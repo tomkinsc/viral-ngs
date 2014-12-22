@@ -5,17 +5,17 @@ main() {
 
     # stage the inputs
     dx cat "$resources" | zcat | tar x -C / &
-    dx download "$reference" -o reference.fasta &
+    dx download "$targets" -o targets.fasta &
     dx cat "$reads" | zcat > reads.fastq &
     dx cat "$reads2" | zcat > reads2.fastq
     wait
 
-    # build Lastal reference database
-    viral-ngs/tools/build/last-490/bin/lastdb -c reference.db reference.fasta
+    # build Lastal target database
+    viral-ngs/tools/build/last-490/bin/lastdb -c targets.db targets.fasta
 
     # filter & dedup the reads
-    python viral-ngs/taxon_filter.py filter_lastal reads.fastq reference.db filtered_reads.pre.fastq &
-    python viral-ngs/taxon_filter.py filter_lastal reads2.fastq reference.db filtered_reads2.pre.fastq
+    python viral-ngs/taxon_filter.py filter_lastal reads.fastq targets.db filtered_reads.pre.fastq &
+    python viral-ngs/taxon_filter.py filter_lastal reads2.fastq targets.db filtered_reads2.pre.fastq
     wait
 
     wc -l filtered_reads.pre.fastq

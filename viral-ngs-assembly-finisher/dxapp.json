@@ -7,9 +7,9 @@
   "categories": [],
   "inputSpec": [
     {
-      "name": "raw_assembly",
+      "name": "trinity_assembly",
       "class": "file",
-      "patterns": ["*.fasta"]
+      "patterns": ["*.Trinity.fasta"]
     },
     {
       "name": "reads",
