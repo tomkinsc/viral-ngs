@@ -1,0 +1,62 @@
+{
+  "name": "viral-ngs-trimmer",
+  "title": "viral-ngs-trimmer",
+  "summary": "Run viral-ngs trimmomatic",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "reads",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "reads2",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "adapters_etc",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "trimmed_reads",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "trimmed_reads2",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-trimmer.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem2_ssd1_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "default-jre-headless"},
+      {"name": "python-numpy"},
+      {"name": "python-scipy"}
+    ]
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}

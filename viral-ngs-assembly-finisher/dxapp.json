@@ -1,0 +1,68 @@
+{
+  "name": "viral-ngs-assembly-finisher",
+  "title": "viral-ngs-assembly-finisher",
+  "summary": "Postprocess Trinity assembly",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "raw_assembly",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "reads",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "reads2",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "reference_genome",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "assembly",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "contigsMap",
+      "class": "file",
+      "patterns": ["*.pdf"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem2_ssd1_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "default-jre-headless"},
+      {"name": "python-numpy"},
+      {"name": "python-scipy"},
+      {"name": "r-base"}
+    ]
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}

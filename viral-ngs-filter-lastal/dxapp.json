@@ -1,0 +1,72 @@
+{
+  "name": "viral-ngs-filter-lastal",
+  "title": "viral-ngs-filter-lastal",
+  "summary": "Restrict paired-end input reads to those that align to a reference database",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "reads",
+      "class": "file",
+      "patterns": ["*.fastq.gz"],
+      "help": "reads"
+    },
+    {
+      "name": "reads2",
+      "class": "file",
+      "patterns": ["*.fastq.gz"],
+      "help": "paired reads"
+    },
+    {
+      "name": "reference",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    },
+    {
+      "name": "read_id_regex",
+      "class": "string",
+      "label": "Read ID Regex",
+      "help": "Perl regular expression to parse paired read IDs from the FASTQ files",
+      "optional": true,
+      "suggestions": ["^@(\\S+)/[1|2]$", "^@(\\S+).[1|2] .*"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "filtered_reads",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "filtered_reads2",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-filter-lastal.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem2_ssd1_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "default-jre-headless"},
+      {"name": "python-numpy"},
+      {"name": "python-scipy"}
+    ]
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}

@@ -1,0 +1,54 @@
+{
+  "name": "viral-ngs-builder",
+  "title": "viral-ngs-builder",
+  "summary": "Build applet resources bundle based on github.com/broadinstitute/viral-ngs",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "git_commit",
+      "label": "Git Commit/Ref",
+      "class": "string",
+      "optional": true,
+      "default": "master"
+    },
+    {
+      "name": "git_url",
+      "label": "Git Repo URL",
+      "class": "string",
+      "optional": true,
+      "default": "https://github.com/broadinstitute/viral-ngs.git"
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "resources",
+      "class": "file"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-builder.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem2_ssd1_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "build-essential"},
+      {"name": "unzip"},
+      {"name": "libncurses5-dev"},
+      {"name": "default-jre-headless"},
+      {"name": "python-numpy"},
+      {"name": "python-scipy"},
+      {"name": "cython"}
+    ]
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}
