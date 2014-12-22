@@ -27,9 +27,20 @@ main() {
         exit 1
     fi
 
+    # modify contig using the reference
+    cat assembly-vfat.fa reference_genome.fa | /seq/annotation/bio_tools/muscle/3.8/muscle -out muscle_align.fasta -quiet
+    python viral-ngs/assembly.py modify_contig muscle_align.fasta assembly-refmosaic.fa $(first_fasta_header reference_genome.fa) --name "$raw_assembly_prefix" --call-reference-ns --trim-ends --replace-5ends --replace-3ends --replace-length "$replace_length" --replace-end-gaps
+    test -s assembly-refmosaic.fa
+
     # upload outputs
-    dx-jobutil-add-output assembly --class=file \
-    	$(dx upload assembly-vfat.fa --destination "${raw_assembly_prefix}.finished.fasta" --brief)
+    dx-jobutil-add-output vfat_assembly --class=file \
+        $(dx upload assembly-vfat.fa --destination "${raw_assembly_prefix}.vfat.fasta" --brief)
+    dx-jobutil-add-output refmosaic_assembly --class=file \
+        $(dx upload assembly-refmosaic.fa --destination "${raw_assembly_prefix}.refmosaic.fasta" --brief)
     dx-jobutil-add-output contigsMap --class=file \
-    	$(dx upload foo/bar_contigsMap.pdf --destination "${raw_assembly_prefix}.finished.contigsMap.pdf" --brief)
+        $(dx upload foo/bar_contigsMap.pdf --destination "${raw_assembly_prefix}.finished.contigsMap.pdf" --brief)
+}
+
+first_fasta_header() {
+    head -n 1 "$1" | tr -d ">\n"
 }

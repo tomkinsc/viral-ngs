@@ -52,7 +52,12 @@
   ],
   "outputSpec": [
     {
-      "name": "assembly",
+      "name": "vfat_assembly",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "refmosaic_assembly",
       "class": "file",
       "patterns": ["*.fasta"]
     },
