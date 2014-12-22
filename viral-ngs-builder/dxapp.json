@@ -1,7 +1,7 @@
 {
   "name": "viral-ngs-builder",
   "title": "viral-ngs-builder",
-  "summary": "Build applet resources bundle based on github.com/broadinstitute/viral-ngs",
+  "summary": "Build resources tarball for use by viral-ngs applets",
   "dxapi": "1.0.0",
   "version": "0.0.1",
   "categories": [],
@@ -18,7 +18,7 @@
       "label": "Git Repo URL",
       "class": "string",
       "optional": true,
-      "default": "https://github.com/broadinstitute/viral-ngs.git"
+      "default": "https://github.com/dnanexus/viral-ngs.git"
     }
   ],
   "outputSpec": [
