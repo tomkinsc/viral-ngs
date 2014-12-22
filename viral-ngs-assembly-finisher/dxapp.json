@@ -57,7 +57,8 @@
       {"name": "python-numpy"},
       {"name": "python-scipy"},
       {"name": "r-base"},
-      {"name": "libipc-system-simple-perl"}
+      {"name": "libipc-system-simple-perl"},
+      {"name": "samtools"}
     ]
   },
   "access": {
