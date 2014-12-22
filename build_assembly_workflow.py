@@ -11,7 +11,8 @@ argparser.add_argument("--project", help="DNAnexus project ID", default="project
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
-                                      default="file-BXBQ3q80QkZ8GfpV91XvQygz")
+                                      default="file-BXFjVfQ0gZG8GfpV91XvxKKF")
+argparser.add_argument("--SRR1553416", help="launch assembly of SRR1553416", action="store_true")
 group = argparser.add_argument_group("trim")
 group.add_argument("--trim-contaminants", help="adapters & contaminants FASTA (default: %(default)s)",
                                      default="file-BXF0vYQ0QyBF509G9J12g927")
@@ -50,7 +51,7 @@ def find_app(app_handle):
 
 def find_applet(applet_name):
     return dxpy.find_one_data_object(classname='applet', name=applet_name,
-                                     project=args.project, folder=applets_folder,
+                                     project=project.get_id(), folder=applets_folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
 def build_workflow():
@@ -92,8 +93,20 @@ def build_workflow():
 
     # TODO populate workflow README
     # TODO set property on workflow with git revision
-
+    return wf
 
 if args.no_applets is not True:
     build_applets()
-build_workflow()
+workflow = build_workflow()
+
+if args.SRR1553416 is True:
+    SRR1553416_folder = args.folder + "/SRR1553416"
+    project.new_folder(SRR1553416_folder)
+    SRR1553416_input = {
+        "trim.reads": dxpy.dxlink("file-BXBP0VQ011y0B0g5bbJFzx51"),
+        "trim.reads2": dxpy.dxlink("file-BXBP0Xj011yFYvPjgJJ0GzZB"),
+        "filter.read_id_regex": "^@(\\S+).[1|2] .*"
+    }
+    analysis = workflow.run(SRR1553416_input, project=project.get_id(), folder=SRR1553416_folder)
+    print "Launched {} on SRR1553416".format(analysis.get_id())
+    # TODO: wait on done?
