@@ -27,6 +27,24 @@
       "patterns": ["*.fasta"]
     },
     {
+      "name": "min_length",
+      "help": "Fail if the assembly is below this length",
+      "class": "int",
+      "default": 15000
+    },
+    {
+      "name": "min_unambig",
+      "help": "Fail if the assembly has less than this proportion of non-N bases",
+      "class": "float",
+      "default": 0.95
+    },
+    {
+      "name": "replace_length",
+      "help": "length of assembly ends to be replaced with reference",
+      "class": "int",
+      "default": 55
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
