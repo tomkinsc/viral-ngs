@@ -56,7 +56,8 @@
       {"name": "default-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"},
-      {"name": "r-base"}
+      {"name": "r-base"},
+      {"name": "libipc-system-simple-perl"}
     ]
   },
   "access": {
