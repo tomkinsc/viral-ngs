@@ -11,7 +11,7 @@ argparser.add_argument("--project", help="DNAnexus project ID", default="project
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
-                                      default="file-BXFjVfQ0gZG8GfpV91XvxKKF")
+                                      default="file-BXJ8Vj805Xq42V4kf1J9YFJ0")
 argparser.add_argument("--SRR1553416", help="launch assembly of SRR1553416", action="store_true")
 group = argparser.add_argument_group("trim")
 group.add_argument("--trim-contaminants", help="adapters & contaminants FASTA (default: %(default)s)",
@@ -80,7 +80,7 @@ def build_workflow():
         "reads2": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads2"}),
         "advanced_options": "--min_contig_length 300"
     }
-    trinity_stage_id = wf.add_stage(args.trinity_applet, stage_input=trinity_input, name="trinity")
+    trinity_stage_id = wf.add_stage(args.trinity_applet, stage_input=trinity_input, name="trinity", instance_type="mem2_ssd1_x2")
 
     finishing_input = {
         "trinity_assembly": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "fasta"}),
