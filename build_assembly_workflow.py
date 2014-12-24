@@ -1,4 +1,4 @@
-#!/usr/bin/env/python
+#!/usr/bin/env python
 import sys
 import dxpy
 import argparse
@@ -21,7 +21,7 @@ group.add_argument("--filter-targets", help="panel of target sequences (default:
                                 default="file-BXF0vf80QyBF509G9J12g9F2")
 group = argparser.add_argument_group("trinity")
 group.add_argument("--trinity-applet", help="Trinity wrapper applet (default: %(default)s)",
-                                       default="applet-BX6Zjz00QyB8PyY514B9pY1k")
+                                       default="applet-BXJ6F5Q0QyB7gy2Gf1p8jqfF")
 group = argparser.add_argument_group("finishing")
 group.add_argument("--finishing-reference", help="Reference genome FASTA (default: %(default)s)",
                                             default="file-BXF0vZ00QyBF509G9J12g944")
