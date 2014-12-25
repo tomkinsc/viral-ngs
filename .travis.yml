@@ -1,56 +1,18 @@
 language: python
-
-matrix:
-    include:
-        - os: linux
-          sudo: false
-          python: 2.7
-        - os: linux
-          sudo: false
-          python: 3.4
-        - os: linux
-          sudo: false
-          python: 3.5
-#        - os: osx
-#          language: generic
-#          env:
-#              - TRAVIS_OSX_PYTHON_VERSION=py35
-#              - TRAVIS_PYTHON_VERSION=3.5.1
-
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
-
-cache:
- directories:
-  - $HOME/misc_cache
-  - $HOME/virtualenv
-  - $HOME/miniconda
-
+python:
+  - 2.7
+# prevent travis from doing pip install requirements.txt
+install: true
+script:
+# disable Travis default virtualenv
+- deactivate
+# deploy dx-toolkit
+- wget https://wiki.dnanexus.com/images/files/dx-toolkit-current-ubuntu-12.04-amd64.tar.gz
+- tar zxf dx-toolkit-current-ubuntu-12.04-amd64.tar.gz
+- source dx-toolkit/environment
+# retrieve & execute tarball builder script with the current commit
+- wget https://raw.githubusercontent.com/dnanexus/viral-ngs/dnanexus/build_resources_tarball.py
+- python build_resources_tarball.py --reuse-builder $(git rev-parse HEAD)
 env:
   global:
-  - CACHE_DIR="$HOME/misc_cache"
-  - MINICONDA_DIR="$HOME/miniconda"
-  - PIP_DIR="$HOME/virtualenv"
-  - GATK_PATH="$CACHE_DIR/GenomeAnalysisTK-3.6"
-  - PYTHONIOENCODING=UTF8
-  - secure: KX7DwKRD85S7NgspxevgbulTtV+jHQIiM6NBus2/Ur/P0RMdpt0EQQ2wDq79qGN70bvvkw901N7EjSYd+GWCAM7StXtaxnLRrrZ3XI1gX7KMk8E3QzPf0zualLDs7cuQmL6l6WiElUAEqumLc7WGpLZZLdSPzNqFSg+CBKCmTI8=
-
-git:
-  depth: 3
-
-before_install:
-  - travis/before_install.sh
-
-install:
-  - source travis/install-conda.sh
-  - travis/install-pip.sh
-  - source travis/install-tools.sh
-
-script:
-  - travis/tests-unit.sh
-  - travis/tests-long.sh
-
-after_success:
-  - coveralls
+  - secure: "hqaflXcPTtAoDDA/KmsTOT8P3tbRQoPLzpzN65UlN0ZlvMM61MjnY0fOQxKNLKrwgQzZWehNt/iXHkEvnYAQopUNlfQ7By5M1njFJSKbdix9UG+B4uF7/ERfxnT+F+AyXiJM974l6uvXAE5s3k7CVTwMol6Rx9XcEA7Sq5sVs/8="
