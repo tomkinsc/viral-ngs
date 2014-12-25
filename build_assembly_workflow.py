@@ -5,14 +5,15 @@ import argparse
 import subprocess
 import time
 import os
+import json
 
 argparser = argparse.ArgumentParser(description="Build the viral-ngs assembly workflow on DNAnexus.")
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
-                                      default="file-BXJ8Vj805Xq42V4kf1J9YFJ0")
-argparser.add_argument("--SRR1553416", help="launch assembly of SRR1553416", action="store_true")
+                                      default="file-BXJk07j0zX142V4kf1JGF991")
+argparser.add_argument("--SRR1553416", help="run assembly of SRR1553416", action="store_true")
 group = argparser.add_argument_group("trim")
 group.add_argument("--trim-contaminants", help="adapters & contaminants FASTA (default: %(default)s)",
                                      default="file-BXF0vYQ0QyBF509G9J12g927")
@@ -28,8 +29,12 @@ group.add_argument("--finishing-reference", help="Reference genome FASTA (defaul
 
 args = argparser.parse_args()
 
+# detect git revision
+here = os.path.dirname(sys.argv[0])
+git_revision = subprocess.check_output(["git", "describe", "--always", "--dirty", "--tags"]).strip()
+
 if args.folder is None:
-    args.folder = time.strftime("/%Y-%m-%d/%H%M%S") # TODO add commit hash subfolder
+    args.folder = time.strftime("/%Y-%m/%d-%H%M%S-") + git_revision
 
 project = dxpy.DXProject(args.project)
 applets_folder = args.folder + "/applets"
@@ -38,14 +43,18 @@ print "folder: {}".format(args.folder)
 
 def build_applets():
     applets = ["viral-ngs-trimmer", "viral-ngs-filter-lastal", "viral-ngs-assembly-finisher"]
-    here = os.path.dirname(sys.argv[0])
 
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
+        # TODO: reuse an existing applet with matching git_revision
         print "building {}...".format(applet),
         sys.stdout.flush()
-        subprocess.check_call(["dx","build","--destination",args.project+":"+applets_folder+"/",os.path.join(here,applet)])
+        applet_dxid = json.loads(subprocess.check_output(["dx","build","--destination",args.project+":"+applets_folder+"/",os.path.join(here,applet)]))["id"]
+        print applet_dxid
+        applet = dxpy.DXApplet(applet_dxid, project=project.get_id())
+        applet.set_properties({"git_revision": git_revision})
 
+# helpers for name resolution
 def find_app(app_handle):
     return dxpy.find_one_app(name=app_handle, zero_ok=False, more_ok=False, return_handler=True)
 
@@ -59,7 +68,8 @@ def build_workflow():
                               name='viral-ngs-assembly',
                               description='viral-ngs-assembly',
                               project=args.project,
-                              folder=args.folder)
+                              folder=args.folder,
+                              properties={"git_revision": git_revision})
     
     trim_input = {
         "adapters_etc": dxpy.dxlink(args.trim_contaminants),
@@ -92,11 +102,12 @@ def build_workflow():
     finishing_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-finisher"), stage_input=finishing_input, name="finishing")
 
     # TODO populate workflow README
-    # TODO set property on workflow with git revision
     return wf
 
+# main
 if args.no_applets is not True:
     build_applets()
+
 workflow = build_workflow()
 
 if args.SRR1553416 is True:
@@ -109,4 +120,5 @@ if args.SRR1553416 is True:
     }
     analysis = workflow.run(SRR1553416_input, project=project.get_id(), folder=SRR1553416_folder)
     print "Launched {} on SRR1553416".format(analysis.get_id())
-    # TODO: wait on done?
+    analysis.wait_on_done()
+
