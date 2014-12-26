@@ -100,7 +100,7 @@ if($option{h})
 
 my $scriptpath = "/idi/sabeti-scratch/kandersen/bin/VfatSoftwarePackage/";
 my $mosaikpath = "/seq/viral/analysis/xyang/external_programs/MOSAIK-2.1.33-source/bin/";
-my $samtoolspath = "/usr/bin/";
+my $samtoolspath = "";
 my $mosaiknetworkpath = "/seq/viral/analysis/xyang/external_programs/MOSAIK-2.1.33-source/networkFile/";
 
 if($mosaiknetworkpath && substr($mosaiknetworkpath, length($mosaiknetworkpath) - 1) ne '/'){$mosaiknetworkpath .= '/';}

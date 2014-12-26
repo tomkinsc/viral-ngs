@@ -1,23 +1,25 @@
 {
-  "name": "viral-ngs-assembly-finisher",
-  "title": "viral-ngs-assembly-finisher",
-  "summary": "Postprocess Trinity assembly",
+  "name": "viral-ngs-assembly-scaffolding",
+  "title": "viral-ngs-assembly-scaffolding",
+  "summary": "Reference-guided scaffolding of Trinity contigs",
   "dxapi": "1.0.0",
   "version": "0.0.1",
   "categories": [],
   "inputSpec": [
     {
-      "name": "trinity_assembly",
+      "name": "trinity_contigs",
       "class": "file",
       "patterns": ["*.Trinity.fasta"]
     },
     {
-      "name": "reads",
+      "name": "trinity_reads",
+      "help": "Reads given to Trinity",
       "class": "file",
       "patterns": ["*.fastq.gz"]
     },
     {
-      "name": "reads2",
+      "name": "trinity_reads2",
+      "help": "Mates of reads given to Trinity",
       "class": "file",
       "patterns": ["*.fastq.gz"]
     },
@@ -52,12 +54,12 @@
   ],
   "outputSpec": [
     {
-      "name": "vfat_assembly",
+      "name": "modified_scaffold",
       "class": "file",
       "patterns": ["*.fasta"]
     },
     {
-      "name": "refmosaic_assembly",
+      "name": "vfat_scaffold",
       "class": "file",
       "patterns": ["*.fasta"]
     },
@@ -79,6 +81,7 @@
       {"name": "default-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"},
+      {"name": "samtools"},
       {"name": "r-base"},
       {"name": "libipc-system-simple-perl"},
       {"name": "samtools"}

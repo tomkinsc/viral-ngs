@@ -23,8 +23,8 @@ group.add_argument("--filter-targets", help="panel of target sequences (default:
 group = argparser.add_argument_group("trinity")
 group.add_argument("--trinity-applet", help="Trinity wrapper applet (default: %(default)s)",
                                        default="applet-BXJ6F5Q0QyB7gy2Gf1p8jqfF")
-group = argparser.add_argument_group("finishing")
-group.add_argument("--finishing-reference", help="Reference genome FASTA (default: %(default)s)",
+group = argparser.add_argument_group("scaffold")
+group.add_argument("--scaffold-reference", help="Reference genome FASTA (default: %(default)s)",
                                             default="file-BXF0vZ00QyBF509G9J12g944")
 
 args = argparser.parse_args()
@@ -42,7 +42,7 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-trimmer", "viral-ngs-filter-lastal", "viral-ngs-assembly-finisher"]
+    applets = ["viral-ngs-trimmer", "viral-ngs-filter-lastal", "viral-ngs-assembly-scaffolding"]
 
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
@@ -92,14 +92,14 @@ def build_workflow():
     }
     trinity_stage_id = wf.add_stage(args.trinity_applet, stage_input=trinity_input, name="trinity", instance_type="mem2_ssd1_x2")
 
-    finishing_input = {
-        "trinity_assembly": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "fasta"}),
-        "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
-        "reads2": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads2"}),
-        "reference_genome" : dxpy.dxlink(args.finishing_reference),
+    scaffold_input = {
+        "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "fasta"}),
+        "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads"}),
+        "trinity_reads2": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads2"}),
+        "reference_genome" : dxpy.dxlink(args.scaffold_reference),
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
     }
-    finishing_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-finisher"), stage_input=finishing_input, name="finishing")
+    scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold")
 
     # TODO populate workflow README
     return wf
