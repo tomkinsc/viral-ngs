@@ -27,18 +27,23 @@ main() {
         exit 1
     fi
 
+    if [ -z "$name" ]; then
+        name=${trinity_contigs_prefix%%.*}
+        name=${name%_1}
+    fi
+
     # modify contig using the reference
     cat vfat-scaffold.fa reference_genome.fa | /seq/annotation/bio_tools/muscle/3.8/muscle -out muscle_align.fasta -quiet
-    python viral-ngs/assembly.py modify_contig muscle_align.fasta scaffold.fa $(first_fasta_header reference_genome.fa) --name "$trinity_contigs_prefix" --call-reference-ns --trim-ends --replace-5ends --replace-3ends --replace-length "$replace_length" --replace-end-gaps
+    python viral-ngs/assembly.py modify_contig muscle_align.fasta scaffold.fa $(first_fasta_header reference_genome.fa) --name "$name" --call-reference-ns --trim-ends --replace-5ends --replace-3ends --replace-length "$replace_length" --replace-end-gaps
     test -s scaffold.fa
 
     # upload outputs
     dx-jobutil-add-output modified_scaffold --class=file \
-        $(dx upload scaffold.fa --destination "${trinity_contigs_prefix}.scaffold.fasta" --brief)
+        $(dx upload scaffold.fa --destination "${name}.scaffold.fasta" --brief)
     dx-jobutil-add-output vfat_scaffold --class=file \
-        $(dx upload vfat-scaffold.fa --destination "${trinity_contigs_prefix}.vfat.fasta" --brief)
+        $(dx upload vfat-scaffold.fa --destination "${name}.vfat.fasta" --brief)
     dx-jobutil-add-output contigsMap --class=file \
-        $(dx upload foo/bar_contigsMap.pdf --destination "${trinity_contigs_prefix}.contigsMap.pdf" --brief)
+        $(dx upload foo/bar_contigsMap.pdf --destination "${name}.contigsMap.pdf" --brief)
 }
 
 first_fasta_header() {

@@ -29,6 +29,12 @@
       "patterns": ["*.fasta"]
     },
     {
+      "name": "name",
+      "help": "name for the sample/assembly (guessed from the filename by default)",
+      "class": "string",
+      "optional": true
+    },
+    {
       "name": "min_length",
       "help": "Fail if the assembly is below this length",
       "class": "int",
@@ -56,7 +62,7 @@
     {
       "name": "modified_scaffold",
       "class": "file",
-      "patterns": ["*.fasta"]
+      "patterns": ["*.scaffold.fasta", "*.fasta"]
     },
     {
       "name": "vfat_scaffold",
@@ -83,8 +89,7 @@
       {"name": "python-scipy"},
       {"name": "samtools"},
       {"name": "r-base"},
-      {"name": "libipc-system-simple-perl"},
-      {"name": "samtools"}
+      {"name": "libipc-system-simple-perl"}
     ]
   },
   "access": {

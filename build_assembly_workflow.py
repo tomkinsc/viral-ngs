@@ -26,7 +26,11 @@ group.add_argument("--trinity-applet", help="Trinity wrapper applet (default: %(
 group = argparser.add_argument_group("scaffold")
 group.add_argument("--scaffold-reference", help="Reference genome FASTA (default: %(default)s)",
                                             default="file-BXF0vZ00QyBF509G9J12g944")
-
+group = argparser.add_argument_group("refine")
+group.add_argument("--refine-novocraft", help="Novocraft tarball (default: %(default)s)",
+                                         default="file-BXJvFq00QyBKgFj9PZBqgbXg")
+group.add_argument("--refine-gatk", help="GATK tarball (default: %(default)s)",
+                                    default="file-BXK8p100QyB0JVff3j9Y1Bf5")
 args = argparser.parse_args()
 
 # detect git revision
@@ -42,7 +46,7 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-trimmer", "viral-ngs-filter-lastal", "viral-ngs-assembly-scaffolding"]
+    applets = ["viral-ngs-trimmer", "viral-ngs-filter-lastal", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement"]
 
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
@@ -100,6 +104,35 @@ def build_workflow():
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
     }
     scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold")
+
+    refine1_input = {
+        "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
+        "reads": dxpy.dxlink({"stage": filter_stage_id, "inputField": "reads"}),
+        "reads2": dxpy.dxlink({"stage": filter_stage_id, "inputField": "reads2"}),
+        "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
+        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
+        "novocraft_tarball": dxpy.dxlink(args.refine_novocraft),
+        "gatk_tarball": dxpy.dxlink(args.refine_gatk)
+    }
+    refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1")
+
+    refine2_input = refine1_input
+    refine2_input["assembly"] = dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
+    refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
+    refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2")
+
+    # TODO: map reads against assembly
+    # TODO: optionally import assembly & mappings for visualization.
+    """
+    genome_importer_input = {
+        "file": dxpy.dxlink({"stage": last_stage_id, "outputField": "refined_assembly"})
+    }
+    genome_importer_stage_id = wf.add_stage(find_app("fasta_contigset_importer"), stage_input=genome_importer_input, name="import_genome", instance_type="mem2_ssd1_x2")
+
+    mappings_importer_input = {
+        "file": 
+    }
+    """
 
     # TODO populate workflow README
     return wf

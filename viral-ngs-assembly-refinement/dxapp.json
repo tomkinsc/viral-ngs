@@ -1,0 +1,80 @@
+{
+  "name": "viral-ngs-assembly-refinement",
+  "title": "viral-ngs-assembly-refinement",
+  "summary": "Refines scaffolded assembly by re-genotyping each site from reads",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "assembly",
+      "class": "file",
+      "patterns": ["*.scaffold.fasta", "*.assembly.fasta"]
+    },
+    {
+      "name": "reads",
+      "help": "Reads to use for genotyping",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "reads2",
+      "help": "Mates of reads to use for genotyping",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "novoalign_options",
+      "class": "string",
+      "optional": false,
+      "default": "-r Random -l 40 -g 40 -x 20 -t 100"
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    },
+    {
+      "name": "novocraft_tarball",
+      "class": "file",
+      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "refined_assembly",
+      "class": "file",
+      "patterns": ["*.assembly.fasta"]
+    },
+    {
+      "name": "intermediates",
+      "class": "array:file"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem2_ssd1_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "openjdk-7-jre-headless"},
+      {"name": "python-numpy"},
+      {"name": "python-scipy"},
+      {"name": "tabix"}
+    ]
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}
