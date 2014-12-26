@@ -120,5 +120,8 @@ if args.SRR1553416 is True:
     }
     analysis = workflow.run(SRR1553416_input, project=project.get_id(), folder=SRR1553416_folder)
     print "Launched {} on SRR1553416".format(analysis.get_id())
-    analysis.wait_on_done()
-
+    # analysis.wait_on_done() # not used because of Travis' 10m console inactivity timeout
+    while analysis.describe()["state"] == "in_progress":
+        print analysis.describe()["output"]
+        time.sleep(30)
+    print analysis.describe()["output"]
