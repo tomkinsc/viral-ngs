@@ -31,6 +31,8 @@ group.add_argument("--refine-novocraft", help="Novocraft tarball (default: %(def
                                          default="file-BXJvFq00QyBKgFj9PZBqgbXg")
 group.add_argument("--refine-gatk", help="GATK tarball (default: %(default)s)",
                                     default="file-BXK8p100QyB0JVff3j9Y1Bf5")
+group.add_argument("--refine-debug", help="Import refinement intermediates for visualization",
+                                     action="store_true")
 args = argparser.parse_args()
 
 # detect git revision
@@ -107,8 +109,8 @@ def build_workflow():
 
     refine1_input = {
         "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
-        "reads": dxpy.dxlink({"stage": filter_stage_id, "inputField": "reads"}),
-        "reads2": dxpy.dxlink({"stage": filter_stage_id, "inputField": "reads2"}),
+        "reads": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads"}),
+        "reads2": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads2"}),
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
         "novocraft_tarball": dxpy.dxlink(args.refine_novocraft),
@@ -120,6 +122,18 @@ def build_workflow():
     refine2_input["assembly"] = dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
     refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
     refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2")
+
+    """
+    if args.refine_debug is True:
+        refine1_genome_importer_input = {
+            "file": dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
+        }
+        genome_importer_stage_id = wf.add_stage(find_app("fasta_contigset_importer"), stage_input=genome_importer_input, name="import_genome", instance_type="mem2_ssd1_x2")
+
+        mappings_importer_input = {
+            "file": 
+        }
+    """
 
     # TODO: map reads against assembly
     # TODO: optionally import assembly & mappings for visualization.
