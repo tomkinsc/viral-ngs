@@ -12,7 +12,7 @@ argparser.add_argument("--project", help="DNAnexus project ID", default="project
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
-                                      default="file-BXJk07j0zX142V4kf1JGF991")
+                                      default="file-BXXGyv00P8F8bj05j9F3gkPj")
 argparser.add_argument("--run-tests", help="run test assemblies", action="store_true")
 group = argparser.add_argument_group("trim")
 group.add_argument("--trim-contaminants", help="adapters & contaminants FASTA (default: %(default)s)",
