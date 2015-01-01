@@ -54,7 +54,7 @@ main() {
     tabix sites.vcf.gz
 
     # generate the final assembly
-    python viral-ngs/assembly.py vcf_to_fasta sites.vcf.gz refined_assembly.fa --trim_ends --min_coverage 2
+    python viral-ngs/assembly.py vcf_to_fasta sites.vcf.gz refined_assembly.fa --trim_ends --min_coverage 2 --name "${name}.refined"
 
     # upload outputs
     dx-jobutil-add-output refined_assembly --class=file \

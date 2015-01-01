@@ -34,7 +34,7 @@ main() {
 
     # modify contig using the reference
     cat vfat-scaffold.fa reference_genome.fa | /seq/annotation/bio_tools/muscle/3.8/muscle -out muscle_align.fasta -quiet
-    python viral-ngs/assembly.py modify_contig muscle_align.fasta scaffold.fa $(first_fasta_header reference_genome.fa) --name "$name" --call-reference-ns --trim-ends --replace-5ends --replace-3ends --replace-length "$replace_length" --replace-end-gaps
+    python viral-ngs/assembly.py modify_contig muscle_align.fasta scaffold.fa $(first_fasta_header reference_genome.fa) --name "${name}_scaffold" --call-reference-ns --trim-ends --replace-5ends --replace-3ends --replace-length "$replace_length" --replace-end-gaps
     test -s scaffold.fa
 
     # upload outputs

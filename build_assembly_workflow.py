@@ -13,7 +13,7 @@ argparser.add_argument("--folder", help="Folder within project (default: timesta
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
                                       default="file-BXJk07j0zX142V4kf1JGF991")
-argparser.add_argument("--SRR1553416", help="run assembly of SRR1553416", action="store_true")
+argparser.add_argument("--run-tests", help="run test assemblies", action="store_true")
 group = argparser.add_argument_group("trim")
 group.add_argument("--trim-contaminants", help="adapters & contaminants FASTA (default: %(default)s)",
                                      default="file-BXF0vYQ0QyBF509G9J12g927")
@@ -157,18 +157,58 @@ if args.no_applets is not True:
 
 workflow = build_workflow()
 
-if args.SRR1553416 is True:
-    SRR1553416_folder = args.folder + "/SRR1553416"
-    project.new_folder(SRR1553416_folder)
-    SRR1553416_input = {
-        "trim.reads": dxpy.dxlink("file-BXBP0VQ011y0B0g5bbJFzx51"),
-        "trim.reads2": dxpy.dxlink("file-BXBP0Xj011yFYvPjgJJ0GzZB"),
-        "filter.read_id_regex": "^@(\\S+).[1|2] .*"
+if args.run_tests is True:
+    muscle_applet = dxpy.DXApplet("applet-BXQxjv00QyB9QF3vP4BpXg95")
+
+    # test data found in "bi-viral-ngs CI:/test_data"
+    test_samples = {
+        "SRR1553416": {
+            "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
+            "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
+            "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq"
+        },
+        "SRR1553554": {
+            "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
+            "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
+            "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4"
+        }
     }
-    analysis = workflow.run(SRR1553416_input, project=project.get_id(), folder=SRR1553416_folder)
-    print "Launched {} on SRR1553416".format(analysis.get_id())
-    # analysis.wait_on_done() # not used because of Travis' 10m console inactivity timeout
-    while analysis.describe()["state"] == "in_progress":
-        print analysis.describe()["output"]
-        time.sleep(30)
-    print analysis.describe()["output"]
+
+    jobs = []
+    for test_sample in test_samples.keys():
+        # create a subfolder for this sample
+        test_folder = args.folder + "/" + test_sample
+        project.new_folder(test_folder)
+        # run the workflow on the test sample
+        test_input = {
+            "trim.reads": dxpy.dxlink(test_samples[test_sample]["reads"]),
+            "trim.reads2": dxpy.dxlink(test_samples[test_sample]["reads2"]),
+            "filter.read_id_regex": "^@(\\S+).[1|2] .*"
+        }
+        test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
+        print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
+        # add on a MUSCLE alignment of the Broad's assembly of the sample with
+        # intermediate and final products of the workflow
+        muscle_input = {
+            "fasta": [
+                test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".vfat_scaffold"),
+                test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".modified_scaffold"),
+                test_analysis.get_output_ref(workflow.get_stage("refine1")["id"]+".refined_assembly"),
+                test_analysis.get_output_ref(workflow.get_stage("refine2")["id"]+".refined_assembly"),
+                dxpy.dxlink(test_samples[test_sample]["broad_assembly"])
+            ],
+            "output_format": "html",
+            "output_name": test_sample+"_test_alignment",
+            "advanced_options": "-maxiters 2"
+        }
+        jobs.append(muscle_applet.run(muscle_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample+" MUSCLE"), instance_type="mem2_ssd1_x2"))
+
+    # wait for jobs to finish while working around Travis 10m console inactivity timeout
+    print "Waiting for jobs to finish..."
+    noise = subprocess.Popen(["/bin/bash", "-c", "while true; do date; sleep 60; done"])
+    try:
+        for job in jobs:
+            job.wait_on_done()
+    finally:
+        noise.kill()
+    print "Success"
