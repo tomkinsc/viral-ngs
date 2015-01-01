@@ -176,7 +176,7 @@ if args.run_tests is True:
         }
     }
 
-    jobs = []
+    test_analyses = []
     for test_sample in test_samples.keys():
         # create a subfolder for this sample
         test_folder = args.folder + "/" + test_sample
@@ -189,28 +189,30 @@ if args.run_tests is True:
         }
         test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
-        # add on a MUSCLE alignment of the Broad's assembly of the sample with
-        # intermediate and final products of the workflow
-        muscle_input = {
-            "fasta": [
-                test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".vfat_scaffold"),
-                test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".modified_scaffold"),
-                test_analysis.get_output_ref(workflow.get_stage("refine1")["id"]+".refined_assembly"),
-                test_analysis.get_output_ref(workflow.get_stage("refine2")["id"]+".refined_assembly"),
-                dxpy.dxlink(test_samples[test_sample]["broad_assembly"])
-            ],
-            "output_format": "html",
-            "output_name": test_sample+"_test_alignment",
-            "advanced_options": "-maxiters 2"
-        }
-        jobs.append(muscle_applet.run(muscle_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample+" MUSCLE"), instance_type="mem2_ssd1_x2"))
+        test_analyses.append((test_sample,test_analysis))
 
     # wait for jobs to finish while working around Travis 10m console inactivity timeout
-    print "Waiting for jobs to finish..."
+    print "Waiting for analyses to finish..."
     noise = subprocess.Popen(["/bin/bash", "-c", "while true; do date; sleep 60; done"])
     try:
-        for job in jobs:
-            job.wait_on_done()
+        for (test_sample,test_analysis) in test_analyses:
+            test_analysis.wait_on_done()
+
+            # for diagnostics: add on a MUSCLE alignment of the Broad's
+            # assembly of the sample with the workflow products
+            muscle_input = {
+                "fasta": [
+                    test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".vfat_scaffold"),
+                    test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".modified_scaffold"),
+                    test_analysis.get_output_ref(workflow.get_stage("refine1")["id"]+".refined_assembly"),
+                    test_analysis.get_output_ref(workflow.get_stage("refine2")["id"]+".refined_assembly"),
+                    dxpy.dxlink(test_samples[test_sample]["broad_assembly"])
+                ],
+                "output_format": "html",
+                "output_name": test_sample+"_test_alignment",
+                "advanced_options": "-maxiters 2"
+            }
+            muscle_applet.run(muscle_input, project=project.get_id(), folder=(args.folder+"/"+test_sample), name=(git_revision+" "+test_sample+" MUSCLE"), instance_type="mem2_ssd1_x2")
     finally:
         noise.kill()
     print "Success"
