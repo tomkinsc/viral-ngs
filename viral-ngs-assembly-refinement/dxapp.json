@@ -24,6 +24,12 @@
       "patterns": ["*.fastq.gz"]
     },
     {
+      "name": "min_coverage",
+      "help": "Minimum supporting read coverage to call a non-ambiguous base",
+      "class": "int",
+      "default": 1
+    },
+    {
       "name": "novoalign_options",
       "class": "string",
       "optional": false,

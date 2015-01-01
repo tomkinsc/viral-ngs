@@ -111,6 +111,7 @@ def build_workflow():
         "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
         "reads": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads"}),
         "reads2": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads2"}),
+        "min_coverage": 1,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
         "novocraft_tarball": dxpy.dxlink(args.refine_novocraft),
@@ -120,6 +121,7 @@ def build_workflow():
 
     refine2_input = refine1_input
     refine2_input["assembly"] = dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
+    refine2_input["min_coverage"] = 3
     refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
     refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2")
 
