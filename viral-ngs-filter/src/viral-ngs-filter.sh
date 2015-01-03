@@ -32,9 +32,22 @@ main() {
     wc -l filtered_reads.fastq
     wc -l filtered_reads2.fastq
 
-    # upload filtered reads
-    dx-jobutil-add-output filtered_reads --class=file \
-        $(gzip -c filtered_reads.fastq | dx upload --brief --destination "${reads_prefix}.filtered.fastq.gz" -)
-    dx-jobutil-add-output filtered_reads2 --class=file \
-        $(gzip -c filtered_reads2.fastq | dx upload --brief --destination "${reads2_prefix}.filtered.fastq.gz" -)
+    dx_filtered_reads=$(gzip -c filtered_reads.fastq | dx upload --brief --destination "${reads_prefix}.filtered.fastq.gz" -)
+    dx-jobutil-add-output filtered_reads --class=file "$dx_filtered_reads"
+    dx_filtered_reads2=$(gzip -c filtered_reads2.fastq | dx upload --brief --destination "${reads2_prefix}.filtered.fastq.gz" -)
+    dx-jobutil-add-output filtered_reads2 --class=file "$dx_filtered_reads2"
+
+    # subsample the read pairs if desired
+    if [ "$subsample" -gt 0 ]; then
+        python viral-ngs/tools/scripts/subsampler.py -n "$subsample" -mode p -in filtered_reads.fastq filtered_reads2.fastq -out filtered_reads.subsample.fastq filtered_reads2.subsample.fastq
+        wc -l filtered_reads.subsample.fastq
+        wc -l filtered_reads2.subsample.fastq
+        dx-jobutil-add-output filtered_subsampled_reads --class=file \
+            $(gzip -c filtered_reads.subsample.fastq | dx upload --brief --destination "${reads_prefix}.filtered.subsampled.fastq.gz" -)
+        dx-jobutil-add-output filtered_subsampled_reads2 --class=file \
+            $(gzip -c filtered_reads2.subsample.fastq | dx upload --brief --destination "${reads2_prefix}.filtered.subsampled.fastq.gz" -)
+    else
+        dx-jobutil-add-output filtered_subsampled_reads --class=file "$dx_filtered_reads"
+        dx-jobutil-add-output filtered_subsampled_reads2 --class=file "$dx_filtered_reads2"
+    fi
 }

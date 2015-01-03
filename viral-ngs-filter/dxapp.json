@@ -25,6 +25,12 @@
       "patterns": ["*.fasta"]
     },
     {
+      "name": "subsample",
+      "help": "If a positive integer n, subsample the filtered dataset to no more than n read pairs",
+      "class": "int",
+      "default": 0
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
@@ -39,6 +45,16 @@
     }
   ],
   "outputSpec": [
+    {
+      "name": "filtered_subsampled_reads",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "filtered_subsampled_reads2",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
     {
       "name": "filtered_reads",
       "class": "file",

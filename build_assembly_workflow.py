@@ -86,14 +86,15 @@ def build_workflow():
     filter_input = {
         "reads": dxpy.dxlink({"stage": trim_stage_id, "outputField": "trimmed_reads"}),
         "reads2": dxpy.dxlink({"stage": trim_stage_id, "outputField": "trimmed_reads2"}),
+        "subsample": 100000,
         "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
     }
     filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter")
 
     trinity_input = {
-        "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
-        "reads2": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads2"}),
+        "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_subsampled_reads"}),
+        "reads2": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_subsampled_reads2"}),
         "advanced_options": "--min_contig_length 300"
     }
     trinity_stage_id = wf.add_stage(args.trinity_applet, stage_input=trinity_input, name="trinity", instance_type="mem2_ssd1_x2")
