@@ -48,7 +48,7 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-trimmer", "viral-ngs-filter-lastal", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement"]
+    applets = ["viral-ngs-trimmer", "viral-ngs-filter", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement"]
 
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
@@ -89,7 +89,7 @@ def build_workflow():
         "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
     }
-    filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter-lastal"), stage_input=filter_input, name="filter")
+    filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter")
 
     trinity_input = {
         "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),

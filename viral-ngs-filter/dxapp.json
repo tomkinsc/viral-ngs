@@ -1,6 +1,6 @@
 {
-  "name": "viral-ngs-filter-lastal",
-  "title": "viral-ngs-filter-lastal",
+  "name": "viral-ngs-filter",
+  "title": "viral-ngs-filter",
   "summary": "Restrict paired-end input reads to those that align to a target database",
   "dxapi": "1.0.0",
   "version": "0.0.1",
@@ -52,7 +52,7 @@
   ],
   "runSpec": {
     "interpreter": "bash",
-    "file": "src/viral-ngs-filter-lastal.sh",
+    "file": "src/viral-ngs-filter.sh",
     "systemRequirements": {
       "main": {
         "instanceType": "mem2_ssd1_x2"
