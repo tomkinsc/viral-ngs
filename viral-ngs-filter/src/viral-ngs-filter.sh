@@ -24,6 +24,11 @@ main() {
             fi
         fi
         echo "Auto-detected read_id_regex: ${read_id_regex}"
+    else
+        if ! try_read_id_regex reads.fastq "$read_id_regex"; then
+            dx-jobutil-report-error "Failed to parse paired read ID in the input FASTQ files using the specified read_id_regex." AppError
+            exit 1
+        fi
     fi
 
     # build Lastal target database
