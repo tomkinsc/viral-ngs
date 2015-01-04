@@ -36,6 +36,8 @@ main() {
     # deduplicate
     python viral-ngs/read_utils.py mkdup_picard reads.rg.bam reads.rg.dedup.bam \
                                                 --remove --picardOptions CREATE_INDEX=true
+    samtools view -c reads.rg.bam
+    samtools view -c reads.rg.dedup.bam
 
     # realign indels
     java -Xmx2g -jar GenomeAnalysisTK.jar -T RealignerTargetCreator \
