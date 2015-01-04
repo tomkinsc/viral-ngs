@@ -10,14 +10,17 @@ main() {
     dx download "$reference_genome" -o reference_genome.fa
     wait
 
-    # symlink R in the path hardcoded into contigMerger.pl
+    # symlink muscle and R in the paths hardcoded into contigMerger.pl
+    mkdir -p /seq/annotation/bio_tools/muscle/3.8/
+    ln -s /home/dnanexus/viral-ngs/tools/build/muscle3.8.31_i86linux64 /seq/annotation/bio_tools/muscle/3.8/muscle
     mkdir -p /broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.15.1/bin
     ln -s "$(which R)" /broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.15.1/bin/R
 
     # run V-FAT scripts to orient & merge contigs
     mkdir foo/
     viral-ngs/tools/scripts/vfat/orientContig.pl trinity_contigs.fa reference_genome.fa foo/bar
-    viral-ngs/tools/scripts/vfat/contigMerger.pl foo/bar_orientedContigs reference_genome.fa -readfq reads.fa -readfq2 reads2.fa -fakequals 30 foo/bar
+    viral-ngs/tools/scripts/vfat/contigMerger.pl foo/bar_orientedContigs reference_genome.fa \
+                                                 -readfq reads.fa -readfq2 reads2.fa -fakequals 30 foo/bar
     ls -tl foo
 
     # check assembly quality thresholds
@@ -33,8 +36,12 @@ main() {
     fi
 
     # modify contig using the reference
-    cat vfat-scaffold.fa reference_genome.fa | /seq/annotation/bio_tools/muscle/3.8/muscle -out muscle_align.fasta -quiet
-    python viral-ngs/assembly.py modify_contig muscle_align.fasta scaffold.fa $(first_fasta_header reference_genome.fa) --name "${name}_scaffold" --call-reference-ns --trim-ends --replace-5ends --replace-3ends --replace-length "$replace_length" --replace-end-gaps
+    cat vfat-scaffold.fa reference_genome.fa | \
+      viral-ngs/tools/build/muscle3.8.31_i86linux64 -out muscle_align.fasta -quiet
+    python viral-ngs/assembly.py modify_contig muscle_align.fasta scaffold.fa \
+                                 $(first_fasta_header reference_genome.fa) --name "${name}_scaffold" \
+                                 --call-reference-ns --trim-ends --replace-5ends --replace-3ends \
+                                 --replace-length "$replace_length" --replace-end-gaps
     test -s scaffold.fa
 
     # upload outputs
