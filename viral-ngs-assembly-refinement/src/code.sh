@@ -57,12 +57,12 @@ main() {
     python viral-ngs/assembly.py vcf_to_fasta sites.vcf.gz refined_assembly.fa --min_coverage "$min_coverage" --trim_ends --name "${name}.refined"
 
     # upload outputs
+    dx-jobutil-add-output deambig_assembly --class=file \
+        $(dx upload assembly.deambig.fa --destination "${name}.deambig.fasta" --brief)
+    dx-jobutil-add-output assembly_read_alignments --class=file \
+        $(dx upload reads.realigned.dedup.bam --destination "${name}.refinement.bam" --brief)
+    dx-jobutil-add-output assembly_sites_vcf --class=file \
+        $(dx upload sites.vcf --destination "${name}.refinement.vcf" --brief)
     dx-jobutil-add-output refined_assembly --class=file \
         $(dx upload refined_assembly.fa --destination "${name}.refined.fasta" --brief)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload assembly.deambig.fa --destination "${name}.deambig.fasta" --brief)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload reads.realigned.dedup.bam --destination "${name}.refinement.bam" --brief)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload sites.vcf --destination "${name}.refinement.vcf" --brief)
 }
