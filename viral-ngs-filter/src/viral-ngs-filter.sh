@@ -29,8 +29,18 @@ main() {
         $cmd
     fi
 
-    wc -l filtered_reads.fastq
-    wc -l filtered_reads2.fastq
+    # sanity checks
+    read_pairs=$(expr $(wc -l < filtered_reads.fastq) / 4)
+    read_pairs2=$(expr $(wc -l < filtered_reads2.fastq) / 4)
+    if [ "$read_pairs" -ne "$read_pairs2" ]; then
+        dx-jobutil-report-error "Reads improperly paired - this shouldn't happen! (${read_pairs} != ${read_pairs2})" AppInternalError
+        exit 1
+    fi
+    echo "${read_pairs} read pairs survived filtering"
+    if [ "$read_pairs" -lt "$min_read_pairs" ]; then
+        dx-jobutil-report-error "Too few read pairs survived filtering (${read_pairs} < ${min_read_pairs})" AppError
+        exit 1
+    fi
 
     dx_filtered_reads=$(gzip -c filtered_reads.fastq | dx upload --brief --destination "${reads_prefix}.filtered.fastq.gz" -)
     dx-jobutil-add-output filtered_reads --class=file "$dx_filtered_reads"
@@ -38,7 +48,8 @@ main() {
     dx-jobutil-add-output filtered_reads2 --class=file "$dx_filtered_reads2"
 
     # subsample the read pairs if desired
-    if [ "$subsample" -gt 0 ]; then
+    if [ "$subsample" -gt 0 ] && [ "$read_pairs" -gt "$subsample" ]; then
+        echo "Subsampling to ${subsample} read pairs"
         python viral-ngs/tools/scripts/subsampler.py -n "$subsample" -mode p -in filtered_reads.fastq filtered_reads2.fastq -out filtered_reads.subsample.fastq filtered_reads2.subsample.fastq
         wc -l filtered_reads.subsample.fastq
         wc -l filtered_reads2.subsample.fastq
@@ -47,6 +58,7 @@ main() {
         dx-jobutil-add-output filtered_subsampled_reads2 --class=file \
             $(gzip -c filtered_reads2.subsample.fastq | dx upload --brief --destination "${reads2_prefix}.filtered.subsampled.fastq.gz" -)
     else
+        echo "No subsampling required"
         dx-jobutil-add-output filtered_subsampled_reads --class=file "$dx_filtered_reads"
         dx-jobutil-add-output filtered_subsampled_reads2 --class=file "$dx_filtered_reads2"
     fi

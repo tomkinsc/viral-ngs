@@ -86,6 +86,7 @@ def build_workflow():
     filter_input = {
         "reads": dxpy.dxlink({"stage": trim_stage_id, "outputField": "trimmed_reads"}),
         "reads2": dxpy.dxlink({"stage": trim_stage_id, "outputField": "trimmed_reads2"}),
+        "min_read_pairs": 1000,
         "subsample": 100000,
         "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
