@@ -10,6 +10,22 @@ main() {
     dx cat "$reads2" | zcat > reads2.fastq
     wait
 
+    # If a regex for parsing the paired read IDs was not given, attempt auto-detection
+    if [ -z "$read_id_regex" ]; then
+        echo "Auto-detecting paired read ID format"
+        # try Illuimna basecaller format
+        read_id_regex="^@(\S+)/[1|2]$"
+        if ! try_read_id_regex reads.fastq "$read_id_regex"; then
+            # try SRA fastq-dump format
+            read_id_regex="^@(\S+).[1|2] .*"
+            if ! try_read_id_regex reads.fastq "$read_id_regex"; then
+                dx-jobutil-report-error "Failed to auto-detect paired read ID format in the input FASTQ files. Please explicitly specify the read_id_regex input to this applet." AppError
+                exit 1
+            fi
+        fi
+        echo "Auto-detected read_id_regex: ${read_id_regex}"
+    fi
+
     # build Lastal target database
     viral-ngs/tools/build/last-490/bin/lastdb -c targets.db targets.fasta
 
@@ -22,12 +38,9 @@ main() {
     wc -l filtered_reads2.pre.fastq
 
     # purge unmated reads
-    cmd='python viral-ngs/read_utils.py purge_unmated filtered_reads.pre.fastq filtered_reads2.pre.fastq filtered_reads.fastq filtered_reads2.fastq'
-    if [ -n "$read_id_regex" ]; then
-        $cmd --regex "$read_id_regex"
-    else
-        $cmd
-    fi
+    python viral-ngs/read_utils.py purge_unmated filtered_reads.pre.fastq filtered_reads2.pre.fastq \
+                                                 filtered_reads.fastq filtered_reads2.fastq \
+                                                 --regex "$read_id_regex"
 
     # sanity checks
     read_pairs=$(expr $(wc -l < filtered_reads.fastq) / 4)
@@ -62,4 +75,8 @@ main() {
         dx-jobutil-add-output filtered_subsampled_reads --class=file "$dx_filtered_reads"
         dx-jobutil-add-output filtered_subsampled_reads2 --class=file "$dx_filtered_reads2"
     fi
+}
+
+try_read_id_regex() {
+    head -n 1 "$1" | perl -ne "\$re='$2'; exit 0 if /\$re/; exit 1"
 }

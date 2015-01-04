@@ -186,8 +186,7 @@ if args.run_tests is True:
         # run the workflow on the test sample
         test_input = {
             "trim.reads": dxpy.dxlink(test_samples[test_sample]["reads"]),
-            "trim.reads2": dxpy.dxlink(test_samples[test_sample]["reads2"]),
-            "filter.read_id_regex": "^@(\\S+).[1|2] .*"
+            "trim.reads2": dxpy.dxlink(test_samples[test_sample]["reads2"])
         }
         test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
