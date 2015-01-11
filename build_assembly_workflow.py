@@ -128,31 +128,6 @@ def build_workflow():
     refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
     refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2")
 
-    """
-    if args.refine_debug is True:
-        refine1_genome_importer_input = {
-            "file": dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
-        }
-        genome_importer_stage_id = wf.add_stage(find_app("fasta_contigset_importer"), stage_input=genome_importer_input, name="import_genome", instance_type="mem2_ssd1_x2")
-
-        mappings_importer_input = {
-            "file": 
-        }
-    """
-
-    # TODO: map reads against assembly
-    # TODO: optionally import assembly & mappings for visualization.
-    """
-    genome_importer_input = {
-        "file": dxpy.dxlink({"stage": last_stage_id, "outputField": "refined_assembly"})
-    }
-    genome_importer_stage_id = wf.add_stage(find_app("fasta_contigset_importer"), stage_input=genome_importer_input, name="import_genome", instance_type="mem2_ssd1_x2")
-
-    mappings_importer_input = {
-        "file": 
-    }
-    """
-
     # TODO populate workflow README
     return wf
 
