@@ -113,7 +113,7 @@ def build_workflow():
         "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
         "reads": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads"}),
         "reads2": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads2"}),
-        "min_coverage": 1,
+        "min_coverage": 2,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
         "novocraft_tarball": dxpy.dxlink(args.refine_novocraft),
