@@ -6,6 +6,7 @@ import subprocess
 import time
 import os
 import json
+import hashlib
 
 argparser = argparse.ArgumentParser(description="Build the viral-ngs assembly workflow on DNAnexus.")
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
@@ -169,12 +170,14 @@ if args.run_tests is True:
         "SRR1553416": {
             "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
-            "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq"
+            "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
+            "expected_assembly_sha256sum": "df785c1d87731a662cfda27b52787c32c40c20a6a3a79ca9e3bc8a3e5e914c65"
         },
         "SRR1553554": {
             "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
-            "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4"
+            "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
+            "expected_assembly_sha256sum": "525acc15dd58c23a790afce91f43cc743db429fdb6fe89e319ae8800e2c7a7fe"
         }
     }
 
@@ -216,4 +219,13 @@ if args.run_tests is True:
             muscle_applet.run(muscle_input, project=project.get_id(), folder=(args.folder+"/"+test_sample), name=(git_revision+" "+test_sample+" MUSCLE"), instance_type="mem2_ssd1_x2")
     finally:
         noise.kill()
+
+    # check hashes of the final assembly FASTAs
+    for (test_sample,test_analysis) in test_analyses:
+        test_assembly_dxfile = dxpy.DXFile(test_analysis.describe()["output"][workflow.get_stage("refine2")["id"]+".refined_assembly"])
+        test_assembly_sha256sum = hashlib.sha256(test_assembly_dxfile.read()).hexdigest()
+        expected_sha256sum = test_samples[test_sample]["expected_assembly_sha256sum"]
+        print "\t".join([test_sample, expected_sha256sum, test_assembly_sha256sum])
+        assert expected_sha256sum == test_assembly_sha256sum
+
     print "Success"
