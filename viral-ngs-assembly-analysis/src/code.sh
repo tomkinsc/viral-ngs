@@ -49,6 +49,7 @@ main() {
     alignment_read_count=$($samtools view -c reads.rg.dedup.bam)
     alignment_base_count=$($samtools view reads.rg.dedup.bam | cut -f10 | tr -d '\n' | wc -c)
     mean_coverage_depth=$(expr $alignment_base_count / $assembly_length)
+    genomecov=$(bedtools genomecov -ibam reads.rg.dedup.bam | dx upload -o "${name}.genomecov.txt" --brief -)
 
     # upload outputs
     dx-jobutil-add-output assembly_length $assembly_length
@@ -57,6 +58,7 @@ main() {
     dx-jobutil-add-output mean_coverage_depth $mean_coverage_depth
     dx-jobutil-add-output assembly_read_alignments --class=file \
         $(dx upload reads.realigned.dedup.bam --destination "${name}.align_self.bam" --brief)
+    dx-jobutil-add-output alignment_genomecov "$genomecov"
     dx-jobutil-add-output final_assembly --class=file \
         $(dx upload assembly.fa --destination "${name}.final.fasta" --brief)
 }

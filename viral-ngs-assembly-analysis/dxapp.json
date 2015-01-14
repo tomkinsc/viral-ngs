@@ -72,6 +72,11 @@
     {
       "name": "mean_coverage_depth",
       "class": "int"
+    },
+    {
+      "name": "alignment_genomecov",
+      "class":"file",
+      "help": "Report from 'bedtools genomecov' on assembly_read_alignments"
     }
   ],
   "runSpec": {
