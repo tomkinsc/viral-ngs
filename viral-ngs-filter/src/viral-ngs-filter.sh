@@ -65,6 +65,12 @@ main() {
     dx_filtered_reads2=$(gzip -c filtered_reads2.fastq | dx upload --brief --destination "${reads2_prefix}.filtered.fastq.gz" -)
     dx-jobutil-add-output filtered_reads2 --class=file "$dx_filtered_reads2"
 
+    dx-jobutil-add-output input_read_pair_count $(expr $(wc -l < reads.fastq) / 4)
+    dx-jobutil-add-output input_base_count $(fastq_pair_base_count reads.fastq reads2.fastq)
+    dx-jobutil-add-output filtered_read_pair_count $read_pairs
+    filtered_base_count=$(fastq_pair_base_count filtered_reads.fastq filtered_reads2.fastq)
+    dx-jobutil-add-output filtered_base_count $filtered_base_count
+
     # subsample the read pairs if desired
     if [ "$subsample" -gt 0 ] && [ "$read_pairs" -gt "$subsample" ]; then
         echo "Subsampling to ${subsample} read pairs"
@@ -75,13 +81,21 @@ main() {
             $(gzip -c filtered_reads.subsample.fastq | dx upload --brief --destination "${reads_prefix}.filtered.subsampled.fastq.gz" -)
         dx-jobutil-add-output filtered_subsampled_reads2 --class=file \
             $(gzip -c filtered_reads2.subsample.fastq | dx upload --brief --destination "${reads2_prefix}.filtered.subsampled.fastq.gz" -)
+        dx-jobutil-add-output filtered_subsampled_read_pair_count $(expr $(wc -l < filtered_reads.subsample.fastq) / 4)
+        dx-jobutil-add-output filtered_subsampled_base_count $(fastq_pair_base_count filtered_reads.subsample.fastq filtered_reads2.subsample.fastq)
     else
         echo "No subsampling required"
         dx-jobutil-add-output filtered_subsampled_reads --class=file "$dx_filtered_reads"
         dx-jobutil-add-output filtered_subsampled_reads2 --class=file "$dx_filtered_reads2"
+        dx-jobutil-add-output filtered_subsampled_read_pair_count $read_pairs
+        dx-jobutil-add-output filtered_subsampled_base_count $filtered_base_count
     fi
 }
 
 try_read_id_regex() {
     head -n 1 "$1" | perl -ne "\$re='$2'; exit 0 if /\$re/; exit 1"
+}
+
+fastq_pair_base_count() {
+    cat $1 $2 | paste - - - - | cut -f2 | tr -d '\n' | wc -c
 }
