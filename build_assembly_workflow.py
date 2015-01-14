@@ -49,7 +49,7 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-trimmer", "viral-ngs-filter", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement"]
+    applets = ["viral-ngs-trimmer", "viral-ngs-filter", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
 
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
@@ -127,6 +127,17 @@ def build_workflow():
     refine2_input["min_coverage"] = 3
     refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
     refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2")
+
+    analysis_input = {
+        "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
+        "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
+        "reads2": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads2"}),
+        "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
+        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
+        "novocraft_tarball": dxpy.dxlink(args.refine_novocraft),
+        "gatk_tarball": dxpy.dxlink(args.refine_gatk)
+    }
+    analysis_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-analysis"), stage_input=analysis_input, name="analysis")
 
     # TODO populate workflow README
     return wf

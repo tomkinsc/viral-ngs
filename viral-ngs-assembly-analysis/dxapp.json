@@ -1,0 +1,102 @@
+{
+  "name": "viral-ngs-assembly-analysis",
+  "title": "viral-ngs-assembly-analysis",
+  "summary": "Map reads to the final assembly and compute some figures of merit",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "assembly",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "reads",
+      "help": "Reads to map",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "reads2",
+      "help": "Mates of reads to map",
+      "class": "file",
+      "patterns": ["*.fastq.gz"]
+    },
+    {
+      "name": "novoalign_options",
+      "class": "string",
+      "optional": false,
+      "default": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3"
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    },
+    {
+      "name": "novocraft_tarball",
+      "class": "file",
+      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "final_assembly",
+      "class": "file",
+      "patterns": ["*.assembly.fasta", "*.fasta", "*.fa"]
+    },
+    {
+      "name": "assembly_read_alignments",
+      "help": "reads aligned to final assembly",
+      "class": "file",
+      "patterns": ["*.bam"]
+    },
+    {
+      "name": "assembly_length",
+      "class": "int"
+    },
+    {
+      "name": "alignment_read_count",
+      "class": "int"
+    },
+    {
+      "name": "alignment_base_count",
+      "class": "int"
+    },
+    {
+      "name": "mean_coverage_depth",
+      "class": "int"
+    },
+    {
+      "name": "alignment_genomecov",
+      "class":"file",
+      "help": "Report from 'bedtools genomecov' on assembly_read_alignments"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem2_ssd1_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "openjdk-7-jre-headless"},
+      {"name": "python-numpy"},
+      {"name": "python-scipy"}
+    ]
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}
