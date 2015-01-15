@@ -157,13 +157,17 @@ if args.run_tests is True:
             "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
-            "expected_assembly_sha256sum": "df785c1d87731a662cfda27b52787c32c40c20a6a3a79ca9e3bc8a3e5e914c65"
+            "expected_assembly_sha256sum": "df785c1d87731a662cfda27b52787c32c40c20a6a3a79ca9e3bc8a3e5e914c65",
+            "expected_filtered_subsampled_base_count":  458785,
+            "expected_alignment_base_count": 485406
         },
         "SRR1553554": {
             "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
-            "expected_assembly_sha256sum": "525acc15dd58c23a790afce91f43cc743db429fdb6fe89e319ae8800e2c7a7fe"
+            "expected_assembly_sha256sum": "525acc15dd58c23a790afce91f43cc743db429fdb6fe89e319ae8800e2c7a7fe",
+            "expected_filtered_subsampled_base_count":  462704,
+            "expected_alignment_base_count": 590547
         }
     }
 
@@ -206,12 +210,22 @@ if args.run_tests is True:
     finally:
         noise.kill()
 
-    # check hashes of the final assembly FASTAs
+    # check figures of merit
     for (test_sample,test_analysis) in test_analyses:
-        test_assembly_dxfile = dxpy.DXFile(test_analysis.describe()["output"][workflow.get_stage("refine2")["id"]+".refined_assembly"])
+        test_assembly_dxfile = dxpy.DXFile(test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".final_assembly"])
         test_assembly_sha256sum = hashlib.sha256(test_assembly_dxfile.read()).hexdigest()
         expected_sha256sum = test_samples[test_sample]["expected_assembly_sha256sum"]
-        print "\t".join([test_sample, expected_sha256sum, test_assembly_sha256sum])
+        print "\t".join([test_sample, "sha256sum", expected_sha256sum, test_assembly_sha256sum])
         assert expected_sha256sum == test_assembly_sha256sum
+
+        filtered_subsampled_base_count = test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".filtered_subsampled_base_count"]
+        expected_filtered_subsampled_base_count = test_samples[test_sample]["expected_filtered_subsampled_base_count"]
+        print "\t".join([test_sample, "filtered_subsampled_base_count", expected_filtered_subsampled_base_count, filtered_subsampled_base_count])
+        assert expected_filtered_subsampled_base_count == filtered_subsampled_base_count
+
+        alignment_base_count = test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".alignment_base_count"]
+        expected_alignment_base_count = test_samples[test_sample]["expected_alignment_base_count"]
+        print "\t".join([test_sample, "alignment_base_count", expected_alignment_base_count, alignment_base_count])
+        assert expected_alignment_base_count == alignment_base_count
 
     print "Success"
