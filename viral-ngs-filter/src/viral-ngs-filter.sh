@@ -81,8 +81,8 @@ main() {
             $(gzip -c filtered_reads.subsample.fastq | dx upload --brief --destination "${reads_prefix}.filtered.subsampled.fastq.gz" -)
         dx-jobutil-add-output filtered_subsampled_reads2 --class=file \
             $(gzip -c filtered_reads2.subsample.fastq | dx upload --brief --destination "${reads2_prefix}.filtered.subsampled.fastq.gz" -)
-        dx-jobutil-add-output input_read_pair_count $(expr $(wc -l < filtered_reads.subsample.fastq) / 4)
-        dx-jobutil-add-output input_base_count $(fastq_pair_base_count filtered_reads.subsample.fastq filtered_reads2.subsample.fastq)
+        dx-jobutil-add-output filtered_subsampled_read_pair_count $(expr $(wc -l < filtered_reads.subsample.fastq) / 4)
+        dx-jobutil-add-output filtered_subsampled_base_count $(fastq_pair_base_count filtered_reads.subsample.fastq filtered_reads2.subsample.fastq)
     else
         echo "No subsampling required"
         dx-jobutil-add-output filtered_subsampled_reads --class=file "$dx_filtered_reads"
