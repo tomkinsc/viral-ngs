@@ -14,4 +14,4 @@ script:
 - python build_assembly_workflow.py --run-tests
 env:
   global:
-  - secure: "mydiKt2slwLY0NG9MvFDCAtEZ40f06FzRWT2H3Tf475g0IU8Cm9zTL1SoOOK+jUdyR12IXtniwixg9HEJcW5uid3lfbnbZcFNCWmXIytDzlU/zmEf518Rth+FEZkl49vG2+UErmmzOPQJSIIYuiY2uBd5FN2PSjKjY2zXuyQdUw="
+  - secure: "hqaflXcPTtAoDDA/KmsTOT8P3tbRQoPLzpzN65UlN0ZlvMM61MjnY0fOQxKNLKrwgQzZWehNt/iXHkEvnYAQopUNlfQ7By5M1njFJSKbdix9UG+B4uF7/ERfxnT+F+AyXiJM974l6uvXAE5s3k7CVTwMol6Rx9XcEA7Sq5sVs/8="
