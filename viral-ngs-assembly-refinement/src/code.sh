@@ -21,9 +21,10 @@ main() {
     python viral-ngs/read_utils.py index_fasta_samtools assembly.deambig.fa
     novocraft/novoindex assembly.deambig.fa.nix assembly.deambig.fa
 
+    samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
     novocraft/novoalign $novoalign_options -f reads.fa reads2.fa \
                         -F STDFQ -o SAM -d assembly.deambig.fa.nix \
-        | viral-ngs/tools/build/samtools-0.1.19/samtools view -buS -q 1 - \
+        | $samtools view -buS -q 1 - \
         | java -Xmx2g -jar viral-ngs/tools/build/picard-tools-1.126/picard.jar SortSam \
                       SO=coordinate VALIDATION_STRINGENCY=SILENT \
                       I=/dev/stdin O=reads.bam
@@ -36,8 +37,8 @@ main() {
     # deduplicate
     python viral-ngs/read_utils.py mkdup_picard reads.rg.bam reads.rg.dedup.bam \
                                                 --remove --picardOptions CREATE_INDEX=true
-    samtools view -c reads.rg.bam
-    samtools view -c reads.rg.dedup.bam
+    $samtools view -c reads.rg.bam
+    $samtools view -c reads.rg.dedup.bam
 
     # realign indels
     java -Xmx2g -jar GenomeAnalysisTK.jar -T RealignerTargetCreator \

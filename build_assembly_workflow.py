@@ -14,6 +14,10 @@ argparser.add_argument("--folder", help="Folder within project (default: timesta
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
                                       default="file-BXXGyv00P8F8bj05j9F3gkPj")
+argparser.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
+                                      default="file-BXJvFq00QyBKgFj9PZBqgbXg")
+argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
+                                 default="file-BXK8p100QyB0JVff3j9Y1Bf5")
 argparser.add_argument("--run-tests", help="run small test assemblies", action="store_true")
 argparser.add_argument("--run-large-tests", help="run test assemblies of varying sizes", action="store_true")
 group = argparser.add_argument_group("trim")
@@ -28,13 +32,6 @@ group.add_argument("--trinity-applet", help="Trinity wrapper applet (default: %(
 group = argparser.add_argument_group("scaffold")
 group.add_argument("--scaffold-reference", help="Reference genome FASTA (default: %(default)s)",
                                             default="file-BXF0vZ00QyBF509G9J12g944")
-group = argparser.add_argument_group("refine")
-group.add_argument("--refine-novocraft", help="Novocraft tarball (default: %(default)s)",
-                                         default="file-BXJvFq00QyBKgFj9PZBqgbXg")
-group.add_argument("--refine-gatk", help="GATK tarball (default: %(default)s)",
-                                    default="file-BXK8p100QyB0JVff3j9Y1Bf5")
-group.add_argument("--refine-debug", help="Import refinement intermediates for visualization",
-                                     action="store_true")
 args = argparser.parse_args()
 
 # detect git revision
@@ -117,16 +114,16 @@ def build_workflow():
         "reads2": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads2"}),
         "min_coverage": 2,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
-        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
-        "novocraft_tarball": dxpy.dxlink(args.refine_novocraft),
-        "gatk_tarball": dxpy.dxlink(args.refine_gatk)
+        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
     }
     refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1")
 
     refine2_input = refine1_input
     refine2_input["assembly"] = dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
     refine2_input["min_coverage"] = 3
+    refine2_input["novocraft_tarball"] = dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"})
     refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
+    refine2_input["gatk_tarball"] = dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
     refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2")
 
     analysis_input = {
@@ -135,8 +132,8 @@ def build_workflow():
         "reads2": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads2"}),
         "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
         "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
-        "novocraft_tarball": dxpy.dxlink(args.refine_novocraft),
-        "gatk_tarball": dxpy.dxlink(args.refine_gatk)
+        "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"}),
+        "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
     }
     analysis_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-analysis"), stage_input=analysis_input, name="analysis")
 
@@ -191,7 +188,9 @@ if args.run_tests is True or args.run_large_tests is True:
         # run the workflow on the test sample
         test_input = {
             "trim.reads": dxpy.dxlink(test_samples[test_sample]["reads"]),
-            "trim.reads2": dxpy.dxlink(test_samples[test_sample]["reads2"])
+            "trim.reads2": dxpy.dxlink(test_samples[test_sample]["reads2"]),
+            "refine1.novocraft_tarball": dxpy.dxlink(args.novocraft),
+            "refine1.gatk_tarball": dxpy.dxlink(args.gatk)
         }
         test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
