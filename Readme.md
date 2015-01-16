@@ -8,6 +8,10 @@ This repo contains the source code for applets implementing discrete stages of t
 
 ### Continuous integration
 
+[![Build Status](https://travis-ci.org/dnanexus/viral-ngs.svg?branch=dnanexus)](https://travis-ci.org/dnanexus/viral-ngs)
+
+Travis CI tests changes to this branch. The `.travis.yml` uses a [secure environment variable](http://docs.travis-ci.com/user/environment-variables/#Secure-Variables) to encode a DNAnexus auth token providing access to the [bi-viral-ngs CI](https://platform.dnanexus.com/projects/BXBXK180x0z7x5kxq11p886f/data/) project. Travis builds the applets & workflows and then executes the workflows on small test datasets. Various supporting materials for these tests are staged in the bi-viral-ngs CI project. 
+
 ### Resources tarball
 
 ### Software licensing issues
