@@ -2,7 +2,7 @@
 
 #### [Broad Institute viral genomics analysis pipelines](https://github.com/broadinstitute/viral-ngs) on DNAnexus
 
-The pipelines are available for use on DNAnexus. (TODO link to public project & docs.) Use this repo if you're interested in modifying them or learning more about how they work.
+The pipelines are available for use on DNAnexus. (TODO link to public project & docs.) Use this repo if you're interested in modifying them or peeking under the hood.
 
 This repo contains the source code for applets implementing discrete stages of the pipelines, and python scripts in the root directory to build the applets and instantiate DNAnexus [workflows](https://wiki.dnanexus.com/UI/Workflows) using them. You'll need the [DNAnexus SDK](https://wiki.dnanexus.com/Command-Line-Client/Quickstart) installed and set up to run these scripts.
 
@@ -19,3 +19,5 @@ To minimize wheel reinvention, most of the applets directly use tools and wrappe
 The [`dnanexus-resources-tarball`](https://github.com/dnanexus/viral-ngs/tree/dnanexus-resources-tarball) branch of this repository is a version of the Broad codebase with a modified `.travis.yml` to automatically build the resources tarball in the [bi-viral-ngs CI:/resources_tarball](https://platform.dnanexus.com/projects/BXBXK180x0z7x5kxq11p886f/data/resources_tarball) folder from the current revision of that branch. As a best practice, the resources tarball used in published workflow versions should come from this folder.
 
 ### Software licensing issues
+
+The workflows use two semi-proprietary software packages: GATK and Novoalign. Published workflow versions require the user to upload GATK and Novoalign tarballs and provide them as workflow inputs. Because the bi-viral-ngs CI project is public, the Travis workflow tests use copies of these tarballs staged in a separate, private project, which the auth token is also empowered to use.
