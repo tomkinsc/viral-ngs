@@ -14,7 +14,8 @@ argparser.add_argument("--folder", help="Folder within project (default: timesta
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
                                       default="file-BXXGyv00P8F8bj05j9F3gkPj")
-argparser.add_argument("--run-tests", help="run test assemblies", action="store_true")
+argparser.add_argument("--run-tests", help="run small test assemblies", action="store_true")
+argparser.add_argument("--run-large-tests", help="run test assemblies of varying sizes", action="store_true")
 group = argparser.add_argument_group("trim")
 group.add_argument("--trim-contaminants", help="adapters & contaminants FASTA (default: %(default)s)",
                                      default="file-BXF0vYQ0QyBF509G9J12g927")
@@ -148,7 +149,7 @@ if args.no_applets is not True:
 
 workflow = build_workflow()
 
-if args.run_tests is True:
+if args.run_tests is True or args.run_large_tests is True:
     muscle_applet = dxpy.DXApplet("applet-BXQxjv00QyB9QF3vP4BpXg95")
 
     # test data found in "bi-viral-ngs CI:/test_data"
@@ -170,6 +171,17 @@ if args.run_tests is True:
             "expected_alignment_base_count": 590547
         }
     }
+
+    if args.run_large_tests is True:
+        # nb this sample takes too long for Travis
+        test_samples["SRR1553468"] = {
+            "reads": "file-BXYqZj80Fv4YqP151Zy9291y",
+            "reads2": "file-BXYqZkQ0Fv4YZYKx14yJg0b4",
+            "broad_assembly": "file-BXYqYKQ0QyB84xYJP9Kz7zzK",
+            "expected_assembly_sha256sum": "456bd7e050222e0eff4fbe4a04c4124695c89d0533b318a49777789f3ed8bb2b",
+            "expected_filtered_subsampled_base_count": 18787806,
+            "expected_alignment_base_count": 247110236
+        }
 
     test_analyses = []
     for test_sample in test_samples.keys():
