@@ -12,8 +12,11 @@ main() {
     dx cat "$reads" | zcat > reads.fa &
     dx cat "$reads2" | zcat > reads2.fa &
     dx cat "$novocraft_tarball" | tar zx &
-    dx cat "$gatk_tarball" | tar jx
+    mkdir gatk/
+    dx cat "$gatk_tarball" | tar jx -C gatk/
     wait
+    export NOVOALIGN_PATH=/home/dnanexus/novocraft
+    export GATK_PATH=/home/dnanexus/gatk
 
     # Novoalign reads to the assembly
     python viral-ngs/read_utils.py index_fasta_picard assembly.fa
@@ -38,11 +41,7 @@ main() {
                                                 --remove --picardOptions CREATE_INDEX=true
 
     # realign indels
-    java -Xmx2g -jar GenomeAnalysisTK.jar -T RealignerTargetCreator \
-                -R assembly.fa -o target.intervals -I reads.rg.dedup.bam
-    java -Xmx2g -jar GenomeAnalysisTK.jar -T IndelRealigner \
-                -R assembly.fa -targetIntervals target.intervals \
-                -I reads.rg.dedup.bam -o reads.realigned.dedup.bam
+    python viral-ngs/read_utils.py gatk_realign reads.rg.dedup.bam assembly.fa reads.realigned.dedup.bam
 
     # collect some statistics
     assembly_length=$(tail -n +1 assembly.fa | tr -d '\n' | wc -c)

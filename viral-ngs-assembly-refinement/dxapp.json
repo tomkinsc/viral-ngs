@@ -87,8 +87,7 @@
     "execDepends": [
       {"name": "openjdk-7-jre-headless"},
       {"name": "python-numpy"},
-      {"name": "python-scipy"},
-      {"name": "tabix"}
+      {"name": "python-scipy"}
     ]
   },
   "access": {

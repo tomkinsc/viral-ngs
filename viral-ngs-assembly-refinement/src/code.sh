@@ -12,8 +12,11 @@ main() {
     dx cat "$reads" | zcat > reads.fa &
     dx cat "$reads2" | zcat > reads2.fa &
     dx cat "$novocraft_tarball" | tar zx &
-    dx cat "$gatk_tarball" | tar jx
+    mkdir gatk/
+    dx cat "$gatk_tarball" | tar jx -C gatk/
     wait
+    export NOVOALIGN_PATH=/home/dnanexus/novocraft
+    export GATK_PATH=/home/dnanexus/gatk
 
     # Novoalign reads back to the assembly
     python viral-ngs/assembly.py deambig_fasta assembly.fa assembly.deambig.fa
@@ -41,20 +44,10 @@ main() {
     $samtools view -c reads.rg.dedup.bam
 
     # realign indels
-    java -Xmx2g -jar GenomeAnalysisTK.jar -T RealignerTargetCreator \
-                -R assembly.deambig.fa -o target.intervals -I reads.rg.dedup.bam
-    java -Xmx2g -jar GenomeAnalysisTK.jar -T IndelRealigner \
-                -R assembly.deambig.fa -targetIntervals target.intervals \
-                -I reads.rg.dedup.bam -o reads.realigned.dedup.bam
+    python viral-ngs/read_utils.py gatk_realign reads.rg.dedup.bam assembly.deambig.fa reads.realigned.dedup.bam
 
     # run UnifiedGenotyper
-    java -Xmx2g -jar GenomeAnalysisTK.jar -T UnifiedGenotyper \
-                -R assembly.deambig.fa -I reads.realigned.dedup.bam -o sites.vcf \
-                --min_base_quality_score 15 -ploidy 4 -glm BOTH --baq OFF \
-                --useOriginalQualities -out_mode EMIT_ALL_SITES -dt NONE --num_threads $(nproc) \
-                -stand_call_conf 0 -stand_emit_conf 0 -A AlleleBalance
-    bgzip -c sites.vcf > sites.vcf.gz
-    tabix sites.vcf.gz
+    python viral-ngs/read_utils.py gatk_ug reads.realigned.dedup.bam assembly.deambig.fa sites.vcf.gz
 
     # generate the final assembly
     python viral-ngs/assembly.py vcf_to_fasta sites.vcf.gz refined_assembly.fa --min_coverage "$min_coverage" --trim_ends --name "${name}.refined"
@@ -65,7 +58,7 @@ main() {
     dx-jobutil-add-output assembly_read_alignments --class=file \
         $(dx upload reads.realigned.dedup.bam --destination "${name}.refinement.bam" --brief)
     dx-jobutil-add-output assembly_sites_vcf --class=file \
-        $(dx upload sites.vcf --destination "${name}.refinement.vcf" --brief)
+        $(zcat sites.vcf.gz | dx upload --destination "${name}.refinement.vcf" --brief -)
     dx-jobutil-add-output refined_assembly --class=file \
         $(dx upload refined_assembly.fa --destination "${name}.refined.fasta" --brief)
 }
