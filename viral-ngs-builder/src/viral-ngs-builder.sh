@@ -3,7 +3,16 @@
 main() {
     set -e -x -o pipefail
 
-    # record a manifest of the filesystem before doing anything
+    # deploy proprietary software (needed for build, but excluded from the
+    # resources tarball)
+    dx cat "$novocraft_tarball" | tar zx &
+    mkdir gatk
+    dx cat "$gatk_tarball" | tar jx -C gatk/
+    wait
+    export NOVOALIGN_PATH=/home/dnanexus/novocraft
+    export GATK_PATH=/home/dnanexus/gatk
+
+    # record a manifest of the filesystem before doing anything further
     (find / -type f 2> /dev/null || true) | sort > /tmp/fs-manifest.0
 
     # clone viral-ngs

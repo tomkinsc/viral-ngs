@@ -19,6 +19,16 @@
       "class": "string",
       "optional": true,
       "default": "https://github.com/dnanexus/viral-ngs.git"
+    },
+    {
+      "name": "novocraft_tarball",
+      "class": "file",
+      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
     }
   ],
   "outputSpec": [
@@ -39,7 +49,7 @@
       {"name": "build-essential"},
       {"name": "unzip"},
       {"name": "libncurses5-dev"},
-      {"name": "default-jre-headless"},
+      {"name": "openjdk-7-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"},
       {"name": "cython"}
