@@ -18,9 +18,9 @@ main() {
 
     # run V-FAT scripts to orient & merge contigs
     mkdir foo/
-    viral-ngs/tools/scripts/vfat/orientContig.pl trinity_contigs.fa reference_genome.fa foo/bar
-    viral-ngs/tools/scripts/vfat/contigMerger.pl foo/bar_orientedContigs reference_genome.fa \
-                                                 -readfq reads.fa -readfq2 reads2.fa -fakequals 30 foo/bar
+    vfat/orientContig.pl trinity_contigs.fa reference_genome.fa foo/bar
+    vfat/contigMerger.pl foo/bar_orientedContigs reference_genome.fa \
+                         -readfq reads.fa -readfq2 reads2.fa -fakequals 30 foo/bar
     ls -tl foo
 
     # check assembly quality thresholds
