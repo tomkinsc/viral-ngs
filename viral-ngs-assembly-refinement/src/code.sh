@@ -9,7 +9,7 @@ main() {
 
     pids=()
     dx cat "$resources" | tar zx -C / & pids+=($!)
-    dx download "$assembly" -o assembly.fa & pids+=($!)
+    dx download "$assembly" -o assembly.fasta & pids+=($!)
     dx download "$reads" -o reads.bam & pids+=($!)
     dx cat "$novocraft_tarball" | tar zx & pids+=($!)
     mkdir gatk/
@@ -18,48 +18,13 @@ main() {
     export NOVOALIGN_PATH=/home/dnanexus/novocraft
     export GATK_PATH=/home/dnanexus/gatk
 
-    # Novoalign reads back to the assembly
-    python viral-ngs/assembly.py deambig_fasta assembly.fa assembly.deambig.fa
-    python viral-ngs/read_utils.py index_fasta_picard assembly.deambig.fa
-    python viral-ngs/read_utils.py index_fasta_samtools assembly.deambig.fa
-    novocraft/novoindex assembly.deambig.fa.nix assembly.deambig.fa
-    samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
+    novocraft/novoindex assembly.nix assembly.fasta
+    python viral-ngs/assembly.py refine_assembly assembly.fasta reads.bam refined_assembly.fasta \
+        --outVcf sites.vcf.gz --min_coverage "$min_coverage" --novo_params "$novoalign_options" \
+        --chr_names "${name}.refined"
 
-    python viral-ngs/read_utils.py bam_to_fastq reads.bam reads.fa reads2.fa
-    novocraft/novoalign $novoalign_options -f reads.fa reads2.fa \
-                        -F STDFQ -o SAM -d assembly.deambig.fa.nix \
-        | $samtools view -buS -q 1 - \
-        | java -Xmx2g -jar viral-ngs/tools/build/picard-tools-1.126/picard.jar SortSam \
-                      SO=coordinate VALIDATION_STRINGENCY=SILENT \
-                      I=/dev/stdin O=reads.bam
-
-    # set read group
-    java -Xmx2g -jar viral-ngs/tools/build/picard-tools-1.126/picard.jar AddOrReplaceReadGroups \
-                     VALIDATION_STRINGENCY=SILENT RGLB=UNKNOWN RGPL=ILLUMINA RGPU=UNKNOWN "RGSM=${name}" \
-                     I=reads.bam O=reads.rg.bam
-
-    # deduplicate
-    python viral-ngs/read_utils.py mkdup_picard reads.rg.bam reads.rg.dedup.bam \
-                                                --remove --picardOptions CREATE_INDEX=true
-    $samtools view -c reads.rg.bam
-    $samtools view -c reads.rg.dedup.bam
-
-    # realign indels
-    python viral-ngs/read_utils.py gatk_realign reads.rg.dedup.bam assembly.deambig.fa reads.realigned.dedup.bam
-
-    # run UnifiedGenotyper
-    python viral-ngs/read_utils.py gatk_ug reads.realigned.dedup.bam assembly.deambig.fa sites.vcf.gz
-
-    # generate the final assembly
-    python viral-ngs/assembly.py vcf_to_fasta sites.vcf.gz refined_assembly.fa --min_coverage "$min_coverage" --trim_ends --name "${name}.refined"
-
-    # upload outputs
-    dx-jobutil-add-output deambig_assembly --class=file \
-        $(dx upload assembly.deambig.fa --destination "${name}.deambig.fasta" --brief)
-    dx-jobutil-add-output assembly_read_alignments --class=file \
-        $(dx upload reads.realigned.dedup.bam --destination "${name}.refinement.bam" --brief)
     dx-jobutil-add-output assembly_sites_vcf --class=file \
         $(zcat sites.vcf.gz | dx upload --destination "${name}.refinement.vcf" --brief -)
     dx-jobutil-add-output refined_assembly --class=file \
-        $(dx upload refined_assembly.fa --destination "${name}.refined.fasta" --brief)
+        $(dx upload refined_assembly.fasta --destination "${name}.refined.fasta" --brief)
 }

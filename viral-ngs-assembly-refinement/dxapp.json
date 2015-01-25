@@ -52,18 +52,6 @@
       "patterns": ["*.assembly.fasta", "*.fasta", "*.fa"]
     },
     {
-      "name": "deambig_assembly",
-      "help": "intermediate product: deambig version of input assembly",
-      "class": "file",
-      "patterns": ["*.deambig.fasta", "*.fasta", "*.fa"]
-    },
-    {
-      "name": "assembly_read_alignments",
-      "help": "intermediate product: reads aligned to deambig_assembly",
-      "class": "file",
-      "patterns": ["*.refinement.bam", "*.bam"]
-    },
-    {
       "name": "assembly_sites_vcf",
       "help": "intermediate product: all-sites VCF",
       "class": "file",
