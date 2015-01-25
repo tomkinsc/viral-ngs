@@ -13,12 +13,6 @@
       "help": "reads"
     },
     {
-      "name": "reads2",
-      "class": "file",
-      "patterns": ["*.fastq.gz"],
-      "help": "paired reads"
-    },
-    {
       "name": "targets",
       "help": "Target sequence database (FASTA)",
       "class": "file",
@@ -27,12 +21,6 @@
     {
       "name": "min_read_pairs",
       "help": "Fail the analysis if fewer than n read pairs survive filtering",
-      "class": "int",
-      "default": 0
-    },
-    {
-      "name": "subsample",
-      "help": "If a positive integer n, subsample the filtered dataset to no more than n read pairs",
       "class": "int",
       "default": 0
     },
@@ -52,31 +40,16 @@
   ],
   "outputSpec": [
     {
-      "name": "filtered_subsampled_reads",
-      "class": "file",
-      "patterns": ["*.fastq.gz"]
-    },
-    {
-      "name": "filtered_subsampled_reads2",
-      "class": "file",
-      "patterns": ["*.fastq.gz"]
-    },
-    {
       "name": "filtered_reads",
       "class": "file",
-      "patterns": ["*.fastq.gz"]
+      "patterns": ["*.bam"]
     },
     {
-      "name": "filtered_reads2",
-      "class": "file",
-      "patterns": ["*.fastq.gz"]
-    },
-    {
-      "name": "input_read_pair_count",
+      "name": "unfiltered_read_pair_count",
       "class": "int"
     },
     {
-      "name": "input_base_count",
+      "name": "unfiltered_base_count",
       "class": "int"
     },
     {
@@ -85,14 +58,6 @@
     },
     {
       "name": "filtered_base_count",
-      "class": "int"
-    },
-    {
-      "name": "filtered_subsampled_read_pair_count",
-      "class": "int"
-    },
-    {
-      "name": "filtered_subsampled_base_count",
       "class": "int"
     }
   ],

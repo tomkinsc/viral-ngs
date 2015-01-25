@@ -14,21 +14,17 @@ argparser.add_argument("--folder", help="Folder within project (default: timesta
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
                                       default="file-BXzb1XQ0K0zPGGvPX4F4kxZB")
+argparser.add_argument("--contaminants", help="contaminants & adapters FASTA (default: %(default)s)",
+                                         default="file-BXF0vYQ0QyBF509G9J12g927")
 argparser.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
                                       default="file-BXJvFq00QyBKgFj9PZBqgbXg")
 argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
                                  default="file-BXK8p100QyB0JVff3j9Y1Bf5")
 argparser.add_argument("--run-tests", help="run small test assemblies", action="store_true")
 argparser.add_argument("--run-large-tests", help="run test assemblies of varying sizes", action="store_true")
-group = argparser.add_argument_group("trim")
-group.add_argument("--trim-contaminants", help="adapters & contaminants FASTA (default: %(default)s)",
-                                     default="file-BXF0vYQ0QyBF509G9J12g927")
 group = argparser.add_argument_group("filter")
 group.add_argument("--filter-targets", help="panel of target sequences (default: %(default)s)",
                                 default="file-BXF0vf80QyBF509G9J12g9F2")
-group = argparser.add_argument_group("trinity")
-group.add_argument("--trinity-applet", help="Trinity wrapper applet (default: %(default)s)",
-                                       default="applet-BXJ6F5Q0QyB7gy2Gf1p8jqfF")
 group = argparser.add_argument_group("scaffold")
 group.add_argument("--scaffold-reference", help="Reference genome FASTA (default: %(default)s)",
                                             default="file-BXF0vZ00QyBF509G9J12g944")
@@ -47,7 +43,7 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-input-validator", "viral-ngs-trimmer", "viral-ngs-filter", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
+    applets = ["viral-ngs-input-validator", "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
 
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
@@ -81,34 +77,25 @@ def build_workflow():
     }
     validation_stage_id = wf.add_stage(find_applet("viral-ngs-input-validator"), stage_input=validation_input, name="validate")
 
-    trim_input = {
-        "reads": dxpy.dxlink({"stage": validation_stage_id, "outputField": "unmapped_bam"}),
-        "adapters_etc": dxpy.dxlink(args.trim_contaminants),
-        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
-    }
-    trim_stage_id = wf.add_stage(find_applet("viral-ngs-trimmer"), stage_input=trim_input, name="trim")
-
     filter_input = {
-        "reads": dxpy.dxlink({"stage": trim_stage_id, "outputField": "trimmed_reads"}),
-        "reads2": dxpy.dxlink({"stage": trim_stage_id, "outputField": "trimmed_reads2"}),
+        "reads": dxpy.dxlink({"stage": validation_stage_id, "outputField": "unmapped_bam"}),
         "min_read_pairs": 1000,
-        "subsample": 100000,
         "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
     filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter")
 
     trinity_input = {
-        "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_subsampled_reads"}),
-        "reads2": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_subsampled_reads2"}),
-        "advanced_options": "--min_contig_length 300"
+        "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
+        "contaminants": dxpy.dxlink(args.contaminants),
+        "subsample": 100000,
+        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
-    trinity_stage_id = wf.add_stage(args.trinity_applet, stage_input=trinity_input, name="trinity", instance_type="mem2_ssd1_x2")
+    trinity_stage_id = wf.add_stage(find_applet("viral-ngs-trinity"), stage_input=trinity_input, name="trinity", instance_type="mem2_ssd1_x2")
 
     scaffold_input = {
-        "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "fasta"}),
+        "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "contigs"}),
         "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads"}),
-        "trinity_reads2": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads2"}),
         "reference_genome" : dxpy.dxlink(args.scaffold_reference),
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
@@ -116,7 +103,7 @@ def build_workflow():
 
     refine1_input = {
         "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
-        "reads": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads"}),
+        "reads": dxpy.dxlink({"stage": validation_stage_id, "outputField": "unmapped_bam"}),
         "min_coverage": 2,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
@@ -160,7 +147,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
             "expected_assembly_sha256sum": "df785c1d87731a662cfda27b52787c32c40c20a6a3a79ca9e3bc8a3e5e914c65",
-            "expected_filtered_subsampled_base_count":  459212,
+            "expected_subsampled_base_count":  448480,
             "expected_alignment_base_count": 485406
         },
         "SRR1553554": {
@@ -168,7 +155,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
             "expected_assembly_sha256sum": "525acc15dd58c23a790afce91f43cc743db429fdb6fe89e319ae8800e2c7a7fe",
-            "expected_filtered_subsampled_base_count":  463249,
+            "expected_subsampled_base_count":  447609,
             "expected_alignment_base_count": 590547
         }
     }
@@ -180,7 +167,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads2": "file-BXYqZkQ0Fv4YZYKx14yJg0b4",
             "broad_assembly": "file-BXYqYKQ0QyB84xYJP9Kz7zzK",
             "expected_assembly_sha256sum": "456bd7e050222e0eff4fbe4a04c4124695c89d0533b318a49777789f3ed8bb2b",
-            "expected_filtered_subsampled_base_count": 18787806,
+            "expected_subsampled_base_count": 18787806,
             "expected_alignment_base_count": 247110236
         }
 
@@ -227,9 +214,9 @@ if args.run_tests is True or args.run_large_tests is True:
 
     # check figures of merit
     for (test_sample,test_analysis) in test_analyses:
-        filtered_subsampled_base_count = test_analysis.describe()["output"][workflow.get_stage("filter")["id"]+".filtered_subsampled_base_count"]
-        expected_filtered_subsampled_base_count = test_samples[test_sample]["expected_filtered_subsampled_base_count"]
-        print "\t".join([test_sample, "filtered_subsampled_base_count", str(expected_filtered_subsampled_base_count), str(filtered_subsampled_base_count)])
+        subsampled_base_count = test_analysis.describe()["output"][workflow.get_stage("trinity")["id"]+".subsampled_base_count"]
+        expected_subsampled_base_count = test_samples[test_sample]["expected_subsampled_base_count"]
+        print "\t".join([test_sample, "subsampled_base_count", str(expected_subsampled_base_count), str(subsampled_base_count)])
 
         test_assembly_dxfile = dxpy.DXFile(test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".final_assembly"])
         test_assembly_sha256sum = hashlib.sha256(test_assembly_dxfile.read()).hexdigest()
@@ -241,7 +228,7 @@ if args.run_tests is True or args.run_large_tests is True:
         print "\t".join([test_sample, "alignment_base_count", str(expected_alignment_base_count), str(alignment_base_count)])
         
         assert expected_sha256sum == test_assembly_sha256sum
-        assert expected_filtered_subsampled_base_count == filtered_subsampled_base_count
+        assert expected_subsampled_base_count == subsampled_base_count
         assert expected_alignment_base_count == alignment_base_count
 
     print "Success"

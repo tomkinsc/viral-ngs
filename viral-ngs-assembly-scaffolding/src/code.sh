@@ -5,10 +5,11 @@ main() {
 
     dx cat "$resources" | zcat | tar x -C / &
     dx download "$trinity_contigs" -o trinity_contigs.fa &
-    dx cat "$trinity_reads" | zcat > reads.fa &
-    dx cat "$trinity_reads2" | zcat > reads2.fa &
-    dx download "$reference_genome" -o reference_genome.fa
+    dx download "$reference_genome" -o reference_genome.fa &
+    dx download "$trinity_reads" -o reads.bam
     wait
+
+    python viral-ngs/read_utils.py bam_to_fastq reads.bam reads.fa reads2.fa
 
     # symlink muscle and R in the paths hardcoded into contigMerger.pl
     mkdir -p /seq/annotation/bio_tools/muscle/3.8/

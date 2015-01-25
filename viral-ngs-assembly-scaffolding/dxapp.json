@@ -15,13 +15,7 @@
       "name": "trinity_reads",
       "help": "Reads given to Trinity",
       "class": "file",
-      "patterns": ["*.fastq.gz"]
-    },
-    {
-      "name": "trinity_reads2",
-      "help": "Mates of reads given to Trinity",
-      "class": "file",
-      "patterns": ["*.fastq.gz"]
+      "patterns": ["*.bam"]
     },
     {
       "name": "reference_genome",
