@@ -4,7 +4,7 @@ main() {
     set -e -x -o pipefail
 
     if [ -z "$name" ]; then
-        name="$assembly_prefix"
+        name="${assembly_prefix%.refined.refined}"
     fi
 
     dx cat "$resources" | tar zx -C / &
@@ -59,5 +59,5 @@ main() {
         $(dx upload reads.realigned.dedup.bam --destination "${name}.align_self.bam" --brief)
     dx-jobutil-add-output alignment_genomecov "$genomecov"
     dx-jobutil-add-output final_assembly --class=file \
-        $(dx upload assembly.fa --destination "${name}.final.fasta" --brief)
+        $(dx upload assembly.fa --destination "${name}.fasta" --brief)
 }

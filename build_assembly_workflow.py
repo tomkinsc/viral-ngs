@@ -75,7 +75,7 @@ def build_workflow():
     validation_input = {
         "resources": dxpy.dxlink(args.resources)
     }
-    validation_stage_id = wf.add_stage(find_applet("viral-ngs-input-validator"), stage_input=validation_input, name="validate")
+    validation_stage_id = wf.add_stage(find_applet("viral-ngs-input-validator"), stage_input=validation_input, name="validate", folder="intermediates", instance_type="mem2_ssd1_x2")
 
     filter_input = {
         "reads": dxpy.dxlink({"stage": validation_stage_id, "outputField": "unmapped_bam"}),
@@ -83,7 +83,7 @@ def build_workflow():
         "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
-    filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter")
+    filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter", folder="intermediates", instance_type="mem2_ssd1_x2")
 
     trinity_input = {
         "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
@@ -91,7 +91,7 @@ def build_workflow():
         "subsample": 100000,
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
-    trinity_stage_id = wf.add_stage(find_applet("viral-ngs-trinity"), stage_input=trinity_input, name="trinity", instance_type="mem2_ssd1_x2")
+    trinity_stage_id = wf.add_stage(find_applet("viral-ngs-trinity"), stage_input=trinity_input, name="trinity", folder="intermediates", instance_type="mem2_ssd1_x2")
 
     scaffold_input = {
         "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "contigs"}),
@@ -99,7 +99,7 @@ def build_workflow():
         "reference_genome" : dxpy.dxlink(args.scaffold_reference),
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
-    scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold")
+    scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold", folder="intermediates")
 
     refine1_input = {
         "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
@@ -108,7 +108,7 @@ def build_workflow():
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
-    refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1")
+    refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1", folder="intermediates")
 
     refine2_input = refine1_input
     refine2_input["assembly"] = dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
@@ -116,7 +116,7 @@ def build_workflow():
     refine2_input["novocraft_tarball"] = dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"})
     refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
     refine2_input["gatk_tarball"] = dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
-    refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2")
+    refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2", folder="intermediates")
 
     analysis_input = {
         "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
