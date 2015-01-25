@@ -24,32 +24,42 @@ main() {
                          -readfq reads.fa -readfq2 reads2.fa -fakequals 30 foo/bar
     ls -tl foo
 
-    # check assembly quality thresholds
-    python viral-ngs/assembly.py filter_short_seqs foo/bar_assembly.fa "$min_length" "$min_unambig" vfat-scaffold.fa
-    if ! test -s vfat-scaffold.fa; then
-        dx-jobutil-report-error "The assembly failed quality thresholds (length >= ${min_length}, non-N proportion >= ${min_unambig})" AppError
-        exit 1
-    fi
-
     if [ -z "$name" ]; then
         name=${trinity_contigs_prefix%%.*}
         name=${name%_1}
     fi
 
-    # modify contig using the reference
-    cat vfat-scaffold.fa reference_genome.fa | \
-      viral-ngs/tools/build/muscle3.8.31_i86linux64 -out muscle_align.fasta -quiet
-    python viral-ngs/assembly.py modify_contig muscle_align.fasta scaffold.fa \
-                                 $(first_fasta_header reference_genome.fa) --name "${name}_scaffold" \
-                                 --call-reference-ns --trim-ends --replace-5ends --replace-3ends \
-                                 --replace-length "$replace_length" --replace-end-gaps
-    test -s scaffold.fa
+    # HACK: assembly.py impute_from_reference calls novoindex at the end; put
+    # a noop in place to trick it.
+    mkdir novocraft
+    cp /bin/echo novocraft/novoalign
+    cp /bin/echo novocraft/novoindex
+    chmod +x novocraft/novo*
+    export NOVOALIGN_PATH=/home/dnanexus/novocraft
+
+    # run assembly.py impute_from_reference to check assembly quality and clean the contigs
+    exit_code=0
+    python viral-ngs/assembly.py impute_from_reference foo/bar_assembly.fa reference_genome.fa scaffold.fasta \
+        --newName "${name}_scaffold" --replaceLength "$replace_length" \
+        --minLength "$min_length" --minUnambig "$min_unambig" \
+            2> >(tee impute.stderr.log >&2) || exit_code=$?
+
+    if [ "$exit_code" -ne "0" ]; then
+        if grep PoorAssemblyError impute.stderr.log ; then
+            dx-jobutil-report-error "The assembly failed quality thresholds (length >= ${min_length}, non-N proportion >= ${min_unambig})" AppError
+        else
+            dx-jobutil-report-error "Please check the job log" AppInternalError
+        fi
+        exit $exit_code
+    fi
+
+    test -s scaffold.fasta
 
     # upload outputs
     dx-jobutil-add-output modified_scaffold --class=file \
-        $(dx upload scaffold.fa --destination "${name}.scaffold.fasta" --brief)
+        $(dx upload scaffold.fasta --destination "${name}.scaffold.fasta" --brief)
     dx-jobutil-add-output vfat_scaffold --class=file \
-        $(dx upload vfat-scaffold.fa --destination "${name}.vfat.fasta" --brief)
+        $(dx upload foo/bar_assembly.fa --destination "${name}.vfat.fasta" --brief)
     dx-jobutil-add-output contigsMap --class=file \
         $(dx upload foo/bar_contigsMap.pdf --destination "${name}.contigsMap.pdf" --brief)
 }
