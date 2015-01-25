@@ -5,10 +5,10 @@ main() {
 
     # deploy proprietary software (needed for build, but excluded from the
     # resources tarball)
-    dx cat "$novocraft_tarball" | tar zx &
+    dx cat "$novocraft_tarball" | tar zx & pid=$!
     mkdir gatk
     dx cat "$gatk_tarball" | tar jx -C gatk/
-    wait
+    wait $pid
     export NOVOALIGN_PATH=/home/dnanexus/novocraft
     export GATK_PATH=/home/dnanexus/gatk
 

@@ -24,10 +24,11 @@ main() {
         fi
         
         # hack SRA FASTQ read names to make them acceptable to Picard FastqToSam
-        dx cat "$file" | zcat | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.1/\1/' | gzip -c > reads.fastq.gz &
-        dx cat "$paired_fastq" | zcat | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.2/\1/' | gzip -c > reads2.fastq.gz &
+        pids=()
+        dx cat "$file" | zcat | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.1/\1/' | gzip -c > reads.fastq.gz & pids+=($!)
+        dx cat "$paired_fastq" | zcat | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.2/\1/' | gzip -c > reads2.fastq.gz & pids+=($!)
         dx cat "$resources" | zcat | tar x -C /
-        wait
+        for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
         sample_name="${file_prefix%_1}"
         sample_name="${sample_name%.1}"

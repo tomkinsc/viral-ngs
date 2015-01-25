@@ -3,11 +3,12 @@
 main() {
     set -e -x -o pipefail
 
-    dx cat "$resources" | zcat | tar x -C / &
-    dx download "$trinity_contigs" -o trinity_contigs.fa &
-    dx download "$reference_genome" -o reference_genome.fa &
+    pids=()
+    dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+    dx download "$trinity_contigs" -o trinity_contigs.fa & pids+=($!)
+    dx download "$reference_genome" -o reference_genome.fa & pids+=($!)
     dx download "$trinity_reads" -o reads.bam
-    wait
+    for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
     python viral-ngs/read_utils.py bam_to_fastq reads.bam reads.fa reads2.fa
 

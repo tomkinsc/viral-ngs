@@ -4,10 +4,11 @@ main() {
     set -e -x -o pipefail
 
     # stage the inputs
-    dx cat "$resources" | zcat | tar x -C / &
-    dx download "$targets" -o targets.fasta &
-    dx download "$reads" -o reads.bam &
-    wait
+    pids=()
+    dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+    dx download "$targets" -o targets.fasta & pids+=($!)
+    dx download "$reads" -o reads.bam
+    for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
     python viral-ngs/read_utils.py bam_to_fastq reads.bam reads.fastq reads2.fastq
 
@@ -36,9 +37,9 @@ main() {
     viral-ngs/tools/build/last-490/bin/lastdb -c targets.db targets.fasta
 
     # filter & dedup the reads
-    python viral-ngs/taxon_filter.py filter_lastal reads.fastq targets.db filtered_reads.pre.fastq &
+    python viral-ngs/taxon_filter.py filter_lastal reads.fastq targets.db filtered_reads.pre.fastq & pid=$!
     python viral-ngs/taxon_filter.py filter_lastal reads2.fastq targets.db filtered_reads2.pre.fastq
-    wait
+    wait $pid
 
     wc -l filtered_reads.pre.fastq
     wc -l filtered_reads2.pre.fastq

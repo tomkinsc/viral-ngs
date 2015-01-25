@@ -7,13 +7,14 @@ main() {
         name="${assembly_prefix%.refined.refined}"
     fi
 
-    dx cat "$resources" | tar zx -C / &
-    dx download "$assembly" -o assembly.fa &
-    dx download "$reads" -o reads.bam &
-    dx cat "$novocraft_tarball" | tar zx &
+    pids=()
+    dx cat "$resources" | tar zx -C / & pids+=($!)
+    dx download "$assembly" -o assembly.fa & pids+=($!)
+    dx download "$reads" -o reads.bam & pids+=($!)
+    dx cat "$novocraft_tarball" | tar zx & pids+=($!)
     mkdir gatk/
     dx cat "$gatk_tarball" | tar jx -C gatk/
-    wait
+    for pid in "${pids[@]}"; do wait $pid || exit $?; done
     export NOVOALIGN_PATH=/home/dnanexus/novocraft
     export GATK_PATH=/home/dnanexus/gatk
 

@@ -4,10 +4,11 @@ main() {
     set -e -x -o pipefail
 
     # stage the inputs
-    dx cat "$resources" | zcat | tar x -C / &
-    dx download "$reads" -o reads.bam &
+    pids=()
+    dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+    dx download "$reads" -o reads.bam & pids+=($!)
     dx download "$contaminants" -o contaminants.fasta
-    wait
+    for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
     # run trinity
     ulimit -s unlimited
