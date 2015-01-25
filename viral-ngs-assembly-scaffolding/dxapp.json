@@ -9,7 +9,7 @@
     {
       "name": "trinity_contigs",
       "class": "file",
-      "patterns": ["*.Trinity.fasta"]
+      "patterns": ["*.trinity.fasta"]
     },
     {
       "name": "trinity_reads",

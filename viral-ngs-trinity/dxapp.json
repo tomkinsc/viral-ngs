@@ -45,7 +45,7 @@
     {
       "name": "contigs",
       "class": "file",
-      "patterns": ["*.fasta", "*.assemble1-trinity.fasta"]
+      "patterns": ["*.fasta", "*.trinity.fasta"]
     }
   ],
   "runSpec": {

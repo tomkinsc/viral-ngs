@@ -17,7 +17,7 @@
       "class": "file",
       "patterns": ["*.fastq.gz"],
       "optional": true,
-      "help": "A .fastq.gz file containing the mate pairs, if the first file is a .fastq.gz."
+      "help": "A .fastq.gz file containing the mate pairs, if the first file is a .fastq.gz. Leave empty if the first file is an unmapped .bam."
     },
     {
       "name": "novocraft_tarball",
