@@ -15,13 +15,7 @@
       "name": "reads",
       "help": "Reads to map",
       "class": "file",
-      "patterns": ["*.fastq.gz"]
-    },
-    {
-      "name": "reads2",
-      "help": "Mates of reads to map",
-      "class": "file",
-      "patterns": ["*.fastq.gz"]
+      "patterns": ["*.bam"]
     },
     {
       "name": "novoalign_options",

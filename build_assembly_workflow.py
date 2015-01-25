@@ -47,7 +47,7 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-trimmer", "viral-ngs-filter", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
+    applets = ["viral-ngs-input-validator", "viral-ngs-trimmer", "viral-ngs-filter", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
 
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
@@ -76,9 +76,15 @@ def build_workflow():
                               folder=args.folder,
                               properties={"git_revision": git_revision})
     
-    trim_input = {
-        "adapters_etc": dxpy.dxlink(args.trim_contaminants),
+    validation_input = {
         "resources": dxpy.dxlink(args.resources)
+    }
+    validation_stage_id = wf.add_stage(find_applet("viral-ngs-input-validator"), stage_input=validation_input, name="validate")
+
+    trim_input = {
+        "reads": dxpy.dxlink({"stage": validation_stage_id, "outputField": "unmapped_bam"}),
+        "adapters_etc": dxpy.dxlink(args.trim_contaminants),
+        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
     trim_stage_id = wf.add_stage(find_applet("viral-ngs-trimmer"), stage_input=trim_input, name="trim")
 
@@ -88,7 +94,7 @@ def build_workflow():
         "min_read_pairs": 1000,
         "subsample": 100000,
         "targets": dxpy.dxlink(args.filter_targets),
-        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
+        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
     filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter")
 
@@ -104,17 +110,16 @@ def build_workflow():
         "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads"}),
         "trinity_reads2": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads2"}),
         "reference_genome" : dxpy.dxlink(args.scaffold_reference),
-        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
+        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
     scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold")
 
     refine1_input = {
         "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
         "reads": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads"}),
-        "reads2": dxpy.dxlink({"stage": trim_stage_id, "inputField": "reads2"}),
         "min_coverage": 2,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
-        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"})
+        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
     refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1")
 
@@ -129,9 +134,8 @@ def build_workflow():
     analysis_input = {
         "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
         "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
-        "reads2": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads2"}),
         "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
-        "resources": dxpy.dxlink({"stage": trim_stage_id, "inputField": "resources"}),
+        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"}),
         "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"}),
         "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
     }
@@ -156,7 +160,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
             "expected_assembly_sha256sum": "df785c1d87731a662cfda27b52787c32c40c20a6a3a79ca9e3bc8a3e5e914c65",
-            "expected_filtered_subsampled_base_count":  458785,
+            "expected_filtered_subsampled_base_count":  459212,
             "expected_alignment_base_count": 485406
         },
         "SRR1553554": {
@@ -164,7 +168,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
             "expected_assembly_sha256sum": "525acc15dd58c23a790afce91f43cc743db429fdb6fe89e319ae8800e2c7a7fe",
-            "expected_filtered_subsampled_base_count":  462704,
+            "expected_filtered_subsampled_base_count":  463249,
             "expected_alignment_base_count": 590547
         }
     }
@@ -187,8 +191,8 @@ if args.run_tests is True or args.run_large_tests is True:
         project.new_folder(test_folder)
         # run the workflow on the test sample
         test_input = {
-            "trim.reads": dxpy.dxlink(test_samples[test_sample]["reads"]),
-            "trim.reads2": dxpy.dxlink(test_samples[test_sample]["reads2"]),
+            "validate.file": dxpy.dxlink(test_samples[test_sample]["reads"]),
+            "validate.paired_fastq": dxpy.dxlink(test_samples[test_sample]["reads2"]),
             "refine1.novocraft_tarball": dxpy.dxlink(args.novocraft),
             "refine1.gatk_tarball": dxpy.dxlink(args.gatk)
         }

@@ -9,12 +9,7 @@
     {
       "name": "reads",
       "class": "file",
-      "patterns": ["*.fastq.gz"]
-    },
-    {
-      "name": "reads2",
-      "class": "file",
-      "patterns": ["*.fastq.gz"]
+      "patterns": ["*.bam"]
     },
     {
       "name": "adapters_etc",

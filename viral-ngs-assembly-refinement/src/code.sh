@@ -9,8 +9,7 @@ main() {
 
     dx cat "$resources" | tar zx -C / &
     dx download "$assembly" -o assembly.fa &
-    dx cat "$reads" | zcat > reads.fa &
-    dx cat "$reads2" | zcat > reads2.fa &
+    dx download "$reads" -o reads.bam &
     dx cat "$novocraft_tarball" | tar zx &
     mkdir gatk/
     dx cat "$gatk_tarball" | tar jx -C gatk/
@@ -23,8 +22,9 @@ main() {
     python viral-ngs/read_utils.py index_fasta_picard assembly.deambig.fa
     python viral-ngs/read_utils.py index_fasta_samtools assembly.deambig.fa
     novocraft/novoindex assembly.deambig.fa.nix assembly.deambig.fa
-
     samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
+
+    python viral-ngs/read_utils.py bam_to_fastq reads.bam reads.fa reads2.fa
     novocraft/novoalign $novoalign_options -f reads.fa reads2.fa \
                         -F STDFQ -o SAM -d assembly.deambig.fa.nix \
         | $samtools view -buS -q 1 - \

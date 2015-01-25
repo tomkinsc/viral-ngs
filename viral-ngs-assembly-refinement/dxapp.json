@@ -25,13 +25,7 @@
       "name": "reads",
       "help": "Reads to use for genotyping",
       "class": "file",
-      "patterns": ["*.fastq.gz"]
-    },
-    {
-      "name": "reads2",
-      "help": "Mates of reads to use for genotyping",
-      "class": "file",
-      "patterns": ["*.fastq.gz"]
+      "patterns": ["*.bam"]
     },
     {
       "name": "min_coverage",
