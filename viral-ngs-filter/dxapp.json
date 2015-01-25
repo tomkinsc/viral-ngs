@@ -1,7 +1,7 @@
 {
   "name": "viral-ngs-filter",
   "title": "viral-ngs-filter",
-  "summary": "Restrict paired-end input reads to those that align to a target database",
+  "summary": "Restrict input reads to those that align to a target database",
   "dxapi": "1.0.0",
   "version": "0.0.1",
   "categories": [],
@@ -19,8 +19,8 @@
       "patterns": ["*.fasta"]
     },
     {
-      "name": "min_read_pairs",
-      "help": "Fail the analysis if fewer than n read pairs survive filtering",
+      "name": "min_base_count",
+      "help": "Fail the analysis if the sum of the length of all surviving reads is below this",
       "class": "int",
       "default": 0
     },
@@ -28,14 +28,6 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
-    },
-    {
-      "name": "read_id_regex",
-      "class": "string",
-      "label": "Read ID Regex",
-      "help": "Perl regular expression to parse paired read IDs from the FASTQ files",
-      "optional": true,
-      "suggestions": ["^@(\\S+)/[1|2]$", "^@(\\S+).[1|2] .*"]
     }
   ],
   "outputSpec": [
@@ -45,7 +37,7 @@
       "patterns": ["*.bam"]
     },
     {
-      "name": "unfiltered_read_pair_count",
+      "name": "unfiltered_read_count",
       "class": "int"
     },
     {
@@ -53,7 +45,7 @@
       "class": "int"
     },
     {
-      "name": "filtered_read_pair_count",
+      "name": "filtered_read_count",
       "class": "int"
     },
     {
