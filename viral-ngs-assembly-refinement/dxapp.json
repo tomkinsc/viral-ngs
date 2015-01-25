@@ -7,16 +7,6 @@
   "categories": [],
   "inputSpec": [
     {
-      "name": "novocraft_tarball",
-      "class": "file",
-      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
-    },
-    {
-      "name": "gatk_tarball",
-      "class": "file",
-      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
-    },
-    {
       "name": "assembly",
       "class": "file",
       "patterns": ["*.scaffold.fasta", "*.assembly.fasta"]
@@ -43,6 +33,16 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
+    },
+    {
+      "name": "novocraft_tarball",
+      "class": "file",
+      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
     }
   ],
   "outputSpec": [

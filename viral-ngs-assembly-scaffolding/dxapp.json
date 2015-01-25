@@ -50,6 +50,11 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
+    },
+    {
+      "name": "novocraft_tarball",
+      "class": "file",
+      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
     }
   ],
   "outputSpec": [

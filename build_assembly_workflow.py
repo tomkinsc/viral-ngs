@@ -97,7 +97,8 @@ def build_workflow():
         "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "contigs"}),
         "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads"}),
         "reference_genome" : dxpy.dxlink(args.scaffold_reference),
-        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
+        "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"}),
+        "novocraft_tarball": dxpy.dxlink({"stage": validation_stage_id, "inputField": "novocraft_tarball"})
     }
     scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold", folder="intermediates")
 
@@ -106,6 +107,8 @@ def build_workflow():
         "reads": dxpy.dxlink({"stage": validation_stage_id, "outputField": "unmapped_bam"}),
         "min_coverage": 2,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
+        "novocraft_tarball": dxpy.dxlink({"stage": validation_stage_id, "inputField": "novocraft_tarball"}),
+        "gatk_tarball": dxpy.dxlink({"stage": validation_stage_id, "inputField": "gatk_tarball"}),
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
     refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1", folder="intermediates")
@@ -113,9 +116,7 @@ def build_workflow():
     refine2_input = refine1_input
     refine2_input["assembly"] = dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
     refine2_input["min_coverage"] = 3
-    refine2_input["novocraft_tarball"] = dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"})
     refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
-    refine2_input["gatk_tarball"] = dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
     refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2", folder="intermediates")
 
     analysis_input = {
@@ -123,8 +124,8 @@ def build_workflow():
         "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
         "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"}),
-        "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"}),
-        "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
+        "novocraft_tarball": dxpy.dxlink({"stage": validation_stage_id, "inputField": "novocraft_tarball"}),
+        "gatk_tarball": dxpy.dxlink({"stage": validation_stage_id, "inputField": "gatk_tarball"})
     }
     analysis_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-analysis"), stage_input=analysis_input, name="analysis")
 
@@ -180,8 +181,8 @@ if args.run_tests is True or args.run_large_tests is True:
         test_input = {
             "validate.file": dxpy.dxlink(test_samples[test_sample]["reads"]),
             "validate.paired_fastq": dxpy.dxlink(test_samples[test_sample]["reads2"]),
-            "refine1.novocraft_tarball": dxpy.dxlink(args.novocraft),
-            "refine1.gatk_tarball": dxpy.dxlink(args.gatk)
+            "validate.novocraft_tarball": dxpy.dxlink(args.novocraft),
+            "validate.gatk_tarball": dxpy.dxlink(args.gatk)
         }
         test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)

@@ -5,10 +5,12 @@ main() {
 
     pids=()
     dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+    dx cat "$novocraft_tarball" | tar zx & pids+=($!)
     dx download "$trinity_contigs" -o trinity_contigs.fa & pids+=($!)
     dx download "$reference_genome" -o reference_genome.fa & pids+=($!)
     dx download "$trinity_reads" -o reads.bam
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
+    export NOVOALIGN_PATH=/home/dnanexus/novocraft
 
     python viral-ngs/read_utils.py bam_to_fastq reads.bam reads.fa reads2.fa
 
@@ -29,14 +31,6 @@ main() {
         name=${trinity_contigs_prefix%%.*}
         name=${name%_1}
     fi
-
-    # HACK: assembly.py impute_from_reference calls novoindex at the end; put
-    # a noop in place to trick it.
-    mkdir novocraft
-    cp /bin/echo novocraft/novoalign
-    cp /bin/echo novocraft/novoindex
-    chmod +x novocraft/novo*
-    export NOVOALIGN_PATH=/home/dnanexus/novocraft
 
     # run assembly.py impute_from_reference to check assembly quality and clean the contigs
     exit_code=0
