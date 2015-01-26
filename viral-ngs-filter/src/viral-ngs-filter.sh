@@ -14,6 +14,7 @@ main() {
 
     # build Lastal target database
     viral-ngs/tools/build/last-490/bin/lastdb -c targets.db targets.fasta
+    sha256sum targets.*
 
     # filter the reads
     python viral-ngs/taxon_filter.py filter_lastal_bam reads.bam targets.db filtered_reads.bam
