@@ -147,7 +147,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
-            "expected_assembly_sha256sum": "df785c1d87731a662cfda27b52787c32c40c20a6a3a79ca9e3bc8a3e5e914c65",
+            "expected_assembly_sha256sum": "411834d66c5226651493b9b921a157984db030a3a5d048975b709806228d3806",
             "expected_subsampled_base_count": 459632,
             "expected_alignment_base_count": 485406
         },
@@ -155,7 +155,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
-            "expected_assembly_sha256sum": "525acc15dd58c23a790afce91f43cc743db429fdb6fe89e319ae8800e2c7a7fe",
+            "expected_assembly_sha256sum": "af4328b04113a149e66055c113ef35fa566e691a2eabde85231ccf2a08df1bf4",
             "expected_subsampled_base_count":  467842,
             "expected_alignment_base_count": 590547
         }

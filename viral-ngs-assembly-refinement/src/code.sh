@@ -21,7 +21,7 @@ main() {
     novocraft/novoindex assembly.nix assembly.fasta
     python viral-ngs/assembly.py refine_assembly assembly.fasta reads.bam refined_assembly.fasta \
         --outVcf sites.vcf.gz --min_coverage "$min_coverage" --novo_params "$novoalign_options" \
-        --chr_names "${name}.refined"
+        --chr_names "${name%.refined}" # TODO: handle multiple contigs correctly
 
     dx-jobutil-add-output assembly_sites_vcf --class=file \
         $(zcat sites.vcf.gz | dx upload --destination "${name}.refinement.vcf" --brief -)

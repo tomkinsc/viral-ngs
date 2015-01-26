@@ -17,8 +17,7 @@ main() {
         trinity_contigs.fasta reference_genome.fasta vfat_scaffold.fasta --inReads reads.bam
 
     if [ -z "$name" ]; then
-        name=${trinity_contigs_prefix%%.*}
-        name=${name%_1}
+        name=${trinity_contigs_prefix%_1}
     fi
 
     # run assembly.py impute_from_reference to check assembly quality and clean the contigs
