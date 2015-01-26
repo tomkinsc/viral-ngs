@@ -57,7 +57,7 @@ main() {
     dx-jobutil-add-output alignment_base_count $alignment_base_count
     dx-jobutil-add-output mean_coverage_depth $mean_coverage_depth
     dx-jobutil-add-output assembly_read_alignments --class=file \
-        $(dx upload reads.realigned.dedup.bam --destination "${name}.align_self.bam" --brief)
+        $(dx upload reads.realigned.dedup.bam --destination "${name}.mapped.bam" --brief)
     dx-jobutil-add-output alignment_genomecov "$genomecov"
     dx-jobutil-add-output final_assembly --class=file \
         $(dx upload assembly.fa --destination "${name}.fasta" --brief)
