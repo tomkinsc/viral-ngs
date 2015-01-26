@@ -67,11 +67,6 @@
       "name": "vfat_scaffold",
       "class": "file",
       "patterns": ["*.fasta"]
-    },
-    {
-      "name": "contigsMap",
-      "class": "file",
-      "patterns": ["*.pdf"]
     }
   ],
   "runSpec": {
@@ -85,10 +80,7 @@
     "execDepends": [
       {"name": "default-jre-headless"},
       {"name": "python-numpy"},
-      {"name": "python-scipy"},
-      {"name": "samtools"},
-      {"name": "r-base"},
-      {"name": "libipc-system-simple-perl"}
+      {"name": "python-scipy"}
     ]
   },
   "access": {
