@@ -75,7 +75,7 @@ def build_workflow():
     validation_input = {
         "resources": dxpy.dxlink(args.resources)
     }
-    validation_stage_id = wf.add_stage(find_applet("viral-ngs-input-validator"), stage_input=validation_input, name="validate", folder="intermediates", instance_type="mem2_ssd1_x2")
+    validation_stage_id = wf.add_stage(find_applet("viral-ngs-input-validator"), stage_input=validation_input, name="validate", folder="intermediates")
 
     filter_input = {
         "reads": dxpy.dxlink({"stage": validation_stage_id, "outputField": "unmapped_bam"}),
@@ -83,7 +83,7 @@ def build_workflow():
         "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
-    filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter", folder="intermediates", instance_type="mem2_ssd1_x2")
+    filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter", folder="intermediates")
 
     trinity_input = {
         "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
@@ -91,7 +91,7 @@ def build_workflow():
         "subsample": 100000,
         "resources": dxpy.dxlink({"stage": validation_stage_id, "inputField": "resources"})
     }
-    trinity_stage_id = wf.add_stage(find_applet("viral-ngs-trinity"), stage_input=trinity_input, name="trinity", folder="intermediates", instance_type="mem2_ssd1_x2")
+    trinity_stage_id = wf.add_stage(find_applet("viral-ngs-trinity"), stage_input=trinity_input, name="trinity", folder="intermediates")
 
     scaffold_input = {
         "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "contigs"}),
