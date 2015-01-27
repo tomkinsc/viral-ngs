@@ -25,21 +25,27 @@ print "folder: {}".format(args.folder)
 # TODO: memoization scheme?
 
 if args.reuse_builder is not True:
-	subprocess.check_call(["dx","build","-f","--destination",args.project+":"+args.folder+"/",
-		                   os.path.join(os.path.dirname(sys.argv[0]),"viral-ngs-builder")])
+    subprocess.check_call(["dx","build","-f","--destination",args.project+":"+args.folder+"/",
+                           os.path.join(os.path.dirname(sys.argv[0]),"viral-ngs-builder")])
             
 builder = dxpy.find_one_data_object(classname='applet', name="viral-ngs-builder",
                                      project=args.project, folder=args.folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
 builder_input = {
-	"git_commit": args.gitref,
-	"novocraft_tarball": dxpy.dxlink(args.novocraft),
-	"gatk_tarball": dxpy.dxlink(args.gatk)
+    "git_commit": args.gitref,
+    "novocraft_tarball": dxpy.dxlink(args.novocraft),
+    "gatk_tarball": dxpy.dxlink(args.gatk)
 }
 job = builder.run(builder_input, project=args.project, folder=args.folder, name=("viral-ngs-bulder " + args.gitref))
-print "builder job: {}".format(job.get_id())
-job.wait_on_done()
+print "Waiting for builder job: {}".format(job.get_id())
+
+# wait for job to finish, while making noise to work around Travis 10m inactivity timeout
+noise = subprocess.Popen(["/bin/bash", "-c", "while true; do date; sleep 60; done"])
+try:
+    job.wait_on_done()
+finally:
+    noise.kill()
 
 id, _ = dxpy.get_dxlink_ids(job.describe()["output"]["resources"])
 print id
