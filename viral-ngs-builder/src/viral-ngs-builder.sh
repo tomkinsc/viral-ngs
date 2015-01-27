@@ -19,6 +19,12 @@ main() {
     git clone -n "$git_url" viral-ngs
     cd viral-ngs
     git checkout "$git_commit"
+
+    # get tags from upstream, to facilitate the best naming of the revision
+    git remote add upstream https://github.com/broadinstitute/viral-ngs.git
+    git fetch upstream
+
+    # detect revision
     GIT_REVISION=$(git describe --long --tags --dirty --always)
 
     # build viral-ngs
