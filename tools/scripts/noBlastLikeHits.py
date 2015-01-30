@@ -29,7 +29,7 @@ def find_nth(str, substr, n):
   return pos
     
 blastReads = {}
-blastFile = open(args.blastPath, 'r')
+blastFile = open(args.blastPath, 'r') if args.blastPath != "-" else sys.stdin
 for line in blastFile:
   if line.find('#') != 0:
     pos = find_nth(line,'\t',6)

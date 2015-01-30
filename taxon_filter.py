@@ -116,40 +116,42 @@ def lastal_get_hits(inFastq, db, outList):
     lastalPath = tools.last.Lastal().install_and_get_path()
     mafSortPath = tools.last.MafSort().install_and_get_path()
     mafConvertPath = tools.last.MafConvert().install_and_get_path()
-    prinseqPath = tools.prinseq.PrinseqTool().install_and_get_path()
     noBlastLikeHitsPath = os.path.join( util.file.get_scripts_path(),
                                         'noBlastLikeHits.py')
-    
-    lastalOut = mkstempfname('.lastal')
-    with open(lastalOut, 'wt') as outf:
-        cmd = [lastalPath, '-Q1', db, inFastq]
-        log.debug(' '.join(cmd) + ' > ' + lastalOut)
-        subprocess.check_call(cmd, stdout=outf)
-    # everything below this point in this method should be replaced with
-    # our own code that just reads lastal output and makes a list of read names
-    
-    mafSortOut = mkstempfname('.mafsort')
-    with open(mafSortOut, 'wt') as outf:
-        with open(lastalOut, 'rt') as inf:
-            cmd = [mafSortPath, '-n2']
-            log.debug('cat ' + lastalOut + ' | ' + ' '.join(cmd) + ' > ' + mafSortOut)
-            subprocess.check_call(cmd, stdin=inf, stdout=outf)
-    os.unlink(lastalOut)
-    
-    mafConvertOut = mkstempfname('.mafconvert')
-    with open(mafConvertOut, 'wt') as outf:
-        cmd = [mafConvertPath, 'tab', mafSortOut]
-        log.debug(' '.join(cmd) + ' > ' + mafConvertOut)
-        subprocess.check_call(cmd, stdout=outf)
-    os.unlink(mafSortOut)
-    
+
+    # run pipeline: lastal | maf-sort | maf-convert | noBlastLikeHits.py > filtered.fastq
     filteredFastq = mkstempfname('.filtered.fastq')
     with open(filteredFastq, 'wt') as outf:
-        cmd = [noBlastLikeHitsPath, '-b', mafConvertOut, '-r', inFastq, '-m', 'hit']
-        log.debug(' '.join(cmd) + ' > ' + filteredFastq)
-        subprocess.check_call(cmd, stdout=outf)
-    os.unlink(mafConvertOut)
+        lastalCmd = [lastalPath, '-Q1', db, inFastq]
+        lastalProc = subprocess.Popen(lastalCmd, stdout=subprocess.PIPE)
+    # everything below this point in this method should be replaced with
+    # our own code that just reads lastal output and makes a list of read names
+
+        mafSortCmd = [mafSortPath, '-n2']
+        mafSortProc = subprocess.Popen(mafSortCmd, stdin=lastalProc.stdout, stdout=subprocess.PIPE)
+        lastalProc.stdout.close()
+
+        mafConvertCmd = [mafConvertPath, 'tab', '/dev/stdin']
+        mafConvertProc = subprocess.Popen(mafConvertCmd, stdin=mafSortProc.stdout, stdout=subprocess.PIPE)
+        mafSortProc.stdout.close()
+
+        noBlastLikeHitsCmd = [noBlastLikeHitsPath, '-b', '-', '-r', inFastq, '-m', 'hit']
+        noBlastLikeHitsProc = subprocess.Popen(noBlastLikeHitsCmd, stdin=mafConvertProc.stdout, stdout=outf)
+        mafConvertProc.stdout.close()
+
+        log.debug(' '.join(lastalCmd + ["|"] + mafSortCmd + ["|"] +
+                           mafConvertCmd + ["|"] + noBlastLikeHitsCmd +
+                           [">", filteredFastq]))
+
+        for cmd, proc in [(noBlastLikeHitsCmd, noBlastLikeHitsProc),
+                          (mafConvertCmd, mafConvertProc),
+                          (mafSortCmd, mafSortProc),
+                          (lastalCmd, lastalProc)]:
+            code = proc.wait()
+            if code != 0:
+                raise subprocess.CalledProcessError(code, ' '.join(cmd), None)
     
+    # extract list of read names
     with open(outList, 'wt') as outf:
         with open(filteredFastq, 'rt') as inf:
             line_num = 0
@@ -160,6 +162,7 @@ def lastal_get_hits(inFastq, db, outList):
                         id = id[:-2]
                     outf.write(id+'\n')
                 line_num += 1
+    os.unlink(filteredFastq)
 
 def filter_lastal_bam(inBam, db, outBam, JVMmemory=None):
     ''' Restrict input reads to those that align to the given
