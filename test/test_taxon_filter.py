@@ -58,6 +58,40 @@ class TestFilterLastal(TestCaseWithTmp) :
         expectedFastq = os.path.join(myInputDir, 'expected.fastq')
         assert_equal_contents(self, outFastq, expectedFastq)
 
+class TestFilterLastalBam(TestCaseWithTmp) :
+
+    def test_filter_lastal(self) :
+        # Create refDbs
+        commonInputDir = util.file.get_test_input_path()
+        myInputDir = util.file.get_test_input_path(self)
+        refFasta = os.path.join(commonInputDir, 'ebola.fasta')
+        dbsDir = tempfile.mkdtemp()
+        refDbs = os.path.join(dbsDir, 'ebola')
+        lastdbPath = tools.last.Lastdb().install_and_get_path()
+        subprocess.check_call([lastdbPath, refDbs, refFasta])
+
+        # create bam from test fastq's
+        testInputBam = util.file.mkstempfname('.bam')
+        tools.picard.FastqToSamTool().execute(os.path.join(myInputDir, 'in.fastq'),
+                                              os.path.join(myInputDir, 'in2.fastq'),
+                                              "TestFilterLastalBam", testInputBam,
+                                              ["V=Standard"])
+
+        # Call parser_filter_lastal_bam
+        testOutputBam = util.file.mkstempfname('.bam')
+        args = taxon_filter.parser_filter_lastal_bam(argparse.ArgumentParser()).parse_args([
+            testInputBam, refDbs, testOutputBam])
+        args.func_main(args)
+
+        # convert bam back to fastq's
+        testOutputFastq1 = util.file.mkstempfname('.fastq')
+        testOutputFastq2 = util.file.mkstempfname('.fastq')
+        tools.picard.SamToFastqTool().execute(testOutputBam, testOutputFastq1, testOutputFastq2)
+
+        # Check that results match expected
+        assert_equal_contents(self, testOutputFastq1, os.path.join(myInputDir, 'expected.fastq'))
+        assert_equal_contents(self, testOutputFastq2, os.path.join(myInputDir, 'expected2.fastq'))
+
 class TestBmtagger(TestCaseWithTmp) :
     """
     How test data was created:
