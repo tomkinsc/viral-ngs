@@ -144,6 +144,7 @@ def postmortem(args):
         print("\t".join(["validation_result", sample,
                          str(get_analysis_output(analysis, ".filtered_base_count")),
                          str(get_analysis_output(analysis, ".subsampled_base_count")),
+                         str(get_analysis_output(analysis, ".mean_coverage_depth")),
                          str(L), str(identical), "{:.2f}".format(100.0*identical/L),
                          str(N), str(gap), str(other)]))
 
