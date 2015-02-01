@@ -5,7 +5,9 @@ import dxpy
 import argparse
 import time
 import subprocess
+import tempfile
 import os
+from Bio import SeqIO
 
 parser = argparse.ArgumentParser(description="viral-ngs-assembly DNAnexus workflow validation")
 subparsers = parser.add_subparsers()
@@ -130,7 +132,18 @@ def postmortem(args):
             else:
                 finished[sample] = (analysis,muscle_job)
 
-    # TODO: calculate consensus % identity in muscle alignments
+    # compare the completed assemblies
+    for sample, (analysis, muscle_job) in finished.iteritems():
+        muscle_fasta = dxpy.DXFile(muscle_job.describe()["output"]["alignment"])
+        handle, local_fasta = tempfile.mkstemp(".fasta")
+        os.close(handle)
+        dxpy.download_dxfile(muscle_fasta.get_id(), local_fasta)
+        L, identical, N, gap, other = muscle_consensus_identity(local_fasta)
+        os.unlink(local_fasta)
+        print("\t".join(["validation_result", sample,
+                         str(get_analysis_output(analysis, ".filtered_base_count")),
+                         str(L), str(identical), "{:.2f}".format(100.0*identical/L),
+                         str(N), str(gap), str(other)]))
 
     # TODO: compare mapped BAMs?
 
@@ -153,6 +166,29 @@ def get_analysis_output(analysis, output_name):
             if k.endswith(output_name):
                 return v
     return None
+
+def muscle_consensus_identity(fasta):
+    seqs = []
+    with open(fasta, "rU") as infile:
+        for record in SeqIO.parse(infile, "fasta") :
+            seqs.append(record.seq.upper())
+    assert (len(seqs) == 2)
+    assert (len(seqs[0]) == len(seqs[1]))
+    L = len(seqs[0])
+    identical = 0
+    N = 0
+    gap = 0
+    other = 0
+    for i in xrange(L):
+        if seqs[0][i] == seqs[1][i]:
+            identical = identical + 1
+        elif seqs[0][i] == "N" or seqs[1][i] == "N":
+            N = N + 1
+        elif seqs[0][i] == "-" or seqs[1][i] == "-":
+            gap = gap + 1
+        else:
+            other = other + 1
+    return (L,identical,N,gap,other)
 
 def strip_end(text, suffix):
     if not text.endswith(suffix):
