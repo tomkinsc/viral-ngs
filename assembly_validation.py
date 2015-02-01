@@ -103,11 +103,56 @@ parser_launch.add_argument("--muscle", help="Muscle applet ID (default: %(defaul
 parser_launch.add_argument("--limit", metavar="N", type=int, default=None,
                                       help="Launch workflow on no more than this many samples")
 
+
+def postmortem(args):
+    record = dxpy.DXRecord(dxpy.dxlink(args.record, args.project))
+    run_details = record.get_details()
+
+    finished = {}
+
+    # check for analysis completion
+    for sample, sample_details in run_details["samples"].iteritems():
+        analysis = dxpy.DXAnalysis(sample_details["analysis"])
+        analysis_state = analysis.describe()["state"]
+
+        if analysis_state == "in_progress":
+            print("\t".join(["analysis_in_progress", sample, analysis.get_id(), analysis_state]))
+        elif analysis_state != "done":
+            print("\t".join(["analysis_failed", sample, analysis.get_id(), analysis_state,
+                             str(get_analysis_output(analysis, ".filtered_base_count"))]))
+        else:
+            muscle_job = dxpy.DXJob(sample_details["muscle"])
+            muscle_job_state = muscle_job.describe()["state"]
+            if muscle_job_state in ["idle", "waiting_on_input", "runnable", "running", "waiting_on_output"]:
+                print("\t".join(["muscle_in_progress", sample, muscle_job.get_id(), muscle_job_state]))
+            elif muscle_job_state != "done":
+                print("\t".join(["muscle_failed", sample, muscle_job.get_id(), muscle_job_state]))
+            else:
+                finished[sample] = (analysis,muscle_job)
+
+    # TODO: calculate consensus % identity in muscle alignments
+
+    # TODO: compare mapped BAMs?
+
+parser_postmortem = subparsers.add_parser("postmortem")
+parser_postmortem.set_defaults(func=postmortem)
+parser_postmortem.add_argument("record", help="ID of the run record created at launch (required)")
+parser_postmortem.add_argument("--project", help="DNAnexus project ID (default: %(default)s)",
+                                            default="project-BX6FjJ00QyB3X12J59PVYZ1V")
+
 def generate_run_id():
     # detect git revision
     here = os.path.dirname(sys.argv[0]) or "."
     git_revision = subprocess.check_output(["git", "-C", here, "describe", "--always", "--dirty", "--tags"]).strip()
     return time.strftime("%Y-%m-%d-%H%M%S-") + git_revision
+
+def get_analysis_output(analysis, output_name):
+    desc = analysis.describe()
+    if "output" in desc:
+        for k, v in desc["output"].iteritems():
+            if k.endswith(output_name):
+                return v
+    return None
 
 def strip_end(text, suffix):
     if not text.endswith(suffix):
