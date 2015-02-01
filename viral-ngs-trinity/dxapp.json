@@ -9,7 +9,7 @@
     {
       "name": "reads",
       "class": "file",
-      "patterns": ["*.unmapped.filtered.bam", "*.bam"]
+      "patterns": ["*.unmapped.filtered.bam", "*.cleaned.filtered.bam", "*.filtered.bam", "*.bam"]
     },
     {
       "name": "contaminants",
