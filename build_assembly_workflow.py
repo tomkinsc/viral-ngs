@@ -13,7 +13,7 @@ argparser.add_argument("--project", help="DNAnexus project ID", default="project
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
 argparser.add_argument("--resources", help="viral-ngs resources tarball (default: %(default)s)",
-                                      default="file-BY3Y4100QY6qVf9YjQQ17jzG")
+                                      default="file-BY777880yPFBYkBKkJ443Zb5")
 argparser.add_argument("--contaminants", help="contaminants & adapters FASTA (default: %(default)s)",
                                          default="file-BXF0vYQ0QyBF509G9J12g927")
 argparser.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
