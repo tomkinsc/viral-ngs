@@ -121,7 +121,8 @@ def postmortem(args):
             print("\t".join(["analysis_in_progress", sample, analysis.get_id(), analysis_state]))
         elif analysis_state != "done":
             print("\t".join(["analysis_failed", sample, analysis.get_id(), analysis_state,
-                             str(get_analysis_output(analysis, ".filtered_base_count"))]))
+                             str(get_analysis_output(analysis, ".filtered_base_count")),
+                             str(get_analysis_output(analysis, ".subsampled_base_count"))]))
         else:
             muscle_job = dxpy.DXJob(sample_details["muscle"])
             muscle_job_state = muscle_job.describe()["state"]
@@ -142,6 +143,7 @@ def postmortem(args):
         os.unlink(local_fasta)
         print("\t".join(["validation_result", sample,
                          str(get_analysis_output(analysis, ".filtered_base_count")),
+                         str(get_analysis_output(analysis, ".subsampled_base_count")),
                          str(L), str(identical), "{:.2f}".format(100.0*identical/L),
                          str(N), str(gap), str(other)]))
 
