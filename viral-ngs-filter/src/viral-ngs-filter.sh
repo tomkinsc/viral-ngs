@@ -13,7 +13,7 @@ main() {
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
     # build Lastal target database
-    viral-ngs/tools/build/last-490/bin/lastdb -c targets.db targets.fasta
+    viral-ngs/tools/build/last-490/bin/lastdb targets.db targets.fasta
     sha256sum targets.*
 
     # filter the reads
