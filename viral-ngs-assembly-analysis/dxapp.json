@@ -46,10 +46,16 @@
       "patterns": ["*.assembly.fasta", "*.fasta", "*.fa"]
     },
     {
-      "name": "assembly_read_alignments",
-      "help": "reads aligned to final assembly",
+      "name": "all_reads",
+      "help": "reads aligned to final assembly and unmapped reads",
       "class": "file",
-      "patterns": ["*.bam"]
+      "patterns": ["*.all.bam", "*.bam"]
+    },
+    {
+      "name": "assembly_read_alignments",
+      "help": "reads aligned to final assembly (mapped reads only)",
+      "class": "file",
+      "patterns": ["*.mapped.bam", "*.bam"]
     },
     {
       "name": "assembly_length",
