@@ -115,14 +115,15 @@ def postmortem(args):
     # check for analysis completion
     for sample, sample_details in run_details["samples"].iteritems():
         analysis = dxpy.DXAnalysis(sample_details["analysis"])
-        analysis_state = analysis.describe()["state"]
+        analysis_desc = analysis.describe()
+        analysis_state = analysis_desc["state"]
 
         if analysis_state == "in_progress":
             print("\t".join(["analysis_in_progress", sample, analysis.get_id(), analysis_state]))
         elif analysis_state != "done":
             print("\t".join(["analysis_failed", sample, analysis.get_id(), analysis_state,
-                             str(get_analysis_output(analysis, ".filtered_base_count")),
-                             str(get_analysis_output(analysis, ".subsampled_base_count"))]))
+                             str(get_analysis_output(analysis_desc, ".filtered_base_count")),
+                             str(get_analysis_output(analysis_desc, ".subsampled_base_count"))]))
         else:
             muscle_job = dxpy.DXJob(sample_details["muscle"])
             muscle_job_state = muscle_job.describe()["state"]
@@ -141,12 +142,14 @@ def postmortem(args):
         dxpy.download_dxfile(muscle_fasta.get_id(), local_fasta)
         L, identical, N, gap, other = muscle_consensus_identity(local_fasta)
         os.unlink(local_fasta)
+
+        analysis_desc = analysis.describe()
         print("\t".join(["validation_result", sample,
-                         str(get_analysis_output(analysis, ".filtered_base_count")),
-                         str(get_analysis_output(analysis, ".subsampled_base_count")),
-                         str(get_analysis_output(analysis, ".mean_coverage_depth")),
+                         str(get_analysis_output(analysis_desc, ".filtered_base_count")),
+                         str(get_analysis_output(analysis_desc, ".subsampled_base_count")),
+                         str(get_analysis_output(analysis_desc, ".mean_coverage_depth")),
                          str(L), str(identical), "{:.2f}".format(100.0*identical/L),
-                         str(N), str(gap), str(other)]))
+                         str(N), str(gap), str(other), str(analysis_desc["totalPrice"])]))
 
     # TODO: compare mapped BAMs?
 
@@ -162,8 +165,7 @@ def generate_run_id():
     git_revision = subprocess.check_output(["git", "-C", here, "describe", "--always", "--dirty", "--tags"]).strip()
     return time.strftime("%Y-%m-%d-%H%M%S-") + git_revision
 
-def get_analysis_output(analysis, output_name):
-    desc = analysis.describe()
+def get_analysis_output(desc, output_name):
     if "output" in desc:
         for k, v in desc["output"].iteritems():
             if k.endswith(output_name):
