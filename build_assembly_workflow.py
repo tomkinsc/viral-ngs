@@ -209,7 +209,7 @@ if args.run_tests is True or args.run_large_tests is True:
                 "output_name": test_sample+"_test_alignment",
                 "advanced_options": "-maxiters 2"
             }
-            muscle_applet.run(muscle_input, project=project.get_id(), folder=(args.folder+"/"+test_sample), name=(git_revision+" "+test_sample+" MUSCLE"), instance_type="mem2_ssd1_x2")
+            muscle_applet.run(muscle_input, project=project.get_id(), folder=(args.folder+"/"+test_sample), name=(git_revision+" "+test_sample+" MUSCLE"), instance_type="mem1_ssd1_x4")
     finally:
         noise.kill()
 

@@ -82,7 +82,7 @@ def launch(args):
         }
         muscle_job = muscle_applet.run(muscle_input, project=project.get_id(), folder=analysis_folder,
                                        name=("viral-ngs-assembly validation " + run_id + " "  + sample + " MUSCLE"),
-                                       instance_type="mem2_ssd1_x2", priority="normal")
+                                       instance_type="mem1_ssd1_x4", priority="normal")
         sample_details["muscle"] = muscle_job.get_id()
         print("{} {}".format(muscle_job.get_id(),muscle_job.name))
 

@@ -84,7 +84,7 @@
     "file": "src/code.sh",
     "systemRequirements": {
       "main": {
-        "instanceType": "mem2_ssd1_x2"
+        "instanceType": "mem1_ssd1_x4"
       }
     },
     "execDepends": [
