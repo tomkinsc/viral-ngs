@@ -1,0 +1,70 @@
+{
+  "name": "viral-ngs-human-depletion",
+  "title": "viral-ngs-human-depletion",
+  "summary": "Deplete human reads from an RNA-seq dataset (either paired FASTQ or an unmapped BAM)",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "file",
+      "class": "file",
+      "patterns": ["*.fastq.gz", "*.bam"],
+      "help": "Either a .fastq.gz or unmapped .bam file"
+    },
+    {
+      "name": "paired_fastq",
+      "class": "file",
+      "patterns": ["*.fastq.gz"],
+      "optional": true,
+      "help": "A .fastq.gz file containing the mate pairs, if the first file is a .fastq.gz. Leave empty if the first file is an unmapped .bam."
+    },
+    {
+      "name": "sample_name",
+      "class": "string",
+      "optional": true,
+      "help": "A sample name, which will be incorporated in the output filenames."
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"],
+      "default": {"$dnanexus_link": "file-BY777880yPFBYkBKkJ443Zb5"}
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "all_reads",
+      "class": "file",
+      "patterns": ["*.raw.bam", "*.bam"]
+    },
+    {
+      "name": "bmtagger_depleted_reads",
+      "class": "file",
+      "patterns": ["*.bmtagger_depleted.bam", "*.bam"]
+    },
+    {
+      "name": "rmdup_reads",
+      "class": "file",
+      "patterns": ["*.rmdup.bam", "*.bam"]
+    },
+    {
+      "name": "cleaned_reads",
+      "class": "file",
+      "patterns": ["*.cleaned.bam", "*.bam"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem3_hdd2_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "default-jre-headless"}
+    ]
+  },
+  "authorizedUsers": []
+}
