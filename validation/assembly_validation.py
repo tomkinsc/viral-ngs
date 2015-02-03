@@ -13,10 +13,10 @@ parser = argparse.ArgumentParser(description="viral-ngs-assembly DNAnexus workfl
 subparsers = parser.add_subparsers()
 
 def launch(args):
-    run_id = generate_run_id()
+    workflow = dxpy.DXWorkflow(args.workflow)
+    run_id = generate_run_id(workflow)
     args.folder = args.folder or ("/validation/"+run_id)
     project = dxpy.DXProject(args.project)
-    workflow = dxpy.DXWorkflow(args.workflow)
     muscle_applet = dxpy.DXApplet(args.muscle)
 
     # find input BAMs from the 'EBOV validation data' project
@@ -159,10 +159,11 @@ parser_postmortem.add_argument("record", help="ID of the run record created at l
 parser_postmortem.add_argument("--project", help="DNAnexus project ID (default: %(default)s)",
                                             default="project-BX6FjJ00QyB3X12J59PVYZ1V")
 
-def generate_run_id():
+def generate_run_id(workflow):
     # detect git revision
     here = os.path.dirname(sys.argv[0]) or "."
-    git_revision = subprocess.check_output(["git", "-C", here, "describe", "--always", "--dirty", "--tags"]).strip()
+    workflow_props = workflow.get_properties()
+    git_revision = workflow_props["git_revision"] if "git_revision" in workflow_props else "unknown"
     return time.strftime("%Y-%m-%d-%H%M%S-") + git_revision
 
 def get_analysis_output(desc, output_name):

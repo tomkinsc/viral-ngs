@@ -20,7 +20,7 @@ main() {
 
     # output
     dx-jobutil-add-output subsampled_reads --class=file \
-            $(dx upload --brief --destination "${reads_prefix}.subsample.bam" subsamp.bam)
+            $(dx upload --brief --destination "${reads_prefix}.trimmed_subsample.bam" subsamp.bam)
     dx-jobutil-add-output subsampled_read_pair_count --class=int $subsampled_read_pair_count
     dx-jobutil-add-output subsampled_base_count --class=int $subsampled_base_count
     dx-jobutil-add-output contigs --class=file \
