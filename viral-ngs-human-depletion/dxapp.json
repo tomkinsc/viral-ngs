@@ -20,6 +20,18 @@
       "help": "A .fastq.gz file containing the mate pairs, if the first file is a .fastq.gz. Leave empty if the first file is an unmapped .bam."
     },
     {
+      "name": "bmtagger_dbs",
+      "class": "array:file",
+      "patterns": ["*.bmtagger_db.tar.gz"],
+      "help": "Tarball(s) containing BMTagger databases to deplete (bitmask and srprism outputs)"
+    },
+    {
+      "name": "blast_dbs",
+      "class": "array:file",
+      "patterns": ["*.blastndb.tar.gz"],
+      "help": "Tarball(s) containing nucleotide BLAST databases to deplete"
+    },
+    {
       "name": "sample_name",
       "class": "string",
       "optional": true,

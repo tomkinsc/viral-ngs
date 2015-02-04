@@ -3,6 +3,9 @@
 main() {
     set -e -x -o pipefail
 
+    dx cat "$resources" | zcat | tar x -C /
+
+    # Receive the input reads as either a BAM file or a pair of .fastq.gz
     filename=$(dx describe "$file" --name)
     if [[ "$filename" == *.bam ]]; then
         if [ -n "$paired_fastq" ]; then
@@ -29,8 +32,7 @@ main() {
         # hack SRA FASTQ read names to make them acceptable to Picard FastqToSam
         pids=()
         dx cat "$file" | zcat | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.1/\1/' | gzip -c > reads.fastq.gz & pids+=($!)
-        dx cat "$paired_fastq" | zcat | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.2/\1/' | gzip -c > reads2.fastq.gz & pids+=($!)
-        dx cat "$resources" | zcat | tar x -C /
+        dx cat "$paired_fastq" | zcat | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.2/\1/' | gzip -c > reads2.fastq.gz
         for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
         if [ -z "$sample_name" ]; then
@@ -44,10 +46,38 @@ main() {
         exit 1
     fi
 
+    # stage the databases for BMTagger and BLAST
+    pids=()
+    mkdir bmtagger_db
+    local_bmtagger_dbs=""
+    for tarball in "${bmtagger_dbs[@]}"; do
+        dbname=$(dx describe "$tarball" --name)
+        dbname=${dbname%.bmtagger_db.tar.gz}
+        mkdir "bmtagger_db/${dbname}"
+        local_bmtagger_dbs="${local_bmtagger_dbs} bmtagger_db/${dbname}/${dbname}"
+        dx cat "$tarball" | zcat | tar x -C "bmtagger_db/${dbname}" & pids+=($!)
+    done
+
+    mkdir blast_db
+    local_blast_dbs=""
+    for tarball in "${blast_dbs[@]}"; do
+        dbname=$(dx describe "$tarball" --name)
+        dbname=${dbname%.blastndb.tar.gz}
+        mkdir "blast_db/${dbname}"
+        local_blast_dbs="${local_blast_dbs} blast_db/${dbname}/${dbname}"
+        dx cat "$tarball" | zcat | tar x -C "blast_db/${dbname}" & pids+=($!)
+    done
+
+    for pid in "${pids[@]}"; do wait $pid || exit $?; done
+    find bmtagger_db -type f
+    find blast_db -type f
+
+    # run deplete_human
     python viral-ngs/taxon_filter.py deplete_human input.bam \
         raw.bam bmtagger_depleted.bam rmdup.bam cleaned.bam \
-        --bmtaggerDbs {params.bmtaggerDbs} --blastDbs {params.blastDbs}
+        --bmtaggerDbs $local_bmtagger_dbs --blastDbs $local_blast_dbs
 
+    # upload outputs
     dx-jobutil-add-output all_reads --class=file \
         $(dx upload --brief --destination ${sample_name}.raw.bam raw.bam)
     dx-jobutil-add-output bmtagger_depleted_reads --class=file \

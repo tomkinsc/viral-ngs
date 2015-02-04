@@ -1,0 +1,39 @@
+{
+  "name": "viral-ngs-bmtagger-db-builder",
+  "title": "viral-ngs-bmtagger-db-builder",
+  "summary": "Builds a BMTagger database from a FASTA file",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "fastagz",
+      "class": "file",
+      "patterns": ["*.fasta.gz"],
+      "help": "gzipped FASTA file with sequences to index"
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "bmtagger_db",
+      "class": "file",
+      "patterns": ["*.bmtagger_db.tar.gz", "*.tar.gz"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x4"
+      }
+    },
+    "execDepends": []
+  },
+  "authorizedUsers": []
+}
