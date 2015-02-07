@@ -179,7 +179,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "deplete.paired_fastq": dxpy.dxlink(test_samples[test_sample]["reads2"]),
             "deplete.novocraft_tarball": dxpy.dxlink(args.novocraft),
             "deplete.gatk_tarball": dxpy.dxlink(args.gatk),
-            "deplete.skip_depletion": true
+            "deplete.skip_depletion": True
         }
         test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample), priority="normal")
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
