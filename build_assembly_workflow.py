@@ -72,7 +72,7 @@ def build_workflow():
     
     depletion_applet = find_applet("viral-ngs-human-depletion")
     depletion_input = {
-        "resources": [x["default"] for x in depletion_applet if x["name"] == "resources"][0]
+        "resources": [x["default"] for x in depletion_applet.describe()["inputSpec"] if x["name"] == "resources"][0]
     }
     depletion_stage_id = wf.add_stage(depletion_applet, stage_input=depletion_input, name="deplete", folder="intermediates")
 
