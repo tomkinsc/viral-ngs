@@ -23,13 +23,18 @@
       "name": "bmtagger_dbs",
       "class": "array:file",
       "patterns": ["*.bmtagger_db.tar.gz"],
-      "help": "Tarball(s) containing BMTagger databases to deplete (bitmask and srprism outputs)"
+      "help": "Tarball(s) containing BMTagger databases to deplete (bitmask and srprism outputs)",
+      "default": [
+        {"$dnanexus_link": "file-BYF6g8Q0zjF77x79bGYgJ1Zb"},
+        {"$dnanexus_link": "file-BYF6j80068477x79bGYgJ1gX"}
+      ]
     },
     {
       "name": "blast_dbs",
       "class": "array:file",
       "patterns": ["*.blastndb.tar.gz"],
-      "help": "Tarball(s) containing nucleotide BLAST databases to deplete"
+      "help": "Tarball(s) containing nucleotide BLAST databases to deplete",
+      "default": [{"$dnanexus_link": "file-BY8fgPQ0QyB1ZJZxv5BB22Fx"}]
     },
     {
       "name": "sample_name",
@@ -38,10 +43,20 @@
       "help": "A sample name, which will be incorporated in the output filenames. By default, derived from the input filename."
     },
     {
-      "name": "skip",
+      "name": "skip_depletion",
       "class": "boolean",
       "default": false,
       "help": "This flag causes the actual depletion steps to be skipped, just generating an unmapped BAM file containing the input reads."
+    },
+    {
+      "name": "novocraft_tarball",
+      "class": "file",
+      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
     },
     {
       "name": "resources",

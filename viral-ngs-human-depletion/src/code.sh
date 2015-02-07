@@ -11,7 +11,7 @@ main() {
             exit 1
         fi
 
-        if [ "$skip" == "true" ]; then
+        if [ "$skip_depletion" == "true" ]; then
             dx-jobutil-add-output cleaned_reads --class=file "$file"
             exit 0
         fi
@@ -50,7 +50,7 @@ main() {
 
         python viral-ngs/read_utils.py fastq_to_bam reads.fastq.gz reads2.fastq.gz input.bam --sampleName "$sample_name"
 
-        if [ "$skip" == "true" ]; then
+        if [ "$skip_depletion" == "true" ]; then
             dx-jobutil-add-output cleaned_reads --class=file \
                 $(dx upload --brief --destination ${sample_name}.unmapped.bam input.bam)
             exit 0
