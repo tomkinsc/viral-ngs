@@ -25,6 +25,7 @@
       "patterns": ["*.bmtagger_db.tar.gz"],
       "help": "Tarball(s) containing BMTagger databases to deplete (bitmask and srprism outputs)",
       "default": [
+        {"$dnanexus_link": "file-BYF8y0Q06PJ7G1fPvkB9q3fK"},
         {"$dnanexus_link": "file-BYF6g8Q0zjF77x79bGYgJ1Zb"},
         {"$dnanexus_link": "file-BYF6j80068477x79bGYgJ1gX"}
       ]

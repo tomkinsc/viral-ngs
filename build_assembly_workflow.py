@@ -71,8 +71,11 @@ def build_workflow():
                               properties={"git_revision": git_revision})
     
     depletion_applet = find_applet("viral-ngs-human-depletion")
+    depletion_applet_inputSpec = depletion_applet.describe()["inputSpec"]
     depletion_input = {
-        "resources": [x for x in depletion_applet.describe()["inputSpec"] if x["name"] == "resources"][0]["default"]
+        "bmtagger_dbs": [x for x in depletion_applet_inputSpec if x["name"] == "bmtagger_dbs"][0]["default"],
+        "blast_dbs": [x for x in depletion_applet_inputSpec if x["name"] == "blast_dbs"][0]["default"]
+        "resources": [x for x in depletion_applet_inputSpec if x["name"] == "resources"][0]["default"]
     }
     depletion_stage_id = wf.add_stage(depletion_applet, stage_input=depletion_input, name="deplete", folder="intermediates")
 

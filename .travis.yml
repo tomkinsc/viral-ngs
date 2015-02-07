@@ -10,6 +10,8 @@ script:
 - wget https://wiki.dnanexus.com/images/files/dx-toolkit-current-ubuntu-12.04-amd64.tar.gz
 - tar zxf dx-toolkit-current-ubuntu-12.04-amd64.tar.gz
 - source dx-toolkit/environment
+# pre-warm later workflow stages
+- for i in $(seq 1 2); do dx run --project-context-id project-BXBXK180x0z7x5kxq11p886f /applets/eval -i sh="sleep 1" --name "prewarming no-op" --instance-type mem1_ssd1_x4 --priority normal --brief -y; done
 # execute workflow builder script
 - python build_assembly_workflow.py --run-tests
 env:
