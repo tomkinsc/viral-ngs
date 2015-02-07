@@ -70,8 +70,11 @@ def build_workflow():
                               folder=args.folder,
                               properties={"git_revision": git_revision})
     
-    depletion_input = {}
-    depletion_stage_id = wf.add_stage(find_applet("viral-ngs-human-depletion"), stage_input=depletion_input, name="deplete", folder="intermediates")
+    depletion_applet = find_applet("viral-ngs-human-depletion")
+    depletion_input = {
+        "resources": [x["default"] for x in depletion_applet if x["name"] == "resources"][0]
+    }
+    depletion_stage_id = wf.add_stage(depletion_applet, stage_input=depletion_input, name="deplete", folder="intermediates")
 
     filter_input = {
         "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
