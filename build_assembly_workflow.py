@@ -93,8 +93,7 @@ def build_workflow():
         "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "contigs"}),
         "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads"}),
         "reference_genome" : dxpy.dxlink(args.scaffold_reference),
-        "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"}),
-        "novocraft_tarball": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "novocraft_tarball"})
+        "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
     scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold", folder="intermediates")
 
@@ -103,8 +102,8 @@ def build_workflow():
         "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "unmapped_bam"}),
         "min_coverage": 2,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
-        "novocraft_tarball": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "novocraft_tarball"}),
-        "gatk_tarball": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "gatk_tarball"}),
+        "novocraft_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_tarball"}),
+        "gatk_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "gatk_tarball"}),
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
     refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1", folder="intermediates")
@@ -120,8 +119,8 @@ def build_workflow():
         "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
         "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"}),
-        "novocraft_tarball": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "novocraft_tarball"}),
-        "gatk_tarball": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "gatk_tarball"})
+        "novocraft_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_tarball"}),
+        "gatk_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "gatk_tarball"})
     }
     analysis_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-analysis"), stage_input=analysis_input, name="analysis")
 
@@ -177,9 +176,9 @@ if args.run_tests is True or args.run_large_tests is True:
         test_input = {
             "deplete.file": dxpy.dxlink(test_samples[test_sample]["reads"]),
             "deplete.paired_fastq": dxpy.dxlink(test_samples[test_sample]["reads2"]),
-            "deplete.novocraft_tarball": dxpy.dxlink(args.novocraft),
-            "deplete.gatk_tarball": dxpy.dxlink(args.gatk),
-            "deplete.skip_depletion": True
+            "deplete.skip_depletion": True,
+            "scaffold.novocraft_tarball": dxpy.dxlink(args.novocraft),
+            "scaffold.gatk_tarball": dxpy.dxlink(args.gatk),
         }
         test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample), priority="normal")
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)

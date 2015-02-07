@@ -55,6 +55,11 @@
       "name": "novocraft_tarball",
       "class": "file",
       "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
     }
   ],
   "outputSpec": [
