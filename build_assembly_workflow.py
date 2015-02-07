@@ -74,7 +74,7 @@ def build_workflow():
     depletion_stage_id = wf.add_stage(find_applet("viral-ngs-human-depletion"), stage_input=depletion_input, name="deplete", folder="intermediates")
 
     filter_input = {
-        "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "unmapped_bam"}),
+        "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
         "min_base_count": 500000,
         "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})

@@ -58,9 +58,9 @@ def launch(args):
     # Launch workflow on each sample
     for sample, sample_details in run_details["samples"].iteritems():
         analysis_input = {
-            "validate.file": dxpy.dxlink(sample_details["input_bam"]),
-            "validate.novocraft_tarball": dxpy.dxlink(args.novocraft),
-            "validate.gatk_tarball": dxpy.dxlink(args.gatk)
+            "depletion.file": dxpy.dxlink(sample_details["input_bam"]),
+            "scaffold.novocraft_tarball": dxpy.dxlink(args.novocraft),
+            "scaffold.gatk_tarball": dxpy.dxlink(args.gatk)
         }
         analysis_folder = args.folder + "/" + sample
         project.new_folder(analysis_folder, parents=True)
