@@ -13,6 +13,12 @@
       "help": "gzipped FASTA file with sequences to index"
     },
     {
+      "name": "bmtool_options",
+      "class": "string",
+      "help": "command-line options passed to bmtool",
+      "default": "-w 18"
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]

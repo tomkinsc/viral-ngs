@@ -8,7 +8,7 @@ main() {
 
     mkdir db
 
-    bmtool -d input.fasta -o "db/${fastagz_prefix}.bitmask"
+    bmtool -d input.fasta -o "db/${fastagz_prefix}.bitmask" $bmtool_options
     viral-ngs/tools/build/bmtagger/srprism mkindex -i input.fasta -o "db/${fastagz_prefix}.srprism"
 
     cd db
