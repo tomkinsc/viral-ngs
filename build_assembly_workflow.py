@@ -72,7 +72,7 @@ def build_workflow():
     
     depletion_applet = find_applet("viral-ngs-human-depletion")
     depletion_input = {
-        "resources": [x["default"] for x in depletion_applet.describe()["inputSpec"] if x["name"] == "resources"][0]
+        "resources": [x for x in depletion_applet.describe()["inputSpec"] if x["name"] == "resources"][0]["default"]
     }
     depletion_stage_id = wf.add_stage(depletion_applet, stage_input=depletion_input, name="deplete", folder="intermediates")
 
@@ -102,7 +102,7 @@ def build_workflow():
 
     refine1_input = {
         "assembly": dxpy.dxlink({"stage": scaffold_stage_id, "outputField": "modified_scaffold"}),
-        "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "unmapped_bam"}),
+        "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
         "min_coverage": 2,
         "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
         "novocraft_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_tarball"}),
