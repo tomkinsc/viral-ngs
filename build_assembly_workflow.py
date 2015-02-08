@@ -186,7 +186,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "scaffold.novocraft_tarball": dxpy.dxlink(args.novocraft),
             "scaffold.gatk_tarball": dxpy.dxlink(args.gatk),
         }
-        test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample), priority="normal")
+        test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
         test_analyses.append((test_sample,test_analysis))
 
