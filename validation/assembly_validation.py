@@ -21,7 +21,7 @@ def launch(args):
 
     # find input BAMs from the 'EBOV validation data' project
     bi_project = "project-BXz7QkQ0K7jf8bQ74GzG9gvY"
-    input_bam_ext = ".cleaned.bam"
+    input_bam_ext = ".cleaned.bam" if args.skip_depletion is True else ".raw.bam"
     fdo = dxpy.search.find_data_objects
     bi_input_bams = list(fdo(project=bi_project, folder="/data/01_per_sample", classname="file",
                              name=("*"+input_bam_ext), name_mode="glob", return_handler=True))
@@ -58,7 +58,8 @@ def launch(args):
     # Launch workflow on each sample
     for sample, sample_details in run_details["samples"].iteritems():
         analysis_input = {
-            "depletion.file": dxpy.dxlink(sample_details["input_bam"]),
+            "deplete.file": dxpy.dxlink(sample_details["input_bam"]),
+            "deplete.skip_depletion": args.skip_depletion is True,
             "scaffold.novocraft_tarball": dxpy.dxlink(args.novocraft),
             "scaffold.gatk_tarball": dxpy.dxlink(args.gatk)
         }
@@ -93,6 +94,8 @@ def launch(args):
 parser_launch = subparsers.add_parser("launch")
 parser_launch.set_defaults(func=launch)
 parser_launch.add_argument("workflow", help="viral-ngs-assembly workflow ID (required)")
+parser_launch.add_argument("--skip-depletion", action="store_true",
+                           help="start from the cleaned BAMs")
 parser_launch.add_argument("--project", help="DNAnexus project ID (default: %(default)s)",
                                         default="project-BX6FjJ00QyB3X12J59PVYZ1V")
 parser_launch.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
