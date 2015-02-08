@@ -1,0 +1,85 @@
+{
+  "name": "viral-ngs-human-depletion",
+  "title": "viral-ngs-human-depletion",
+  "summary": "Deplete human reads from an RNA-seq dataset (either paired FASTQ or an unmapped BAM)",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "file",
+      "class": "file",
+      "patterns": ["*.fastq", "*.fastq.gz", "*.bam"],
+      "help": "Either a FASTQ or unmapped BAM file"
+    },
+    {
+      "name": "paired_fastq",
+      "class": "file",
+      "patterns": ["*.fastq", "*.fastq.gz"],
+      "optional": true,
+      "help": "A FASTQ file containing the mate pairs, if the first file is a FASTQ. Leave empty if the first file is an unmapped BAM."
+    },
+    {
+      "name": "bmtagger_dbs",
+      "class": "array:file",
+      "patterns": ["*.bmtagger_db.tar.gz"],
+      "help": "Tarball(s) containing BMTagger databases to deplete (bitmask and srprism outputs)",
+      "default": [
+        {"$dnanexus_link": "file-BYF8y0Q06PJ7G1fPvkB9q3fK"},
+        {"$dnanexus_link": "file-BYF6g8Q0zjF77x79bGYgJ1Zb"},
+        {"$dnanexus_link": "file-BYF6j80068477x79bGYgJ1gX"}
+      ]
+    },
+    {
+      "name": "blast_dbs",
+      "class": "array:file",
+      "patterns": ["*.blastndb.tar.gz"],
+      "help": "Tarball(s) containing nucleotide BLAST databases to deplete",
+      "default": [{"$dnanexus_link": "file-BY8fgPQ0QyB1ZJZxv5BB22Fx"}]
+    },
+    {
+      "name": "sample_name",
+      "class": "string",
+      "optional": true,
+      "help": "A sample name, which will be incorporated in the output filenames. By default, derived from the input filename."
+    },
+    {
+      "name": "skip_depletion",
+      "class": "boolean",
+      "default": false,
+      "help": "This flag causes the actual depletion steps to be skipped, instead just generating an unmapped BAM file containing the input reads."
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"],
+      "default": {"$dnanexus_link": "file-BY777880yPFBYkBKkJ443Zb5"}
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "cleaned_reads",
+      "class": "file",
+      "patterns": ["*.cleaned.bam", "*.bam"]
+    },
+    {
+      "name": "intermediates",
+      "class": "array:file",
+      "patterns": ["*.bam"],
+      "optional": true
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem3_hdd2_x2"
+      }
+    },
+    "execDepends": [
+      {"name": "default-jre-headless"}
+    ]
+  },
+  "authorizedUsers": []
+}
