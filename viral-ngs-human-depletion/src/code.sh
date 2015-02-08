@@ -18,6 +18,7 @@ main() {
 
         if [ -z "$sample_name" ]; then
             sample_name="$file_prefix"
+            sample_name="${sample_name%.raw}"
         fi
 
         pids=()
