@@ -35,7 +35,7 @@
       "class": "array:file",
       "patterns": ["*.blastndb.tar.gz"],
       "help": "Tarball(s) containing nucleotide BLAST databases to deplete",
-      "default": [{"$dnanexus_link": "file-BY8fgPQ0QyB1ZJZxv5BB22Fx"}]
+      "default": [{"$dnanexus_link": "file-BYFv7bQ0QyBFXQBkX1Jqz88g"}]
     },
     {
       "name": "sample_name",
@@ -74,7 +74,7 @@
     "file": "src/code.sh",
     "systemRequirements": {
       "main": {
-        "instanceType": "mem3_hdd2_x2"
+        "instanceType": "mem2_ssd1_x8"
       }
     },
     "execDepends": [
