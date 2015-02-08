@@ -7,6 +7,16 @@
   "categories": [],
   "inputSpec": [
     {
+      "name": "novocraft_tarball",
+      "class": "file",
+      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
+    },
+    {
       "name": "trinity_contigs",
       "class": "file",
       "patterns": ["*.trinity.fasta"]
@@ -50,16 +60,6 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
-    },
-    {
-      "name": "novocraft_tarball",
-      "class": "file",
-      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
-    },
-    {
-      "name": "gatk_tarball",
-      "class": "file",
-      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
     }
   ],
   "outputSpec": [
