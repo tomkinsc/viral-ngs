@@ -533,7 +533,7 @@ def deplete_blastn(inFastq, outFastq, refDbs) :
         log.info("running blastn on {} against {}".format(inFastq, db))
         blastnCmd = [blastnPath, '-db', db,
                     '-word_size', '16', '-evalue', '1e-6', '-outfmt', '6',
-                    '-num_descriptions', '2', '-num_alignments', '2',
+                    '-max_target_seqs', '2',
                     '-query', inFasta, '-out', blastOutFile]
         log.debug(' '.join(blastnCmd))
         subprocess.check_call(blastnCmd)
@@ -619,7 +619,7 @@ def deplete_blastn_bam(inBam, db, outBam, JVMmemory=None):
     log.info("running blastn on {} pair 1 against {}".format(inBam, db))
     blastnCmd = [blastnPath, '-db', db,
                 '-word_size', '16', '-evalue', '1e-6', '-outfmt', '6',
-                '-num_descriptions', '2', '-num_alignments', '2',
+                '-max_target_seqs', '2',
                 '-query', fasta, '-out', blastOutFile]
     log.debug(' '.join(blastnCmd))
     subprocess.check_call(blastnCmd)
@@ -645,7 +645,7 @@ def deplete_blastn_bam(inBam, db, outBam, JVMmemory=None):
     log.info("running blastn on {} pair 2 against {}".format(inBam, db))
     blastnCmd = [blastnPath, '-db', db,
                 '-word_size', '16', '-evalue', '1e-6', '-outfmt', '6',
-                '-num_descriptions', '2', '-num_alignments', '2',
+                '-max_target_seqs', '2',
                 '-query', fasta, '-out', blastOutFile]
     log.debug(' '.join(blastnCmd))
     subprocess.check_call(blastnCmd)
