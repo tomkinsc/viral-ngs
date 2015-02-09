@@ -104,8 +104,8 @@ main() {
     find blast_db -type f
 
     # run deplete_human
-    python viral-ngs/taxon_filter.py deplete_human input.bam \
-        raw.bam bmtagger_depleted.bam rmdup.bam cleaned.bam \
+    python viral-ngs/taxon_filter.py deplete_human --JVMmemory 16g \
+        input.bam raw.bam bmtagger_depleted.bam rmdup.bam cleaned.bam \
         --bmtaggerDbs $local_bmtagger_dbs --blastDbs $local_blast_dbs
 
     # upload outputs
