@@ -67,6 +67,22 @@
       "class": "array:file",
       "patterns": ["*.bam"],
       "optional": true
+    },
+    {
+      "name": "predepletion_read_count",
+      "class": "int"
+    },
+    {
+      "name": "predepletion_base_count",
+      "class": "int"
+    },
+    {
+      "name": "depleted_read_count",
+      "class": "int"
+    },
+    {
+      "name": "depleted_base_count",
+      "class": "int"
     }
   ],
   "runSpec": {

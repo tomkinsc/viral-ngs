@@ -1,5 +1,7 @@
 #!/bin/bash
 
+samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
+
 main() {
     set -e -x -o pipefail
 
@@ -9,11 +11,6 @@ main() {
         if [ -n "$paired_fastq" ]; then
             dx-jobutil-report-error "Received both BAM and FASTQ inputs. Provide either one unmapped BAM file or a pair of FASTQ files." AppError
             exit 1
-        fi
-
-        if [ "$skip_depletion" == "true" ]; then
-            dx-jobutil-add-output cleaned_reads --class=file "$file"
-            exit 0
         fi
 
         if [ -z "$sample_name" ]; then
@@ -26,6 +23,11 @@ main() {
         dx download "$file" -o input.bam
         for pid in "${pids[@]}"; do wait $pid || exit $?; done
         # TODO: verify BAM is actually unmapped, contains properly paired reads, etc.
+
+        if [ "$skip_depletion" == "true" ]; then
+            dx-jobutil-add-output cleaned_reads --class=file "$file"
+            # will quit below after counting reads/bases
+        fi
     elif [[ "$filename" == *.fastq.gz || "$filename" == *.fastq ]]; then
         if [ -z "$paired_fastq" ]; then
             dx-jobutil-report-error "Missing the second FASTQ file containing mate pairs" AppError
@@ -54,12 +56,26 @@ main() {
         if [ "$skip_depletion" == "true" ]; then
             dx-jobutil-add-output cleaned_reads --class=file \
                 $(dx upload --brief --destination ${sample_name}.unmapped.bam input.bam)
-            exit 0
+            # will quit below after counting reads/bases
         fi
     else
         dx-jobutil-report-error "The input file doesn't appear to be BAM or FASTQ" AppError
         exit 1
     fi
+
+    # count reads and bases in the input
+    predepletion_read_count=$($samtools view -c input.bam)
+    predepletion_base_count=$(bam_base_count input.bam)
+    dx-jobutil-add-output predepletion_read_count --class=int "$predepletion_read_count"
+    dx-jobutil-add-output predepletion_base_count --class=int "$predepletion_base_count"
+
+    if [ "$skip_depletion" == "true" ]; then
+        dx-jobutil-add-output depleted_read_count --class=int "$predepletion_read_count"
+        dx-jobutil-add-output depleted_base_count --class=int "$predepletion_base_count"
+        # cleaned_reads output was set above
+        exit 0
+    fi
+
 
     # stage the databases for BMTagger and BLAST
     pids=()
@@ -93,6 +109,10 @@ main() {
         --bmtaggerDbs $local_bmtagger_dbs --blastDbs $local_blast_dbs
 
     # upload outputs
+    dx-jobutil-add-output depleted_read_count --class=int \
+        $($samtools view -c cleaned.bam)
+    dx-jobutil-add-output depleted_base_count --class=int \
+        $(bam_base_count cleaned.bam)
     dx-jobutil-add-output intermediates --class=array:file \
         $(dx upload --brief --destination ${sample_name}.raw.bam raw.bam)
     dx-jobutil-add-output intermediates --class=array:file \
@@ -110,4 +130,8 @@ maybe_dxzcat() {
     else
         dx cat "$1"
     fi
+}
+
+bam_base_count() {
+    $samtools view $1 | cut -f10 | tr -d '\n' | wc -c
 }

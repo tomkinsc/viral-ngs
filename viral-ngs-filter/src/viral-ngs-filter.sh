@@ -26,8 +26,8 @@ main() {
         exit 1
     fi
 
-    dx-jobutil-add-output unfiltered_read_count $($samtools view -c reads.bam)
-    dx-jobutil-add-output unfiltered_base_count $(bam_base_count reads.bam)
+    dx-jobutil-add-output prefiltration_read_count $($samtools view -c reads.bam)
+    dx-jobutil-add-output prefiltration_base_count $(bam_base_count reads.bam)
     dx-jobutil-add-output filtered_read_count $($samtools view -c filtered_reads.bam)
     dx-jobutil-add-output filtered_base_count $filtered_base_count
     dx-jobutil-add-output filtered_reads --class=file \

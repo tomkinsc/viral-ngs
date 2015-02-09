@@ -37,11 +37,11 @@
       "patterns": ["*.bam"]
     },
     {
-      "name": "unfiltered_read_count",
+      "name": "prefiltration_read_count",
       "class": "int"
     },
     {
-      "name": "unfiltered_base_count",
+      "name": "prefiltration_base_count",
       "class": "int"
     },
     {
