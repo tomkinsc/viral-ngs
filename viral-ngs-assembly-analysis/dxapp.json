@@ -93,10 +93,5 @@
       {"name": "python-scipy"}
     ]
   },
-  "access": {
-    "network": [
-      "*"
-    ]
-  },
   "authorizedUsers": []
 }
