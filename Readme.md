@@ -2,7 +2,9 @@
 
 #### [Broad Institute viral genomics analysis pipelines](https://github.com/broadinstitute/viral-ngs) on DNAnexus
 
-The pipelines are [available for use on DNAnexus](https://platform.dnanexus.com/projects/BXx29vQ0y3FfPJv100237B88/data/). Consult this repo if you're interested in peeking under the hood or modifying them. You'll find the source code for applets implementing individual pipeline stages, and python scripts in the root directory to build the applets and instantiate DNAnexus [workflows](https://wiki.dnanexus.com/UI/Workflows) using them. You'll need the [DNAnexus SDK](https://wiki.dnanexus.com/Command-Line-Client/Quickstart) installed and set up to run these scripts.
+**The pipelines are available for use on DNAnexus. [See the wiki](https://github.com/dnanexus/viral-ngs/wiki) for instructions on how to run them. The following information is for developers interested in peeking under the hood or modifying them.**
+
+Here you'll find the source code for applets implementing individual pipeline stages, and python scripts in the root directory to build the applets and instantiate DNAnexus [workflows](https://wiki.dnanexus.com/UI/Workflows) using them. You'll need the [DNAnexus SDK](https://wiki.dnanexus.com/Command-Line-Client/Quickstart) installed and set up to run these scripts.
 
 ### Continuous integration
 
