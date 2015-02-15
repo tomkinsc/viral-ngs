@@ -53,7 +53,7 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],
-      "default": {"$dnanexus_link": "file-BYQ4Y2006GPfjXz0p17zJ455"}
+      "default": {"$dnanexus_link": "file-BYQQyJ80bV26jXz0p17zjqyq"}
     }
   ],
   "outputSpec": [
