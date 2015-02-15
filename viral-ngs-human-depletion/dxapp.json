@@ -53,7 +53,7 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],
-      "default": {"$dnanexus_link": "file-BYP4gxQ0QpXfjXz0p17yF526"}
+      "default": {"$dnanexus_link": "file-BYPzgvj05p93YJV4gvPqXG63"}
     }
   ],
   "outputSpec": [
@@ -90,7 +90,7 @@
     "file": "src/code.sh",
     "systemRequirements": {
       "main": {
-        "instanceType": "mem3_hdd2_x2"
+        "instanceType": "mem3_hdd2_x4"
       }
     },
     "execDepends": [
