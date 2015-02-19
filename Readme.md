@@ -1,6 +1,6 @@
 # dnanexus/viral-ngs
 
-#### [Broad Institute viral genomics analysis pipelines](https://github.com/broadinstitute/viral-ngs) on DNAnexus
+#### [broadinstitute/viral-ngs pipelines](https://github.com/broadinstitute/viral-ngs) on DNAnexus
 
 **The pipelines are available for use on DNAnexus. [See the wiki](https://github.com/dnanexus/viral-ngs/wiki) for instructions on how to run them. The following information is for developers interested in peeking under the hood or modifying them.**
 
