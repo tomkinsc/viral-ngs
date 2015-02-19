@@ -22,7 +22,7 @@ To incorporate code changes from [upstream](https://github.com/broadinstitute/vi
 
 1. Rebase the `dnanexus-resources-tarball` branch (specifically, the commit modifying `.travis.yml` as described above) on top of the desired upstream revision/tag, and (force) push to GitHub.
 2. Take note of the file ID of the new tarball Travis then generates in [bi-viral-ngs CI:/resources_tarball](https://platform.dnanexus.com/projects/BXBXK180x0z7x5kxq11p886f/data/resources_tarball)
-3. On the `dnanexus` branch (or wip branches from it), change the default setting of the `--resources` argument in the workflow builder scripts to the new tarball's file ID.
+3. On the `dnanexus` branch (or wip branches from it), find the `resources` input in `viral-ngs-human-depletion/dxapp.json`, and change its default to the new tarball's file ID. (All the other workflow stages take the cue from this default setting.)
 4. Ensure Travis tests succeed using the new version.
 
 ### Software licensing issues
