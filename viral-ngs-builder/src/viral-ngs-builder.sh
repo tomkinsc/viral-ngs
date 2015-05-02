@@ -28,7 +28,7 @@ main() {
     GIT_REVISION=$(git describe --long --tags --dirty --always)
 
     # build viral-ngs
-    pip install $(cat requirements.txt | grep -iv numpy | grep -iv scipy | grep -iv cython)
+    pip install -r requirements.txt
     ./run_all_tests.sh
 
     # record a new filesystem manifest
