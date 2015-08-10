@@ -14,7 +14,7 @@ main() {
 
     # build Lastal target database to working dir with prefix targets.db
     # taxon_filter.py lastal_build_db [input_fasta] [output_dir] [output_prefix]
-    python viral-ngs/taxon_filter.py lastal_build_db targets.fasta ./ targets.db
+    python viral-ngs/taxon_filter.py lastal_build_db targets.fasta ./ --outputFilePrefix targets.db
     ls
     sha256sum targets.*
 
