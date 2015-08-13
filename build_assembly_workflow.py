@@ -97,7 +97,7 @@ def build_workflow():
 
     scaffold_input = {
         "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "contigs"}),
-        "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "inputField": "reads"}),
+        "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "subsampled_reads"}),
         "reference_genome" : dxpy.dxlink(args.scaffold_reference),
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }

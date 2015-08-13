@@ -23,7 +23,7 @@
     },
     {
       "name": "trinity_reads",
-      "help": "Reads given to Trinity",
+      "help": "Subsampled Reads from Trinity",
       "class": "file",
       "patterns": ["*.bam"]
     },
