@@ -148,9 +148,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
-            "expected_assembly_sha256sum": "411834d66c5226651493b9b921a157984db030a3a5d048975b709806228d3806",
-            # SHA256sum for fasta file with _scaffold suffix in contig name
-            # "expected_assembly_sha256sum": "20943d9e7e10208dd04cab6b9af2f27e8c924550921e0596fd4bddb1bfa827c1",
+            "expected_assembly_sha256sum": "0aee68fa7a120e6a319dea3f3fb6f74243d928e7c54023799ea16de6322c67da",
+            # contig is named >SRR1553416-0
             "expected_subsampled_base_count": 459632,
             "expected_alignment_base_count": 485406
         },
@@ -158,9 +157,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
-            "expected_assembly_sha256sum": "af4328b04113a149e66055c113ef35fa566e691a2eabde85231ccf2a08df1bf4",
-            # SHA256sum for fasta file with _scaffold suffix in contig name
-            # "expected_assembly_sha256sum": "5893354fad5088d0731bd0e3b9427b0a175743d283469d687c5d5b2004f1da89",
+            "expected_assembly_sha256sum": "cdfeb7773bba47f72316dbd197b91130380ed9e165d5a1dde142257266092b54",
+            # contig is named >SRR1553554-0
             "expected_subsampled_base_count":  467842,
             "expected_alignment_base_count": 590547
         }
@@ -172,9 +170,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXYqZj80Fv4YqP151Zy9291y",
             "reads2": "file-BXYqZkQ0Fv4YZYKx14yJg0b4",
             "broad_assembly": "file-BXYqYKQ0QyB84xYJP9Kz7zzK",
-            "expected_assembly_sha256sum": "456bd7e050222e0eff4fbe4a04c4124695c89d0533b318a49777789f3ed8bb2b",
-            # SHA256sum for fasta file with _scaffold suffix in contig name
-            # "expected_assembly_sha256sum": "4f851bfb1f3affd96e73dc20c4087e59908092a0354e3f00427c6bdfbf39d1a1",
+            "expected_assembly_sha256sum": "4460fbf7cc24e921e0eb3925713cc34fe58f6dfe9594954ff65da7cbcd71b093",
+            # contig is named >SRR1553468-0
             "expected_subsampled_base_count": 18787806,
             "expected_alignment_base_count": 247110236
         }
