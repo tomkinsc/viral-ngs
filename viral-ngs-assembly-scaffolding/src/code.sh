@@ -24,7 +24,7 @@ main() {
     exit_code=0
     python viral-ngs/assembly.py impute_from_reference \
         vfat_scaffold.fasta reference_genome.fasta scaffold.fasta \
-        --newName "${name}_scaffold" --replaceLength "$replace_length" \
+        --newName "${name}" --replaceLength "$replace_length" \
         --minLengthFraction "$min_length_fraction" --minUnambig "$min_unambig" \
             2> >(tee impute.stderr.log >&2) || exit_code=$?
 
