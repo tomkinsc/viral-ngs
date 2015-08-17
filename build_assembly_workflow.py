@@ -41,14 +41,26 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-human-depletion", "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
+    applets = ["viral-ngs-human-depletion", "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
+               "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
 
+    # Build applets for assembly workflow in [args.folder]/applets/ folder
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
         # TODO: reuse an existing applet with matching git_revision
         print "building {}...".format(applet),
         sys.stdout.flush()
         applet_dxid = json.loads(subprocess.check_output(["dx","build","--destination",args.project+":"+applets_folder+"/",os.path.join(here,applet)]))["id"]
+        print applet_dxid
+        applet = dxpy.DXApplet(applet_dxid, project=project.get_id())
+        applet.set_properties({"git_revision": git_revision})
+
+    # Build applets that user interact with directly in [args.folder]/ main folder
+    exposed_applets = ["viral-ngs-fasta-fetcher"]
+    for applet in exposed_applets:
+        print "building {}...".format(applet),
+        sys.stdout.flush()
+        applet_dxid = json.loads(subprocess.check_output(["dx","build","--destination",args.project+":"+args.folder+"/",os.path.join(here,applet)]))["id"]
         print applet_dxid
         applet = dxpy.DXApplet(applet_dxid, project=project.get_id())
         applet.set_properties({"git_revision": git_revision})
@@ -69,7 +81,7 @@ def build_workflow():
                               project=args.project,
                               folder=args.folder,
                               properties={"git_revision": git_revision})
-    
+
     depletion_applet = find_applet("viral-ngs-human-depletion")
     depletion_applet_inputSpec = depletion_applet.describe()["inputSpec"]
     depletion_input = {
@@ -232,7 +244,7 @@ if args.run_tests is True or args.run_large_tests is True:
         alignment_base_count = test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".alignment_base_count"]
         expected_alignment_base_count = test_samples[test_sample]["expected_alignment_base_count"]
         print "\t".join([test_sample, "alignment_base_count", str(expected_alignment_base_count), str(alignment_base_count)])
-        
+
         assert expected_sha256sum == test_assembly_sha256sum
         assert expected_subsampled_base_count == subsampled_base_count
         assert expected_alignment_base_count == alignment_base_count

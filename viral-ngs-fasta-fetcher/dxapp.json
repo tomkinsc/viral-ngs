@@ -1,0 +1,51 @@
+{
+  "name": "viral-ngs-fasta-fetcher",
+  "title": "fetch_fasta",
+  "summary": "Fetch genomic fasta from Genbank based on accession numbers",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "accession_numbers",
+      "label": "Genbank accession numbers",
+      "class": "array:string",
+      "optional": false
+    },
+    {
+      "name": "combined_genome_prefix",
+      "label": "Prefix given to combined fasta file",
+      "class": "string",
+      "optional": false
+    },
+    {
+      "name": "user_email",
+      "label": "Email address passed to NCBI for notification of excessive requests",
+      "class": "string",
+      "optional": false
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"],
+      "default": {"$dnanexus_link": "file-Bg2VBvj0vFx512Ky6VG493Yz"}
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "genome_fasta",
+      "label": "Combined genome fasta",
+      "class": "file"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-fasta-fetcher.sh"
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}
