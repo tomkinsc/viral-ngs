@@ -52,6 +52,12 @@
       "patterns": ["*.all.bam", "*.bam"]
     },
     {
+      "name": "bam_stat",
+      "help": "Statistics of the reads aligned to final assembly",
+      "class": "file",
+      "patterns": ["*.txt"]
+    },
+    {
       "name": "assembly_read_alignments",
       "help": "reads aligned to final assembly (mapped reads only)",
       "class": "file",
