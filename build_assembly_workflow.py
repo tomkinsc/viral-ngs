@@ -8,24 +8,44 @@ import os
 import json
 import hashlib
 
+species_resource = {
+    'Ebola':{
+        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
+        'filter-targets': 'file-BXF0vf80QyBF509G9J12g9F2',
+        'scaffold-reference': 'file-BXF0vZ00QyBF509G9J12g944'
+    },
+    'Lassa':{
+        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
+        'filter-targets': 'file-Bg533J00x0zBkYkFGb23k58B',
+        'scaffold-reference': 'file-Bg533J00x0zBkYkFGb23k58B'
+    },
+    'Generic':{
+        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927'
+    }
+}
+valid_species = species_resource.keys()
+
 argparser = argparse.ArgumentParser(description="Build the viral-ngs assembly workflow on DNAnexus.")
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
+argparser.add_argument("--species", help="Build workflow(s) by populating resources for the specified species. \
+                                    Allows for multiple species to be chosen. 'Generic' builds a workflow without chaining species-specific resource. Choices: %(choices)s",
+                                    nargs='+', choices=valid_species, default=["Generic"])
 argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
-argparser.add_argument("--contaminants", help="contaminants & adapters FASTA (default: %(default)s)",
-                                         default="file-BXF0vYQ0QyBF509G9J12g927")
+# argparser.add_argument("--contaminants", help="contaminants & adapters FASTA (default: %(default)s)",
+#                                          default="file-BXF0vYQ0QyBF509G9J12g927")
 argparser.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
                                       default="file-BXJvFq00QyBKgFj9PZBqgbXg")
 argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
                                  default="file-BXK8p100QyB0JVff3j9Y1Bf5")
 argparser.add_argument("--run-tests", help="run small test assemblies", action="store_true")
 argparser.add_argument("--run-large-tests", help="run test assemblies of varying sizes", action="store_true")
-group = argparser.add_argument_group("filter")
-group.add_argument("--filter-targets", help="panel of target sequences (default: %(default)s)",
-                                default="file-BXF0vf80QyBF509G9J12g9F2")
-group = argparser.add_argument_group("scaffold")
-group.add_argument("--scaffold-reference", help="Reference genome FASTA (default: %(default)s)",
-                                            default="file-BXF0vZ00QyBF509G9J12g944")
+# group = argparser.add_argument_group("filter")
+# group.add_argument("--filter-targets", help="panel of target sequences (default: %(default)s)",
+#                                 default="file-BXF0vf80QyBF509G9J12g9F2")
+# group = argparser.add_argument_group("scaffold")
+# group.add_argument("--scaffold-reference", help="Reference genome FASTA (default: %(default)s)",
+#                                             default="file-BXF0vZ00QyBF509G9J12g944")
 args = argparser.parse_args()
 
 # detect git revision
@@ -62,14 +82,14 @@ def find_applet(applet_name):
                                      project=project.get_id(), folder=applets_folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
-def build_workflow():
-    wf = dxpy.new_dxworkflow(title='viral-ngs-assembly',
-                              name='viral-ngs-assembly',
-                              description='viral-ngs-assembly',
+def build_workflow(species, resources):
+    wf = dxpy.new_dxworkflow(title='viral-ngs-assembly_{0}'.format(species),
+                              name='viral-ngs-assembly_{0}'.format(species),
+                              description='viral-ngs-assembly, with resources populated for {0}'.format(species),
                               project=args.project,
                               folder=args.folder,
                               properties={"git_revision": git_revision})
-    
+
     depletion_applet = find_applet("viral-ngs-human-depletion")
     depletion_applet_inputSpec = depletion_applet.describe()["inputSpec"]
     depletion_input = {
@@ -82,25 +102,31 @@ def build_workflow():
     filter_input = {
         "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
         "min_base_count": 500000,
-        "targets": dxpy.dxlink(args.filter_targets),
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
+    if "filter-targets" in resources:
+        filter_input["targets"] = dxpy.dxlink(resources["filter-targets"])
+
     filter_stage_id = wf.add_stage(find_applet("viral-ngs-filter"), stage_input=filter_input, name="filter", folder="intermediates")
 
     trinity_input = {
         "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
-        "contaminants": dxpy.dxlink(args.contaminants),
         "subsample": 100000,
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
+    if "contaminants" in resources:
+        trinity_input["contaminants"] = dxpy.dxlink(resources["contaminants"])
+
     trinity_stage_id = wf.add_stage(find_applet("viral-ngs-trinity"), stage_input=trinity_input, name="trinity", folder="intermediates")
 
     scaffold_input = {
         "trinity_contigs": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "contigs"}),
         "trinity_reads": dxpy.dxlink({"stage": trinity_stage_id, "outputField": "subsampled_reads"}),
-        "reference_genome" : dxpy.dxlink(args.scaffold_reference),
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
+    if "scaffold-reference" in resources:
+        scaffold_input["reference_genome"] = dxpy.dxlink(resources["scaffold-reference"])
+
     scaffold_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-scaffolding"), stage_input=scaffold_input, name="scaffold", folder="intermediates")
 
     refine1_input = {
@@ -137,7 +163,11 @@ def build_workflow():
 if args.no_applets is not True:
     build_applets()
 
-workflow = build_workflow()
+# Dict of species-name: workflow_id
+workflows = {}
+for species in args.species:
+    workflow = build_workflow(species, species_resource[species])
+    workflows[species] = workflow
 
 if args.run_tests is True or args.run_large_tests is True:
     muscle_applet = dxpy.DXApplet("applet-BXQxjv00QyB9QF3vP4BpXg95")
@@ -145,6 +175,7 @@ if args.run_tests is True or args.run_large_tests is True:
     # test data found in "bi-viral-ngs CI:/test_data"
     test_samples = {
         "SRR1553416": {
+            "species": "Ebola",
             "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
@@ -154,6 +185,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "expected_alignment_base_count": 485406
         },
         "SRR1553554": {
+            "species": "Ebola",
             "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
@@ -161,12 +193,22 @@ if args.run_tests is True or args.run_large_tests is True:
             # contig is named >SRR1553554-0
             "expected_subsampled_base_count":  467842,
             "expected_alignment_base_count": 590547
+        },
+        "G1190": {
+            "species": "Lassa",
+            "reads": "file-Bg97bJQ0x0z12q4XyZf5p0Kk",
+            "broad_assembly": 'file-Bg533J00x0zBkYkFGb23k58B',
+            "expected_assembly_sha256sum": "e7aa592e5ab9d3d1d3ac7fa1cc53eeff37e3ea30afad72a3cf9549172767c95c",
+            # contig is named >G1190-0 and so on
+            "expected_subsampled_base_count":  1841634,
+            "expected_alignment_base_count": 111944259
         }
     }
 
     if args.run_large_tests is True:
         # nb this sample takes too long for Travis
         test_samples["SRR1553468"] = {
+            "species": "Ebola",
             "reads": "file-BXYqZj80Fv4YqP151Zy9291y",
             "reads2": "file-BXYqZkQ0Fv4YZYKx14yJg0b4",
             "broad_assembly": "file-BXYqYKQ0QyB84xYJP9Kz7zzK",
@@ -182,13 +224,21 @@ if args.run_tests is True or args.run_large_tests is True:
         test_folder = args.folder + "/" + test_sample
         project.new_folder(test_folder)
         # run the workflow on the test sample
+        try:
+            workflow = workflows[test_samples[test_sample]["species"]]
+        except KeyError:
+            # Skip running test if workflow for req species was not built
+            continue
+
         test_input = {
             "deplete.file": dxpy.dxlink(test_samples[test_sample]["reads"]),
-            "deplete.paired_fastq": dxpy.dxlink(test_samples[test_sample]["reads2"]),
             "deplete.skip_depletion": True,
             "scaffold.novocraft_tarball": dxpy.dxlink(args.novocraft),
             "scaffold.gatk_tarball": dxpy.dxlink(args.gatk),
         }
+        if "reads2" in test_samples[test_sample]:
+            test_input["deplete.paired_fastq"] = dxpy.dxlink(test_samples[test_sample]["reads2"])
+
         test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
         test_analyses.append((test_sample,test_analysis))
@@ -232,7 +282,7 @@ if args.run_tests is True or args.run_large_tests is True:
         alignment_base_count = test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".alignment_base_count"]
         expected_alignment_base_count = test_samples[test_sample]["expected_alignment_base_count"]
         print "\t".join([test_sample, "alignment_base_count", str(expected_alignment_base_count), str(alignment_base_count)])
-        
+
         assert expected_sha256sum == test_assembly_sha256sum
         assert expected_subsampled_base_count == subsampled_base_count
         assert expected_alignment_base_count == alignment_base_count
