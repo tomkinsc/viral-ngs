@@ -205,20 +205,11 @@ if args.run_tests is True or args.run_large_tests is True:
             # contig is named >SRR1553554-0
             "expected_subsampled_base_count":  467842,
             "expected_alignment_base_count": 590547
-        },
-        "G1190": {
-            "species": "Lassa",
-            "reads": "file-Bg97bJQ0x0z12q4XyZf5p0Kk",
-            "broad_assembly": 'file-Bg533J00x0zBkYkFGb23k58B',
-            "expected_assembly_sha256sum": "e7aa592e5ab9d3d1d3ac7fa1cc53eeff37e3ea30afad72a3cf9549172767c95c",
-            # contig is named >G1190-0 and so on
-            "expected_subsampled_base_count":  1841634,
-            "expected_alignment_base_count": 111944259
         }
     }
 
     if args.run_large_tests is True:
-        # nb this sample takes too long for Travis
+        # nb these samples takes too long for Travis
         test_samples["SRR1553468"] = {
             "species": "Ebola",
             "reads": "file-BXYqZj80Fv4YqP151Zy9291y",
@@ -228,6 +219,15 @@ if args.run_tests is True or args.run_large_tests is True:
             # contig is named >SRR1553468-0
             "expected_subsampled_base_count": 18787806,
             "expected_alignment_base_count": 247110236
+        }
+        test_samples["G1190"] = {
+            "species": "Lassa",
+            "reads": "file-Bg97bJQ0x0z12q4XyZf5p0Kk",
+            "broad_assembly": 'file-Bg533J00x0zBkYkFGb23k58B',
+            "expected_assembly_sha256sum": "e7aa592e5ab9d3d1d3ac7fa1cc53eeff37e3ea30afad72a3cf9549172767c95c",
+            # contig is named >G1190-0 and so on
+            "expected_subsampled_base_count":  1841634,
+            "expected_alignment_base_count": 111944259
         }
 
     test_analyses = []
@@ -282,6 +282,7 @@ if args.run_tests is True or args.run_large_tests is True:
 
     # check figures of merit
     for (test_sample,test_analysis) in test_analyses:
+        workflow = workflows[test_samples[test_sample]["species"]]
         subsampled_base_count = test_analysis.describe()["output"][workflow.get_stage("trinity")["id"]+".subsampled_base_count"]
         expected_subsampled_base_count = test_samples[test_sample]["expected_subsampled_base_count"]
         print "\t".join([test_sample, "subsampled_base_count", str(expected_subsampled_base_count), str(subsampled_base_count)])
