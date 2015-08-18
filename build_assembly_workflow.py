@@ -61,14 +61,26 @@ print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
 
 def build_applets():
-    applets = ["viral-ngs-human-depletion", "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding", "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
+    applets = ["viral-ngs-human-depletion", "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
+               "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
 
+    # Build applets for assembly workflow in [args.folder]/applets/ folder
     project.new_folder(applets_folder, parents=True)
     for applet in applets:
         # TODO: reuse an existing applet with matching git_revision
         print "building {}...".format(applet),
         sys.stdout.flush()
         applet_dxid = json.loads(subprocess.check_output(["dx","build","--destination",args.project+":"+applets_folder+"/",os.path.join(here,applet)]))["id"]
+        print applet_dxid
+        applet = dxpy.DXApplet(applet_dxid, project=project.get_id())
+        applet.set_properties({"git_revision": git_revision})
+
+    # Build applets that user interact with directly in [args.folder]/ main folder
+    exposed_applets = ["viral-ngs-fasta-fetcher"]
+    for applet in exposed_applets:
+        print "building {}...".format(applet),
+        sys.stdout.flush()
+        applet_dxid = json.loads(subprocess.check_output(["dx","build","--destination",args.project+":"+args.folder+"/",os.path.join(here,applet)]))["id"]
         print applet_dxid
         applet = dxpy.DXApplet(applet_dxid, project=project.get_id())
         applet.set_properties({"git_revision": git_revision})
