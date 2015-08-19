@@ -24,13 +24,13 @@ main() {
     exit_code=0
     python viral-ngs/assembly.py impute_from_reference \
         vfat_scaffold.fasta reference_genome.fasta scaffold.fasta \
-        --newName "${name}_scaffold" --replaceLength "$replace_length" \
-        --minLength "$min_length" --minUnambig "$min_unambig" \
+        --newName "${name}" --replaceLength "$replace_length" \
+        --minLengthFraction "$min_length_fraction" --minUnambig "$min_unambig" \
             2> >(tee impute.stderr.log >&2) || exit_code=$?
 
     if [ "$exit_code" -ne "0" ]; then
         if grep PoorAssemblyError impute.stderr.log ; then
-            dx-jobutil-report-error "The assembly failed quality thresholds (length >= ${min_length}, non-N proportion >= ${min_unambig})" AppError
+            dx-jobutil-report-error "The assembly failed quality thresholds (length fraction >= ${min_length_fraction}, non-N proportion >= ${min_unambig})" AppError
         else
             dx-jobutil-report-error "Please check the job log" AppInternalError
         fi
