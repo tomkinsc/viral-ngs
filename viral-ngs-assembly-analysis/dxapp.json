@@ -58,6 +58,11 @@
       "patterns": ["*.txt"]
     },
     {
+      "name": "reads_paired_count",
+      "help": "Reads mapped to assembly and properly paired",
+      "class": "int",
+    },
+    {
       "name": "assembly_read_alignments",
       "help": "reads aligned to final assembly (mapped reads only)",
       "class": "file",
