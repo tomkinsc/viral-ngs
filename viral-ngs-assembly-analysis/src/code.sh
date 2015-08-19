@@ -29,7 +29,7 @@ main() {
     # collect some statistics
     assembly_length=$(tail -n +1 assembly.fasta | tr -d '\n' | wc -c)
     alignment_read_count=$($samtools view -c mapped.bam)
-    reads_paired_count=$(samtools flagstat all.bam | grep properly | awk '{print $1}')
+    reads_paired_count=$($samtools flagstat all.bam | grep properly | awk '{print $1}')
     alignment_base_count=$($samtools view mapped.bam | cut -f10 | tr -d '\n' | wc -c)
     mean_coverage_depth=$(expr $alignment_base_count / $assembly_length)
     genomecov=$(bedtools genomecov -ibam mapped.bam | dx upload -o "${name}.genomecov.txt" --brief -)
