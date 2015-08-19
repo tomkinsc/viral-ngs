@@ -60,7 +60,7 @@
     {
       "name": "reads_paired_count",
       "help": "Reads mapped to assembly and properly paired",
-      "class": "int",
+      "class": "int"
     },
     {
       "name": "assembly_read_alignments",
