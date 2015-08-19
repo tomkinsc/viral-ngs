@@ -11,7 +11,7 @@ script:
 - tar zxf dx-toolkit-current-ubuntu-12.04-amd64.tar.gz
 - source dx-toolkit/environment
 # pre-warm later workflow stages
-- for i in $(seq 1 3); do dx run --project-context-id project-BXBXK180x0z7x5kxq11p886f /assets/eval -i sh="sleep 1" --name "prewarming no-op" --instance-type mem1_ssd1_x4 --brief -y; done
+- for i in $(seq 1 2); do dx run --project-context-id project-BXBXK180x0z7x5kxq11p886f /assets/eval -i sh="sleep 1" --name "prewarming no-op" --instance-type mem1_ssd1_x4 --brief -y; done
 # execute workflow builder script
 - python build_assembly_workflow.py --species Ebola Lassa --run-tests
 env:
