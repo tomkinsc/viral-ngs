@@ -29,17 +29,22 @@ main() {
     # collect some statistics
     assembly_length=$(tail -n +1 assembly.fasta | tr -d '\n' | wc -c)
     alignment_read_count=$($samtools view -c mapped.bam)
+    reads_paired_count=$($samtools flagstat all.bam | grep properly | awk '{print $1}')
     alignment_base_count=$($samtools view mapped.bam | cut -f10 | tr -d '\n' | wc -c)
     mean_coverage_depth=$(expr $alignment_base_count / $assembly_length)
     genomecov=$(bedtools genomecov -ibam mapped.bam | dx upload -o "${name}.genomecov.txt" --brief -)
+    $samtools flagstat  all.bam > stats.txt
 
     # upload outputs
     dx-jobutil-add-output assembly_length $assembly_length
+    dx-jobutil-add-output reads_paired_count $reads_paired_count
     dx-jobutil-add-output alignment_read_count $alignment_read_count
     dx-jobutil-add-output alignment_base_count $alignment_base_count
     dx-jobutil-add-output mean_coverage_depth $mean_coverage_depth
     dx-jobutil-add-output all_reads --class=file \
         $(dx upload all.bam --destination "${name}.all.bam" --brief)
+    dx-jobutil-add-output bam_stat --class=file \
+        $(dx upload stats.txt --destination "${name}.flagstat.txt" --brief)
     dx-jobutil-add-output assembly_read_alignments --class=file \
         $(dx upload mapped.bam --destination "${name}.mapped.bam" --brief)
     dx-jobutil-add-output alignment_genomecov "$genomecov"
