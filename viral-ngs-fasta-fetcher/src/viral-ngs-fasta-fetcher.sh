@@ -14,14 +14,12 @@ main() {
     # if a command is present (even if arguments are missing), we can use exit codes
     # to determine the correct functions to call
 
-    viral-ngs/ncbi.py fetch_fastas_and_feature_tables &> /dev/null
-    if [[ $? -eq 0 ]] ; then
+    if viral-ngs/ncbi.py fetch_fastas_and_feature_tables &> /dev/null ; then
         # this is the old interface
         viral-ngs/ncbi.py fetch_fastas_and_feature_tables $user_email ./ $accessions --combinedGenomeFilePrefix genome --removeSeparateFastas
     fi
 
-    viral-ngs/ncbi.py fetch_fastas &> /dev/null
-    if [[ $? -eq 0 ]] ; then
+    if viral-ngs/ncbi.py fetch_fastas &> /dev/null ; then
         # this is the new interface
         viral-ngs/ncbi.py fetch_fastas $user_email ./ $accessions --combinedFilePrefix genome --removeSeparateFiles
         # if feature tables are needed, uncomment this:
