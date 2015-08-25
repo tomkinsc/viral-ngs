@@ -94,6 +94,13 @@ def find_applet(applet_name):
                                      project=project.get_id(), folder=applets_folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
+def build_workflows(speciesList):
+    workflows = {}
+    for species in speciesList:
+        workflow = build_workflow(species, species_resource[species])
+        workflows[species] = workflow
+    return workflows
+
 def build_workflow(species, resources):
     wf = dxpy.new_dxworkflow(title='viral-ngs-assembly_{0}'.format(species),
                               name='viral-ngs-assembly_{0}'.format(species),
@@ -176,10 +183,7 @@ if args.no_applets is not True:
     build_applets()
 
 # Dict of species-name: workflow_id
-workflows = {}
-for species in args.species:
-    workflow = build_workflow(species, species_resource[species])
-    workflows[species] = workflow
+workflows = build_workflows(args.species)
 
 if args.run_tests is True or args.run_large_tests is True:
     muscle_applet = dxpy.DXApplet("applet-BXQxjv00QyB9QF3vP4BpXg95")
@@ -261,6 +265,7 @@ if args.run_tests is True or args.run_large_tests is True:
     try:
         for (test_sample,test_analysis) in test_analyses:
             test_analysis.wait_on_done()
+            workflow = workflows[test_samples[test_sample]["species"]]
 
             # for diagnostics: add on a MUSCLE alignment of the Broad's
             # assembly of the sample with the workflow products
