@@ -120,7 +120,6 @@ def build_workflow(species, resources):
 
     filter_input = {
         "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
-        "min_base_count": 500000,
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
     if "filter-targets" in resources:
@@ -131,6 +130,7 @@ def build_workflow(species, resources):
     trinity_input = {
         "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
         "subsample": 100000,
+        "min_base_count": 5000,
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
     if "contaminants" in resources:

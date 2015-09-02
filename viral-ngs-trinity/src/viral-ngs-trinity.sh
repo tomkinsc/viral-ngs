@@ -10,6 +10,14 @@ main() {
     dx download "$contaminants" -o contaminants.fasta
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
+    samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
+    # check min_base_count
+    filtered_base_count=$(bam_base_count reads.bam)
+    if [ "$filtered_base_count" -lt "$min_base_count" ]; then
+        dx-jobutil-report-error "Too few bases survived filtering (${filtered_base_count} < ${min_base_count})" AppError
+        exit 1
+    fi
+
     # run trinity
     ulimit -s unlimited
     python viral-ngs/assembly.py assemble_trinity reads.bam contaminants.fasta assembly.fasta --n_reads=$subsample --outReads subsamp.bam
@@ -25,4 +33,8 @@ main() {
     dx-jobutil-add-output subsampled_base_count --class=int $subsampled_base_count
     dx-jobutil-add-output contigs --class=file \
             $(dx upload --brief --destination "${reads_prefix}.trinity.fasta" assembly.fasta)
+}
+
+bam_base_count() {
+    $samtools view $1 | cut -f10 | tr -d '\n' | wc -c
 }
