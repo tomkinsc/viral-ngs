@@ -29,7 +29,21 @@ main() {
 
     # build viral-ngs
     pip install -r requirements.txt
-    ./run_all_tests.sh
+    pip install nose
+
+    # Tool installation test
+    python -m unittest -v test.unit.test_tools.TestToolsInstallation
+
+    # Unit and integration test
+    nosetests -v --with-xunit --with-coverage --nocapture \
+    --cover-inclusive --cover-branches --cover-tests \
+    --cover-package broad_utils,illumina,assembly,interhost,intrahost,ncbi,read_utils,reports,taxon_filter,tools,util \
+    -w test/unit/
+
+    nosetests -v --with-xunit --with-coverage --nocapture \
+    --cover-inclusive --cover-branches --cover-tests \
+    --cover-package broad_utils,illumina,assembly,interhost,intrahost,ncbi,read_utils,reports,taxon_filter,tools,util \
+    -w test/integration/
 
     # record a new filesystem manifest
     (find / -type f 2> /dev/null || true) | sort > /tmp/fs-manifest.1
