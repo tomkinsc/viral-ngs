@@ -120,7 +120,6 @@ def build_workflow(species, resources):
 
     filter_input = {
         "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
-        "min_base_count": 500000,
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
     if "filter-targets" in resources:
@@ -131,6 +130,7 @@ def build_workflow(species, resources):
     trinity_input = {
         "reads": dxpy.dxlink({"stage": filter_stage_id, "outputField": "filtered_reads"}),
         "subsample": 100000,
+        "min_base_count": 5000,
         "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
     }
     if "contaminants" in resources:
@@ -195,8 +195,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
             "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
-            "expected_assembly_sha256sum": "0aee68fa7a120e6a319dea3f3fb6f74243d928e7c54023799ea16de6322c67da",
-            # contig is named >SRR1553416-0
+            "expected_assembly_sha256sum": "7e39e584758ba47c828a933cb836ea3a9b21b9afa2555a81d02fc17c8ba00e66",
+            # Note: contig name line (>....) removed
             "expected_subsampled_base_count": 459632,
             "expected_alignment_base_count": 485406
         },
@@ -205,8 +205,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
             "reads2": "file-BXPPQ380YzB6xGxJ45K9Yv6Q",
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
-            "expected_assembly_sha256sum": "cdfeb7773bba47f72316dbd197b91130380ed9e165d5a1dde142257266092b54",
-            # contig is named >SRR1553554-0
+            "expected_assembly_sha256sum": "3a849c1e545bca1ff938fe847f09206c0d5001de6153bf65831eb21513f1c3fa",
+            # Note: contig name line (>....) removed
             "expected_subsampled_base_count":  467842,
             "expected_alignment_base_count": 590547
         }
@@ -219,8 +219,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "reads": "file-BXYqZj80Fv4YqP151Zy9291y",
             "reads2": "file-BXYqZkQ0Fv4YZYKx14yJg0b4",
             "broad_assembly": "file-BXYqYKQ0QyB84xYJP9Kz7zzK",
-            "expected_assembly_sha256sum": "4460fbf7cc24e921e0eb3925713cc34fe58f6dfe9594954ff65da7cbcd71b093",
-            # contig is named >SRR1553468-0
+            "expected_assembly_sha256sum": "626c6a72ce4380470340d6fd0d94f0a23e240c8bc57d63a7c83046ac7111ace7",
+            # Note: contig name line (>....) removed
             "expected_subsampled_base_count": 18787806,
             "expected_alignment_base_count": 247110236
         }
@@ -228,8 +228,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "species": "Lassa",
             "reads": "file-Bg97bJQ0x0z12q4XyZf5p0Kk",
             "broad_assembly": 'file-Bg533J00x0zBkYkFGb23k58B',
-            "expected_assembly_sha256sum": "e7aa592e5ab9d3d1d3ac7fa1cc53eeff37e3ea30afad72a3cf9549172767c95c",
-            # contig is named >G1190-0 and so on
+            "expected_assembly_sha256sum": "2c41eed662454fe6fd8757cc7c60b872d5021728bbfaeef1fd3d81d2023c0bca",
+            # Note: contig name line (>....) removed
             "expected_subsampled_base_count":  1841634,
             "expected_alignment_base_count": 111944259
         }
@@ -292,8 +292,14 @@ if args.run_tests is True or args.run_large_tests is True:
         expected_subsampled_base_count = test_samples[test_sample]["expected_subsampled_base_count"]
         print "\t".join([test_sample, "subsampled_base_count", str(expected_subsampled_base_count), str(subsampled_base_count)])
 
-        test_assembly_dxfile = dxpy.DXFile(test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".final_assembly"])
-        test_assembly_sha256sum = hashlib.sha256(test_assembly_dxfile.read()).hexdigest()
+        # Get the final assembly and remove the contig name (>...) lines
+        test_assembly_file_id = test_analysis.describe()["output"][workflow.get_stage("analysis")["id"]+".final_assembly"]
+        dx_cat_cmd = ["dx", "cat", test_assembly_file_id['$dnanexus_link']]
+        grep_cmd = ["grep", "-v", ">"]
+        ps = subprocess.Popen(dx_cat_cmd, stdout=subprocess.PIPE)
+        editted_assembly_file = subprocess.check_output(grep_cmd, stdin=ps.stdout)
+
+        test_assembly_sha256sum = hashlib.sha256(editted_assembly_file).hexdigest()
         expected_sha256sum = test_samples[test_sample]["expected_assembly_sha256sum"]
         print "\t".join([test_sample, "sha256sum", expected_sha256sum, test_assembly_sha256sum])
 

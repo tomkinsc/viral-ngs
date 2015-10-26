@@ -19,12 +19,6 @@
       "patterns": ["*.fasta"]
     },
     {
-      "name": "min_base_count",
-      "help": "Fail the analysis if the sum of the length of all surviving reads is below this",
-      "class": "int",
-      "default": 0
-    },
-    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
