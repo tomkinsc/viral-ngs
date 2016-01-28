@@ -4,8 +4,6 @@ python:
 # prevent travis from doing pip install requirements.txt
 install: true
 script:
-# disable Travis default virtualenv
-- deactivate
 # deploy dx-toolkit
 - wget https://wiki.dnanexus.com/images/files/dx-toolkit-current-ubuntu-12.04-amd64.tar.gz
 - tar zxf dx-toolkit-current-ubuntu-12.04-amd64.tar.gz
