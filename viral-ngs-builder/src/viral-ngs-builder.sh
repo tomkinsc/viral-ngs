@@ -31,19 +31,12 @@ main() {
     pip install -r requirements.txt
     pip install nose
 
-    # Tool installation test
-    python -m unittest -v test.unit.test_tools.TestToolsInstallation
-
-    # Unit and integration test
+    # run upstream tests
+    # tests track https://github.com/broadinstitute/viral-ngs/blob/master/run_all_tests.sh
     nosetests -v --with-xunit --with-coverage --nocapture \
     --cover-inclusive --cover-branches --cover-tests \
     --cover-package broad_utils,illumina,assembly,interhost,intrahost,ncbi,read_utils,reports,taxon_filter,tools,util \
-    -w test/unit/
-
-    nosetests -v --with-xunit --with-coverage --nocapture \
-    --cover-inclusive --cover-branches --cover-tests \
-    --cover-package broad_utils,illumina,assembly,interhost,intrahost,ncbi,read_utils,reports,taxon_filter,tools,util \
-    -w test/integration/
+    test/unit/ test/integration/
 
     # record a new filesystem manifest
     (find / -type f 2> /dev/null || true) | sort > /tmp/fs-manifest.1
