@@ -52,7 +52,8 @@
       {"name": "openjdk-7-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"},
-      {"name": "cython"}
+      {"name": "cython"},
+      {"name": "libtool"}
     ]
   },
   "access": {

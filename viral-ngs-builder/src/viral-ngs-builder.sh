@@ -27,12 +27,27 @@ main() {
     # detect revision
     GIT_REVISION=$(git describe --long --tags --dirty --always)
 
-    # build viral-ngs
+    # installations from upstream:/travis/install-pip.sh
     pip install -r requirements.txt
-    pip install nose
+    pip install -r requirements-tests.txt
 
-    # run upstream tests
-    # tests track https://github.com/broadinstitute/viral-ngs/blob/master/run_all_tests.sh
+    # installations from upstrea:/travis/install-conda.sh
+    wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    bash miniconda.sh -b -p $HOME/miniconda
+    user=$(whoami)
+    chown -R $user $HOME/miniconda
+    export PATH="$PATH:$HOME/miniconda/bin"
+    hash -r
+    conda config --set always_yes yes --set changeps1 no
+    conda config --add channels bioconda
+    conda config --add channels r
+    conda update -q conda
+    conda info -a
+
+    # installations from upstream:/travis/install-tools.sh
+    nosetests -v test.unit.test_tools
+
+    # run upstream tests from upstream:/run_all_tests.sh
     nosetests -v --with-xunit --with-coverage --nocapture \
     --cover-inclusive --cover-branches --cover-tests \
     --cover-package broad_utils,illumina,assembly,interhost,intrahost,ncbi,read_utils,reports,taxon_filter,tools,util \
