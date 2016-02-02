@@ -2,6 +2,7 @@
 
 main() {
     set -e -x -o pipefail
+    export PATH="$PATH:$HOME/miniconda/bin"
 
     if [ -z "$name" ]; then
         name="$assembly_prefix"

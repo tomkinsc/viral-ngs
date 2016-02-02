@@ -1,7 +1,10 @@
 #!/bin/bash
 
+samtools=miniconda/pkgs/samtools-1.2-2/bin/samtools
+
 main() {
     set -e -x -o pipefail
+    export PATH="$PATH:$HOME/miniconda/bin"
 
     # stage the inputs
     pids=()
@@ -10,7 +13,6 @@ main() {
     dx download "$contaminants" -o contaminants.fasta
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
-    samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
     # check min_base_count
     filtered_base_count=$(bam_base_count reads.bam)
     if [ "$filtered_base_count" -lt "$min_base_count" ]; then
@@ -23,8 +25,8 @@ main() {
     python viral-ngs/assembly.py assemble_trinity reads.bam contaminants.fasta assembly.fasta --n_reads=$subsample --outReads subsamp.bam
 
     # collect figures of merit
-    subsampled_read_pair_count=$(expr $(viral-ngs/tools/build/samtools-0.1.19/samtools view -c subsamp.bam) / 2)
-    subsampled_base_count=$(viral-ngs/tools/build/samtools-0.1.19/samtools view subsamp.bam | cut -f10 | tr -d '\n' | wc -c)
+    subsampled_read_pair_count=$(expr $($samtools view -c subsamp.bam) / 2)
+    subsampled_base_count=$($samtools view subsamp.bam | cut -f10 | tr -d '\n' | wc -c)
 
     # output
     dx-jobutil-add-output subsampled_reads --class=file \

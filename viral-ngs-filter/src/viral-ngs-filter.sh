@@ -1,9 +1,10 @@
 #!/bin/bash
 
-samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
+samtools=miniconda/pkgs/samtools-1.2-2/bin/samtools
 
 main() {
     set -e -x -o pipefail
+    export PATH="$PATH:$HOME/miniconda/bin"
 
     # stage the inputs
     pids=()

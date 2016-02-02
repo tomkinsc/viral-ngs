@@ -197,7 +197,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
             "expected_assembly_sha256sum": "7e39e584758ba47c828a933cb836ea3a9b21b9afa2555a81d02fc17c8ba00e66",
             # Note: contig name line (>....) removed
-            "expected_subsampled_base_count": 459632,
+            "expected_subsampled_base_count": 460338,
             "expected_alignment_base_count": 485406
         },
         "SRR1553554": {
@@ -207,7 +207,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
             "expected_assembly_sha256sum": "3a849c1e545bca1ff938fe847f09206c0d5001de6153bf65831eb21513f1c3fa",
             # Note: contig name line (>....) removed
-            "expected_subsampled_base_count":  467842,
+            "expected_subsampled_base_count":  469496,
             "expected_alignment_base_count": 590547
         }
     }

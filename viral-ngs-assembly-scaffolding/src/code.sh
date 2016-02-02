@@ -2,6 +2,7 @@
 
 main() {
     set -e -x -o pipefail
+    export PATH="$PATH:$HOME/miniconda/bin"
 
     pids=()
     dx cat "$resources" | zcat | tar x -C / & pids+=($!)

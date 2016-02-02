@@ -2,6 +2,7 @@
 
 main() {
     set -e -x -o pipefail
+    export PATH="$PATH:$HOME/miniconda/bin"
 
     if [ -z "$name" ]; then
         name="${assembly_prefix%.refined.refined}"
@@ -21,7 +22,7 @@ main() {
     python viral-ngs/read_utils.py index_fasta_picard assembly.fasta
     python viral-ngs/read_utils.py index_fasta_samtools assembly.fasta
     novocraft/novoindex assembly.nix assembly.fasta
-    samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
+    samtools=miniconda/pkgs/samtools-1.2-2/bin/samtools
 
     # align reads, dedup, realign, filter
     python viral-ngs/read_utils.py align_and_fix reads.bam assembly.fasta --outBamAll all.bam --outBamFiltered mapped.bam --novoalign_options "$novoalign_options"

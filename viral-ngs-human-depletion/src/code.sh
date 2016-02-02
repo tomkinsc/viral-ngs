@@ -1,9 +1,10 @@
 #!/bin/bash
 
-samtools=viral-ngs/tools/build/samtools-0.1.19/samtools
+samtools=miniconda/pkgs/samtools-1.2-2/bin/samtools
 
 main() {
     set -e -x -o pipefail
+    export PATH="$PATH:$HOME/miniconda/bin"
 
     # Receive the input reads as either a BAM file or a pair of FASTQs
     filename=$(dx describe "$file" --name)

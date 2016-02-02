@@ -2,6 +2,7 @@
 
 main() {
     set -e -x -o pipefail
+    export PATH="$PATH:$HOME/miniconda/bin"
 
     accessions=$(echo ${accession_numbers[*]})
     dx cat "$resources" | tar zx -C /
