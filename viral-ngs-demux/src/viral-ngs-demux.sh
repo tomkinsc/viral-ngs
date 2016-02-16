@@ -49,8 +49,6 @@ main() {
     --outMetrics out/metrics/$metrics_fn --JVMmemory $mem_in_mb \
     $opts
 
-    sleep 1200
-
     dx-upload-all-outputs
 
 }
