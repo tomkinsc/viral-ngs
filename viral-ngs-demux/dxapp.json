@@ -1,0 +1,102 @@
+{
+  "name": "viral-ngs-demux",
+  "title": "illumina-demux",
+  "summary": "Perform BCL conversion and de-multiplexing from Illumina RUN directory using viral-ngs' custom demux script",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"],
+      "label": "Viral-ngs resource tarball",
+      "default": {"$dnanexus_link": "file-BpjZF2j0b4J8xFXGj8jBQGZz"}
+    },
+    {
+      "name": "upload_sentinel_record",
+      "class": "record",
+      "label": "Incremental upload sentinel record",
+      "help": "The sentinel record produced by the the incremental_upload.sh script. When this record is closed it indicates that the upload is complete and demux can begin."
+    },
+    {
+      "name": "lane",
+      "class": "int",
+      "label": "Lane Number",
+      "default": 1
+    },
+    {
+      "name": "metrics_fn",
+      "class": "string",
+      "label": "Metric filename",
+      "help": "Filename for output ExtractIlluminaBarcodes metrics file. Default is metrics.txt",
+      "default": "metrics.txt"
+    },
+    {
+      "name": "sample_sheet",
+      "label": "Sample Sheet",
+      "class": "file",
+      "help": "Override SampleSheet. Input tab or CSV file w/header and four named columns:barcode_name, library_name, barcode_sequence_1, barcode_sequence_2. Default is to look for a SampleSheet.csv in the inDir.",
+      "optional": true
+    },
+    {
+      "name": "flowcell",
+      "label": "Flowcell ID",
+      "class": "string",
+      "help": "Override flowcell ID (default: read from RunInfo.xml)",
+      "optional": true
+    },
+    {
+      "name": "read_structure",
+      "label": "Read structure",
+      "class": "string",
+      "help": "Override read structure (default: read from RunInfo.xml).",
+      "optional": true
+    },
+    {
+      "name": "sequencing_center",
+      "label": "Sequencing Center",
+      "class": "string",
+      "help": "Sequencing Center Name",
+      "default": "center"
+    },
+    {
+      "name": "advanced_opt",
+      "label": "Advanced options",
+      "class": "string",
+      "help": "Additional advanced parameter to be passed to illumina.py",
+      "optional": true
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "bams",
+      "label": "Demuxed Bam files",
+      "help": "Unmapped bam files from demultiplexing",
+      "class": "array:file"
+    },
+    {
+      "name": "metrics",
+      "label": "Metrics file",
+      "help": "ExtractIlluminaBarcodes metrics file",
+      "class": "file"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-demux.sh",
+    "systemRequirements": {
+      "*": {
+        "instanceType": "mem1_ssd1_x4"
+      }
+    },
+    "execDepends": [
+      {"name": "default-jre-headless"},
+      {"name": "python-numpy"},
+      {"name": "python-scipy"}
+    ],
+    "distribution": "Ubuntu",
+    "release": "12.04"
+  },
+  "authorizedUsers": []
+}
