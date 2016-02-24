@@ -76,7 +76,7 @@ def build_applets():
         applet.set_properties({"git_revision": git_revision})
 
     # Build applets that user interact with directly in [args.folder]/ main folder
-    exposed_applets = ["viral-ngs-fasta-fetcher"]
+    exposed_applets = ["viral-ngs-fasta-fetcher", "viral-ngs-demux"]
     for applet in exposed_applets:
         print "building {}...".format(applet),
         sys.stdout.flush()
