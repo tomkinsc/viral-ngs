@@ -120,16 +120,16 @@ def build_workflow(species, resources):
     depletion_applet_inputSpec = depletion_applet.describe()["inputSpec"]
     resource_tarball_id = [x for x in depletion_applet_inputSpec if x["name"] == "resources"][0]["default"]
 
-    # Locate viral-ngs resources tarball
-    depletion_input = {
+    # These steps are used in the full assembly workflow
+    if not resources.get('abridged', False):
+
+        depletion_input = {
         "bmtagger_dbs": [x for x in depletion_applet_inputSpec if x["name"] == "bmtagger_dbs"][0]["default"],
         "blast_dbs": [x for x in depletion_applet_inputSpec if x["name"] == "blast_dbs"][0]["default"],
         "resources": [x for x in depletion_applet_inputSpec if x["name"] == "resources"][0]["default"]
-    }
-    depletion_stage_id = wf.add_stage(depletion_applet, stage_input=depletion_input, name="deplete", folder="intermediates")
+        }
+        depletion_stage_id = wf.add_stage(depletion_applet, stage_input=depletion_input, name="deplete", folder="intermediates")
 
-    # These steps are used in the full assembly workflow
-    if not resources.get('abridged', False):
         filter_input = {
             "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
             "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
@@ -198,13 +198,25 @@ def build_workflow(species, resources):
         refine1_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine1_input, name="refine1", folder="refinement_1")
 
         refine2_input = {
+            "reads": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "reads"}),
+            "assembly": dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"}),
             "min_coverage": 3,
             "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100",
-            "resources": resource_tarball_id,
+            "resources": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "resources"}),
             "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"}),
             "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"})
         }
         refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2", folder="refinement_2")
+
+        analysis_input = {
+            "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
+            "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
+            "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
+            "resources": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "resources"}),
+            "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"}),
+            "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
+        }
+        analysis_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-analysis"), stage_input=analysis_input, name="analysis")
 
     return wf
 
