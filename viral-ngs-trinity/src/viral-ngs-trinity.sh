@@ -1,6 +1,6 @@
 #!/bin/bash
 
-samtools=miniconda/pkgs/samtools-1.2-2/bin/samtools
+samtools=viral-ngs/tools/build/conda-tools/bin/samtools
 
 main() {
     set -e -x -o pipefail

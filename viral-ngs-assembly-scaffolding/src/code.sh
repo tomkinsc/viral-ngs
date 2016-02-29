@@ -15,7 +15,7 @@ main() {
 
     # run assembly.py order_and_orient to scaffold the contigs
     python viral-ngs/assembly.py order_and_orient \
-        trinity_contigs.fasta reference_genome.fasta vfat_scaffold.fasta --inReads reads.bam
+        trinity_contigs.fasta reference_genome.fasta vfat_scaffold.fasta
 
     if [ -z "$name" ]; then
         name=${trinity_contigs_prefix%_1}
