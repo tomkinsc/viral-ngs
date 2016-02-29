@@ -87,7 +87,7 @@
     "file": "src/viral-ngs-demux.sh",
     "systemRequirements": {
       "*": {
-        "instanceType": "mem1_ssd1_x4"
+        "instanceType": "mem1_ssd1_x8"
       }
     },
     "execDepends": [
