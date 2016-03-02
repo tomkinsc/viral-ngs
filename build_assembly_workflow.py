@@ -91,6 +91,14 @@ def build_applets():
         applet = dxpy.DXApplet(applet_dxid, project=project.get_id())
         applet.set_properties({"git_revision": git_revision})
 
+    # Special case handling to expose a HiSeq compatible demux
+    print "building viral-ngs-demux-HiSeq"
+    demux_hiSeq_target = args.project+":"+args.folder+"/"+"viral-ngs-demux-HiSeq"
+    extra_args = '{ "runSpec": { "systemRequirements": { "*": {"instanceType": "mem1_ssd1_x32"} } } }'
+    applet_dxid = json.loads(subprocess.check_output(["dx","build","--destination",demux_hiSeq_target,
+                                                      "--extra-args", extra_args,
+                                                      os.path.join(here,"viral-ngs-demux")]))["id"]
+
 # helpers for name resolution
 def find_app(app_handle):
     return dxpy.find_one_app(name=app_handle, zero_ok=False, more_ok=False, return_handler=True)
