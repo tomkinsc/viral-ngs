@@ -240,16 +240,6 @@ if args.run_tests is True or args.run_large_tests is True:
 
     # test data found in "bi-viral-ngs CI:/test_data"
     test_samples = {
-        "SRR1553416": {
-            "species": "Ebola",
-            "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
-            "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
-            "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
-            "expected_assembly_sha256sum": "7e39e584758ba47c828a933cb836ea3a9b21b9afa2555a81d02fc17c8ba00e66",
-            # Note: contig name line (>....) removed
-            "expected_subsampled_base_count": 460338,
-            "expected_alignment_base_count": 485406
-        },
         "SRR1553554": {
             "species": "Ebola",
             "reads": "file-BXPPQ2Q0YzB28x9Q9911Ykz5",
@@ -282,6 +272,16 @@ if args.run_tests is True or args.run_large_tests is True:
             # Note: contig name line (>....) removed
             "expected_subsampled_base_count":  1841634,
             "expected_alignment_base_count": 111944259
+        }
+        test_samples["SRR1553416"] = {
+            "species": "Ebola",
+            "reads": "file-BXBP0VQ011y0B0g5bbJFzx51",
+            "reads2": "file-BXBP0Xj011yFYvPjgJJ0GzZB",
+            "broad_assembly": "file-BXFqQvQ0QyB5859Vpx1j7bqq",
+            "expected_assembly_sha256sum": "7e39e584758ba47c828a933cb836ea3a9b21b9afa2555a81d02fc17c8ba00e66",
+            # Note: contig name line (>....) removed
+            "expected_subsampled_base_count": 460338,
+            "expected_alignment_base_count": 485406
         }
 
     test_analyses = []
@@ -321,7 +321,7 @@ if args.run_tests is True or args.run_large_tests is True:
             # assembly of the sample with the workflow products
             muscle_input = {
                 "fasta": [
-                    test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".vfat_scaffold"),
+                    test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".intermediate_scaffold"),
                     test_analysis.get_output_ref(workflow.get_stage("scaffold")["id"]+".modified_scaffold"),
                     test_analysis.get_output_ref(workflow.get_stage("refine1")["id"]+".refined_assembly"),
                     test_analysis.get_output_ref(workflow.get_stage("refine2")["id"]+".refined_assembly"),
