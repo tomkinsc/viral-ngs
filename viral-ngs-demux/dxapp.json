@@ -11,7 +11,7 @@
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],
       "label": "Viral-ngs resource tarball",
-      "default": {"$dnanexus_link": "file-BqfFg5j0Fx7xGfX6bJy2PQ5Z"}
+      "default": {"$dnanexus_link": "file-Bv2f2v001VK4621pyVj37jK3"}
     },
     {
       "name": "upload_sentinel_record",
@@ -58,7 +58,7 @@
       "label": "Sequencing Center",
       "class": "string",
       "help": "Sequencing Center Name",
-      "default": "center"
+      "optional": true
     },
     {
       "name": "advanced_opt",

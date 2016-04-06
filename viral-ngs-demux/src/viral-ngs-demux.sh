@@ -40,6 +40,11 @@ main() {
         opts="$opts --read_structure $read_structure "
     fi
 
+    if [ "$sequencing_center" != "" ]
+    then
+        opts="$opts --sequencing_center $sequencing_center "
+    fi
+
     mem_in_mb="`head -n1 /proc/meminfo | awk '{print int($2*0.9/1024)}'`m"
 
     mkdir -p out/bams
