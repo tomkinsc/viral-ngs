@@ -15,7 +15,7 @@ main() {
 
     # run assembly.py order_and_orient to scaffold the contigs
     python viral-ngs/assembly.py order_and_orient \
-        trinity_contigs.fasta reference_genome.fasta vfat_scaffold.fasta
+        trinity_contigs.fasta reference_genome.fasta intermediate_scaffold.fasta
 
     if [ -z "$name" ]; then
         name=${trinity_contigs_prefix%_1}
@@ -24,10 +24,10 @@ main() {
     # run assembly.py impute_from_reference to check assembly quality and clean the contigs
     exit_code=0
     python viral-ngs/assembly.py impute_from_reference \
-        vfat_scaffold.fasta reference_genome.fasta scaffold.fasta \
+        intermediate_scaffold.fasta reference_genome.fasta scaffold.fasta \
         --newName "${name}" --replaceLength "$replace_length" \
         --minLengthFraction "$min_length_fraction" --minUnambig "$min_unambig" \
-            2> >(tee impute.stderr.log >&2) || exit_code=$?
+        --aligner "$aligner" 2> >(tee impute.stderr.log >&2) || exit_code=$?
 
     if [ "$exit_code" -ne "0" ]; then
         if grep PoorAssemblyError impute.stderr.log ; then
@@ -43,8 +43,8 @@ main() {
     # upload outputs
     dx-jobutil-add-output modified_scaffold --class=file \
         $(dx upload scaffold.fasta --destination "${name}.scaffold.fasta" --brief)
-    dx-jobutil-add-output vfat_scaffold --class=file \
-        $(dx upload vfat_scaffold.fasta --destination "${name}.vfat.fasta" --brief)
+    dx-jobutil-add-output intermediate_scaffold --class=file \
+        $(dx upload intermediate_scaffold.fasta --destination "${name}.mummer.fasta" --brief)
 }
 
 first_fasta_header() {

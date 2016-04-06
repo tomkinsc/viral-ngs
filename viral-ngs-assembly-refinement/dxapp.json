@@ -9,7 +9,7 @@
     {
       "name": "assembly",
       "class": "file",
-      "patterns": ["*.scaffold.fasta", "*.assembly.fasta"]
+      "patterns": ["*.fasta"]
     },
     {
       "name": "reads",

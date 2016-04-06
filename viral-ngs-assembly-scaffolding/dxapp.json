@@ -57,6 +57,13 @@
       "default": 55
     },
     {
+      "name": "aligner",
+      "help": "aligner to be used for alignment of fasta to reference. Possible choices: MUSCLE, MAFFT, nucmer",
+      "choices": ["muscle", "mafft", "mummer"],
+      "class": "string",
+      "default": "muscle"
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
@@ -69,7 +76,7 @@
       "patterns": ["*.scaffold.fasta", "*.fasta"]
     },
     {
-      "name": "vfat_scaffold",
+      "name": "intermediate_scaffold",
       "class": "file",
       "patterns": ["*.fasta"]
     }
