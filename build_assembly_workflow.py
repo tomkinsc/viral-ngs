@@ -189,7 +189,7 @@ def build_workflow(species, resources):
         analysis_input = {
             "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
             "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
-            "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
+            "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
             "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"}),
             "novocraft_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_tarball"}),
             "gatk_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "gatk_tarball"})
@@ -219,7 +219,7 @@ def build_workflow(species, resources):
         analysis_input = {
             "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
             "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
-            "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3",
+            "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
             "resources": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "resources"}),
             "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"}),
             "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
