@@ -8,50 +8,15 @@ import os
 import json
 import hashlib
 
-workflow_resources = {
-    'Ebola':{
-        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
-        'filter-targets': 'file-BXF0vf80QyBF509G9J12g9F2',
-        'scaffold-reference': 'file-BXF0vZ00QyBF509G9J12g944',
-        'abridged': False
-    },
-    'Lassa':{
-        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
-        'filter-targets': 'file-Bg533J00x0zBkYkFGb23k58B',
-        'scaffold-reference': 'file-Bg533J00x0zBkYkFGb23k58B',
-        'abridged': False
-    },
-    'Generic':{
-        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
-        'abridged': False
-    },
-    'Abridged':{
-        'abridged': True
-    }
-}
-valid_workflow_names = workflow_resources.keys()
-
 argparser = argparse.ArgumentParser(description="Build the viral-ngs assembly workflow on DNAnexus.")
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
-argparser.add_argument("--workflows", help="Build workflow(s) by populating resources or chaining applets for the specified type. \
-                                    Allows for multiple workflows to be chosen. 'Generic' builds a workflow without chaining species-specific resource. Choices: %(choices)s",
-                                    nargs='+', choices=valid_workflow_names, default=["Generic"])
-argparser.add_argument("--no-applets", help="Assume applets already exist under designated folder", action="store_true")
-# argparser.add_argument("--contaminants", help="contaminants & adapters FASTA (default: %(default)s)",
-#                                          default="file-BXF0vYQ0QyBF509G9J12g927")
 argparser.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
                                       default="file-BXJvFq00QyBKgFj9PZBqgbXg")
 argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
                                  default="file-BXK8p100QyB0JVff3j9Y1Bf5")
 argparser.add_argument("--run-tests", help="run small test assemblies", action="store_true")
 argparser.add_argument("--run-large-tests", help="run test assemblies of varying sizes", action="store_true")
-# group = argparser.add_argument_group("filter")
-# group.add_argument("--filter-targets", help="panel of target sequences (default: %(default)s)",
-#                                 default="file-BXF0vf80QyBF509G9J12g9F2")
-# group = argparser.add_argument_group("scaffold")
-# group.add_argument("--scaffold-reference", help="Reference genome FASTA (default: %(default)s)",
-#                                             default="file-BXF0vZ00QyBF509G9J12g944")
 args = argparser.parse_args()
 
 # detect git revision
@@ -65,6 +30,10 @@ project = dxpy.DXProject(args.project)
 applets_folder = args.folder + "/applets"
 print "project: {} ({})".format(project.name, args.project)
 print "folder: {}".format(args.folder)
+
+###############################################################################
+# BUILDING APPLETS
+###############################################################################
 
 def build_applets():
     applets = ["viral-ngs-human-depletion", "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
@@ -99,6 +68,8 @@ def build_applets():
                                                       "--extra-args", extra_args,
                                                       os.path.join(here,"viral-ngs-demux")]))["id"]
 
+build_applets()
+
 # helpers for name resolution
 def find_app(app_handle):
     return dxpy.find_one_app(name=app_handle, zero_ok=False, more_ok=False, return_handler=True)
@@ -108,14 +79,41 @@ def find_applet(applet_name):
                                      project=project.get_id(), folder=applets_folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
-def build_workflows(workflow_list):
+###############################################################################
+# VIRAL ASSEMBLY WORKFLOWS: taking raw reads (in paired FASTQ or unmapped BAM)
+# through optional human depletion, quality control and polished assembly
+###############################################################################
+
+assembly_workflow_resources = {
+    'Ebola':{
+        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
+        'filter-targets': 'file-BXF0vf80QyBF509G9J12g9F2',
+        'scaffold-reference': 'file-BXF0vZ00QyBF509G9J12g944',
+        'abridged': False
+    },
+    'Lassa':{
+        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
+        'filter-targets': 'file-Bg533J00x0zBkYkFGb23k58B',
+        'scaffold-reference': 'file-Bg533J00x0zBkYkFGb23k58B',
+        'abridged': False
+    },
+    'Generic':{
+        'contaminants': 'file-BXF0vYQ0QyBF509G9J12g927',
+        'abridged': False
+    },
+    'Abridged':{
+        'abridged': True
+    }
+}
+
+def build_assembly_workflows(workflow_list):
     workflows = {}
     for w in workflow_list:
-        workflow = build_workflow(w, workflow_resources[w])
+        workflow = build_assembly_workflow(w, assembly_workflow_resources[w])
         workflows[w] = workflow
     return workflows
 
-def build_workflow(species, resources):
+def build_assembly_workflow(species, resources):
     wf = dxpy.new_dxworkflow(title='viral-ngs-assembly_{0}'.format(species),
                               name='viral-ngs-assembly_{0}'.format(species),
                               description='viral-ngs-assembly, with resources populated for {0}'.format(species),
@@ -228,12 +226,12 @@ def build_workflow(species, resources):
 
     return wf
 
-# main
-if args.no_applets is not True:
-    build_applets()
+# workflows = dict of species-name: workflow_id
+assembly_workflows = build_assembly_workflows(assembly_workflow_resources.keys())
 
-# Dict of species-name: workflow_id
-workflows = build_workflows(args.workflows)
+###############################################################################
+# TESTS
+###############################################################################
 
 if args.run_tests is True or args.run_large_tests is True:
     muscle_applet = dxpy.DXApplet("applet-BXQxjv00QyB9QF3vP4BpXg95")
@@ -291,7 +289,7 @@ if args.run_tests is True or args.run_large_tests is True:
         project.new_folder(test_folder)
         # run the workflow on the test sample
         try:
-            workflow = workflows[test_samples[test_sample]["species"]]
+            workflow = assembly_workflows[test_samples[test_sample]["species"]]
         except KeyError:
             # Skip running test if workflow for req species was not built
             continue
@@ -315,7 +313,7 @@ if args.run_tests is True or args.run_large_tests is True:
     try:
         for (test_sample,test_analysis) in test_analyses:
             test_analysis.wait_on_done()
-            workflow = workflows[test_samples[test_sample]["species"]]
+            workflow = assembly_workflows[test_samples[test_sample]["species"]]
 
             # for diagnostics: add on a MUSCLE alignment of the Broad's
             # assembly of the sample with the workflow products
@@ -337,7 +335,7 @@ if args.run_tests is True or args.run_large_tests is True:
 
     # check figures of merit
     for (test_sample,test_analysis) in test_analyses:
-        workflow = workflows[test_samples[test_sample]["species"]]
+        workflow = assembly_workflows[test_samples[test_sample]["species"]]
         subsampled_base_count = test_analysis.describe()["output"][workflow.get_stage("trinity")["id"]+".subsampled_base_count"]
         expected_subsampled_base_count = test_samples[test_sample]["expected_subsampled_base_count"]
         print "\t".join([test_sample, "subsampled_base_count", str(expected_subsampled_base_count), str(subsampled_base_count)])
