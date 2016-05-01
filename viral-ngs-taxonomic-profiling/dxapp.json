@@ -1,0 +1,74 @@
+{
+  "name": "kraken",
+  "dxapi": "1.0.0",
+  "inputSpec": [
+    {
+      "patterns": [ "*.bam" ],
+      "label": "Reads",
+      "help": "A file, in fasta or fastq format, containing the reads to be classified.",
+      "name": "reads",
+      "class": "array:file"
+    },
+    {
+      "patterns": [ "*db*.tar.gz", "*db*.tar.lz4", "*db*.tgz" ],
+      "label": "Kraken database",
+      "help": "A gzipped tar archive containing a kraken database (database.idx, database.kdb, taxonomy/nodes.dmp and taxonomy/names.dmp).",
+      "name": "database",
+      "class": "file"
+    },
+    {
+      "group": "Advanced",
+      "help": "Extra command-line options that will be passed directly to the kraken invocation. Example: --quick --only-classified-output",
+      "label": "Extra command-line options",
+      "optional": true,
+      "class": "string",
+      "name": "extra_options"
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": [ "viral-ngs-*.resources.tar.gz" ],
+      "label": "Viral-ngs resource tarball",
+      "default": {"$dnanexus_link": "file-BvPxg200kfgZ1KZJ0bkx1zg7"}
+    }
+  ],
+  "outputSpec": [
+    {
+      "patterns": [
+        "*.kraken-classified.txt.gz"
+      ],
+      "label": "Classification",
+      "help": "A gzipped text file with the classification output.",
+      "name": "classified",
+      "class": "array:file"
+    },
+    {
+      "patterns": [
+        "*.kraken-report.txt"
+      ],
+      "label": "Report",
+      "help": "A text file with a classification report.",
+      "name": "report",
+      "class": "array:file"
+    }
+  ],
+  "runSpec": {
+    "execDepends": [
+      {
+        "name": "liblz4-tool"
+      },
+      {
+        "name": "pigz"
+      }
+    ],
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x8"
+      }
+    },
+    "file": "src/code.sh",
+    "release": "14.04",
+    "interpreter": "bash",
+    "distribution": "Ubuntu"
+  }
+}
