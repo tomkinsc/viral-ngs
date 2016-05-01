@@ -1,0 +1,39 @@
+{
+  "name": "viral-ngs-human-depletion-multiplex",
+  "title": "viral-ngs-human-depletion-multiplex",
+  "summary": "Run viral-ngs-human-depletion on multiple unmapped BAMs (from demultiplexing)",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "bams",
+      "class": "array:file",
+      "patterns": ["*.bam"],
+      "help": "Unmapped BAM files"
+    },
+    {
+      "name": "depletion_applet",
+      "class": "applet",
+      "patterns": ["viral-ngs-human-depletion"],
+      "help": "The viral-ngs-human-depletion applet"
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "cleaned_reads",
+      "class": "array:file",
+      "patterns": ["*.cleaned.bam", "*.bam"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh"
+  },
+  "authorizedUsers": []
+}
