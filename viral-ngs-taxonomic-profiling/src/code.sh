@@ -6,6 +6,8 @@
 set -e -x -o pipefail
 
 export PATH="$PATH:$HOME/miniconda/bin/"
+export LOCALPERL="$HOME/viral-ngs/tools/build/conda-tools/default/opt/krona/lib/"
+export PERL5LIB="$LOCALPERL"
 dx cat "$resources" | tar zx -C /
 
 # log detailed sys utilization
