@@ -34,7 +34,7 @@
     },
     {
       "name": "sample_sheet",
-      "label": "Sample Sheet",
+      "label": "Sample Sheet (override)",
       "class": "file",
       "help": "Override SampleSheet. Input tab or CSV file w/header and four named columns:barcode_name, library_name, barcode_sequence_1, barcode_sequence_2. Default is to look for a SampleSheet.csv in the inDir.",
       "optional": true
