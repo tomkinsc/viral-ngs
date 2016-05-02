@@ -39,7 +39,7 @@ for i in "${!reads[@]}"; do
   dx cat "${reads[$i]}" > ~/input/"${reads_prefix[$i]}".bam
   viral-ngs/metagenomics.py kraken ~/input/"${reads_prefix[$i]}".bam "./$database_prefix" --outReads ~/out/classified/"${reads_prefix[$i]}".kraken-classified.txt.gz --outReport ~/out/report/"${reads_prefix[$i]}".kraken-report.txt --numThreads `nproc`
 
-  viral-ngs/metagenomics.py krona ~/out/classified/"${reads_prefix[$i]}".kraken-classified.txt.gz ~/out/html/"${reads_prefix[$i]}".report.html --noRank
+  # viral-ngs/metagenomics.py krona ~/out/classified/"${reads_prefix[$i]}".kraken-classified.txt.gz ~/out/html/"${reads_prefix[$i]}".report.html --noRank
 done
 
 #
