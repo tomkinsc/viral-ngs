@@ -4,9 +4,23 @@ main() {
 
     set -e -x -o pipefail
 
+    # Unpack viral-ngs resources
     export PATH="$PATH:$HOME/miniconda/bin"
     dx cat "$resources" | tar zx -C /
 
+     # Download the RunInfo.xml file
+    runInfo_file_id=$(dx get_details "$upload_sentinel_record" | jq .runinfo_file_id -r)
+    dx cat $runInfo_file_id > RunInfo.xml
+
+    # Parse the lane count from RunInfo.xml file
+    lane_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@LaneCount)" RunInfo.xml)
+
+    # Raise error if laneCount could not be found in the expected XML path
+    if [ -z "$lane_count" ]; then
+        dx-jobutil-report-error "Could not parse laneCount from RunInfo.xml. Please check RunInfo.xml is properful formatted"
+    fi
+
+    # Get file IDs of run directory tarballs
     mkdir ./input
     file_ids=$(dx get_details "$upload_sentinel_record" | jq .tar_file_ids | grep -Po '(?<=\")file-.*(?=\")')
 
@@ -15,13 +29,14 @@ main() {
         dx cat $file_id | tar xzf - -C ./input/
     done
 
+    # Locate root of run directory
     location_of_data=$(find . -type d -name "Data")
     if [ "$location_of_data" == "" ]
-
     then
       dx-jobutil-report-error "The Data folder could not be found."
     fi
 
+    # Populate command line options
     opts="$advanced_opts"
 
     if [ "$sample_sheet" != "" ]
@@ -47,12 +62,49 @@ main() {
 
     mem_in_mb="`head -n1 /proc/meminfo | awk '{print int($2*0.9/1024)}'`m"
 
-    mkdir -p out/bams
-    mkdir -p out/metrics
+    # Find the lanes to perform demux on, if no lanes
+    # specified, demux over all lanes
+    if [ ${#lanes[@]} -eq 0 ];
+    then
+        lanes=$(seq 1 $lane_count)
+    fi
 
-    python viral-ngs/illumina.py illumina_demux  input/ $lane out/bams/ \
-    --outMetrics out/metrics/$metrics_fn --JVMmemory $mem_in_mb \
-    $opts
+    multi_lane=false
+
+    if [ ${#lanes[@]} -gt 1 ];
+    then
+        multi_lane=true
+    fi
+
+    # Perform demux iteratively over lanes
+    for lane in "${lanes[@]}"
+    do
+        # Make sure that the lane specified is valid
+        if [ $lane -gt $lane_count ];
+        then
+            dx-jobutil-report-error "Invalid lane: $lane, there are only $lane_count lane(s) detected in the run."
+        fi
+
+        # Prepare output folders
+        bam_out_dir="out/bams"
+        metric_out_dir="out/metrics"
+
+        # Subfolders by lane if multi-lane run
+        if [ "$multi_lane" = true ]; then
+            bam_out_dir="out/bams/lane_$lane"
+            metric_out_dir="out/bams/lane_$lane"
+        fi
+
+        mkdir -p $bam_out_dir
+        mkdir -p $metric_out_dir
+
+        # Execute viral-ngs demux, $opts may be empty so we do not quote it
+        # to prevent expansion to an empty "" argument
+        python viral-ngs/illumina.py illumina_demux input/ "$lane" "$bam_out_dir" \
+        --outMetrics "$metric_out_dir/$metrics_fn" --JVMmemory "$mem_in_mb" \
+        $opts
+
+    done
 
     dx-upload-all-outputs
 

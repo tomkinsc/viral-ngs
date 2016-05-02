@@ -1,7 +1,7 @@
 {
-  "name": "viral-ngs-demux",
-  "title": "illumina-demux",
-  "summary": "Perform BCL conversion and de-multiplexing from Illumina RUN directory using viral-ngs' custom demux script",
+  "name": "viral-ngs-demux-wrapper",
+  "title": "illumina-demux wrapper",
+  "summary": "Wrapper around viral-ngs-demux to perform BCL conversion and de-multiplexing from Illumina RUN directory using viral-ngs' custom demux script",
   "dxapi": "1.0.0",
   "version": "0.0.1",
   "categories": [],
@@ -20,11 +20,10 @@
       "help": "The sentinel record produced by the the incremental_upload.sh script. When this record is closed it indicates that the upload is complete and demux can begin."
     },
     {
-      "name": "lanes",
-      "class": "array:int",
-      "label": "Lane(s) to perform demux",
-      "help": "If not specified, demux will be performed over all lane(s)",
-      "optional": true
+      "name": "demux_applet_id",
+      "class": "string",
+      "label": "Applet ID for viral-ngs-demux",
+      "help": "The sentinel record produced by the the incremental_upload.sh script. When this record is closed it indicates that the upload is complete and demux can begin."
     },
     {
       "name": "metrics_fn",
@@ -35,7 +34,7 @@
     },
     {
       "name": "sample_sheet",
-      "label": "Sample Sheet (override)",
+      "label": "Sample Sheet",
       "class": "file",
       "help": "Override SampleSheet. Input tab or CSV file w/header and four named columns:barcode_name, library_name, barcode_sequence_1, barcode_sequence_2. Default is to look for a SampleSheet.csv in the inDir.",
       "optional": true
@@ -45,6 +44,13 @@
       "label": "Flowcell ID",
       "class": "string",
       "help": "Override flowcell ID (default: read from RunInfo.xml)",
+      "optional": true
+    },
+    {
+      "name": "lanes",
+      "class": "array:int",
+      "label": "Lane(s) to perform demux",
+      "help": "If not specified, demux will be performed over all lane(s)",
       "optional": true
     },
     {
@@ -85,10 +91,10 @@
   ],
   "runSpec": {
     "interpreter": "bash",
-    "file": "src/viral-ngs-demux.sh",
+    "file": "src/viral-ngs-demux-wrapper.sh",
     "systemRequirements": {
       "*": {
-        "instanceType": "mem1_ssd1_x4"
+        "instanceType": "mem1_ssd1_x2"
       }
     },
     "execDepends": [
