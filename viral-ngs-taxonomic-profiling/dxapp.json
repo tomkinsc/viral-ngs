@@ -41,15 +41,6 @@
       "help": "A gzipped text file with the classification output.",
       "name": "classified",
       "class": "array:file"
-    },
-    {
-      "patterns": [
-        "*.kraken-report.txt"
-      ],
-      "label": "Report",
-      "help": "A text file with a classification report.",
-      "name": "report",
-      "class": "array:file"
     }
   ],
   "runSpec": {
