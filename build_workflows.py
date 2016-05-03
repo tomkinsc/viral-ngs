@@ -38,7 +38,8 @@ print "folder: {}".format(args.folder)
 def build_applets():
     applets = ["viral-ngs-human-depletion", "viral-ngs-human-depletion-multiplex",
                "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
-               "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis"]
+               "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis",
+               "viral-ngs-demux-wrapper", "viral-ngs-demux", "viral-ngs-taxonomic-profiling"]
 
     # Build applets for assembly workflow in [args.folder]/applets/ folder
     project.new_folder(applets_folder, parents=True)
@@ -52,7 +53,7 @@ def build_applets():
         applet.set_properties({"git_revision": git_revision})
 
     # Build applets that user interact with directly in [args.folder]/ main folder
-    exposed_applets = ["viral-ngs-fasta-fetcher", "viral-ngs-demux"]
+    exposed_applets = ["viral-ngs-fasta-fetcher"]
     for applet in exposed_applets:
         print "building {}...".format(applet),
         sys.stdout.flush()
@@ -61,23 +62,15 @@ def build_applets():
         applet = dxpy.DXApplet(applet_dxid, project=project.get_id())
         applet.set_properties({"git_revision": git_revision})
 
-    # Special case handling to expose a HiSeq compatible demux
-    print "building viral-ngs-demux-HiSeq"
-    demux_hiSeq_target = args.project+":"+args.folder+"/"+"viral-ngs-demux-HiSeq"
-    extra_args = '{ "runSpec": { "systemRequirements": { "*": {"instanceType": "mem1_ssd1_x32"} } } }'
-    applet_dxid = json.loads(subprocess.check_output(["dx","build","--destination",demux_hiSeq_target,
-                                                      "--extra-args", extra_args,
-                                                      os.path.join(here,"viral-ngs-demux")]))["id"]
-
 build_applets()
 
 # helpers for name resolution
 def find_app(app_handle):
     return dxpy.find_one_app(name=app_handle, zero_ok=False, more_ok=False, return_handler=True)
 
-def find_applet(applet_name):
+def find_applet(applet_name, folder=applets_folder):
     return dxpy.find_one_data_object(classname='applet', name=applet_name,
-                                     project=project.get_id(), folder=applets_folder,
+                                     project=project.get_id(), folder=folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
 ###############################################################################
@@ -231,6 +224,33 @@ def build_assembly_workflow(species, resources):
 assembly_workflows = build_assembly_workflows(assembly_workflow_resources.keys())
 
 ###############################################################################
+# DEMUX-ONLY WORKFLOW: upon completion of a streaming run upload, demultiplex
+# the samples to unmapped BAMs, using the demux-wrapper to launch appropriate
+# instance types
+###############################################################################
+
+def build_demux_only_workflow():
+    demux_applet = find_applet('viral-ngs-demux')
+    demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
+
+    wf = dxpy.new_dxworkflow(title='viral-ngs-demux-only',
+                              name='viral-ngs-demux-only',
+                              description='viral-ngs demultiplexing',
+                              project=args.project,
+                              folder=args.folder,
+                              properties={"git_revision": git_revision})
+
+    demux_wrapper_input = {
+        "resources": dxpy.dxlink(resource_tarball_id),
+        "demux_applet_id": demux_applet.id
+    }
+
+    demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input,
+        name='viral-ngs-demux')
+
+demux_only_workflow = build_demux_only_workflow()
+
+###############################################################################
 # DEMUX "PLUS" WORKFLOW: upon completion of a streaming run upload, demultiplex
 # the samples to unmapped BAMs, plus run human depletion and metagenomics
 # analysis
@@ -250,13 +270,13 @@ def build_demux_plus_workflow():
                               properties={"git_revision": git_revision})
 
     # demux
-    demux_applet = dxpy.find_one_data_object(classname='applet', name='viral-ngs-demux',
-                                             project=project.get_id(), folder=args.folder,
-                                             zero_ok=False, more_ok=False, return_handler=True)
-    demux_input = {
-        "resources": dxpy.dxlink(resource_tarball_id)
+    demux_applet = find_applet('viral-ngs-demux')
+    demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
+    demux_wrapper_input = {
+        "resources": dxpy.dxlink(resource_tarball_id),
+        "demux_applet_id": demux_applet.id
     }
-    demux_stage_id = wf.add_stage(demux_applet, stage_input=demux_input, name="demux")
+    demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input, name="demux")
 
     # depletion
     depletion_input = {
@@ -265,11 +285,17 @@ def build_demux_plus_workflow():
         "resources": dxpy.dxlink(resource_tarball_id)
     }
     depletion_stage_id = wf.add_stage(find_applet("viral-ngs-human-depletion-multiplex"), stage_input=depletion_input, name="human depletion")
-    
-    # metagenomics: TODO
+
+    # metagenomics
+    metagenomics_applet = find_applet('viral-ngs-taxonomic-profiling')
+    metagenomics_input = {
+        "reads" : dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
+        "resources": dxpy.dxlink(resources_tarball_id)
+    }
+    metagenomics_stage_id = wf.add_stage(metagenomics_applet, stage_input=metagenomics_input, name="metagenomics")
 
     return wf
-    
+
 demux_plus_workflow = build_demux_plus_workflow()
 
 ###############################################################################

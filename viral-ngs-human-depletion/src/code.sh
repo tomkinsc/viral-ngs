@@ -39,7 +39,7 @@ main() {
             dx-jobutil-report-error "The second input file doesn't appear to be a FASTQ file (*.fastq or *.fastq.gz)" AppError
             exit 1
         fi
-        
+
         pids=()
         dx cat "$resources" | zcat | tar x -C / & pids+=($!)
         # hack SRA FASTQ read names to make them acceptable to Picard FastqToSam
@@ -108,7 +108,8 @@ main() {
     mem_in_mb=`head -n1 /proc/meminfo | awk '{print int($2*0.9/1024)}'`
 
     # run deplete_human
-    python viral-ngs/taxon_filter.py deplete_human --JVMmemory ${mem_in_mb}m \
+    python viral-ngs/taxon_filter.py deplete_human \
+        --JVMmemory ${mem_in_mb}m --threads `nproc` \
         input.bam raw.bam bmtagger_depleted.bam rmdup.bam cleaned.bam \
         --bmtaggerDbs $local_bmtagger_dbs --blastDbs $local_blast_dbs
 

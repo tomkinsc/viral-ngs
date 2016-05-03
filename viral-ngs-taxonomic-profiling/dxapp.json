@@ -1,5 +1,5 @@
 {
-  "name": "kraken",
+  "name": "viral-ngs-taxonomic-profiling",
   "dxapi": "1.0.0",
   "inputSpec": [
     {
@@ -14,7 +14,8 @@
       "label": "Kraken database",
       "help": "A compressed archive containing a Kraken database (including database.idx, database.kdb, taxonomy/nodes.dmp and taxonomy/names.dmp).",
       "name": "database",
-      "class": "file"
+      "class": "file",
+      "default": {"$dnanexus_link": "file-Bqxxb8Q07q4bFjZZKJ25jyXb"}
     },
     {
       "patterns": [ "*krona*.tar.lz4" ],
@@ -22,6 +23,14 @@
       "help": "A compressed archive containing a taxonomy database for Krona.",
       "name": "krona_taxonomy_db",
       "class": "file"
+    },
+    {
+      "group": "Advanced",
+      "help": "Extra command-line options that will be passed directly to the kraken invocation. Example: --quick --only-classified-output",
+      "label": "Extra command-line options",
+      "optional": true,
+      "class": "string",
+      "name": "extra_options"
     },
     {
       "name": "resources",
