@@ -27,7 +27,7 @@ main() {
     fi
 
     # Populate command line options
-    opts="-iupload_sentinel_record=${upload_sentinel_record}"
+    opts=""
 
     if [ "$sample_sheet" != "" ]
     then
@@ -62,9 +62,12 @@ main() {
     echo $opts
 
     # Execute demux applet, shuttling all input variables as is
+    # We do not quote opts as it may be empty and may be passed
+    # as a confusing "" parameter if quoted
     job_id=$(dx run $demux_applet_id \
     --instance-type="$instance_type" \
-    "$opts" \
+    -iupload_sentinel_record="${upload_sentinel_record}" -iresources="${resources}" \
+    $opts \
     --yes --brief)
 
     dx-jobutil-add-output bams $job_id:bams --class=jobref

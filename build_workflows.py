@@ -73,6 +73,12 @@ def find_applet(applet_name, folder=applets_folder):
                                      project=project.get_id(), folder=folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
+def find_resource_tarball_id():
+    depletion_applet = find_applet("viral-ngs-human-depletion")
+    depletion_applet_inputSpec = depletion_applet.describe()["inputSpec"]
+    resource_tarball_id = [x for x in depletion_applet_inputSpec if x["name"] == "resources"][0]["default"]
+    return resource_tarball_id
+
 ###############################################################################
 # VIRAL ASSEMBLY WORKFLOWS: taking raw reads (in paired FASTQ or unmapped BAM)
 # through optional human depletion, quality control and polished assembly
@@ -118,7 +124,8 @@ def build_assembly_workflow(species, resources):
     # Locate the file ID corresponding to the viral-ngs resource tarball
     depletion_applet = find_applet("viral-ngs-human-depletion")
     depletion_applet_inputSpec = depletion_applet.describe()["inputSpec"]
-    resource_tarball_id = [x for x in depletion_applet_inputSpec if x["name"] == "resources"][0]["default"]
+
+    resource_tarball_id = find_resource_tarball_id()
 
     # These steps are used in the full assembly workflow
     if not resources.get('abridged', False):
@@ -230,6 +237,8 @@ assembly_workflows = build_assembly_workflows(assembly_workflow_resources.keys()
 ###############################################################################
 
 def build_demux_only_workflow():
+    resource_tarball_id = find_resource_tarball_id()
+
     demux_applet = find_applet('viral-ngs-demux')
     demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
 
@@ -248,6 +257,8 @@ def build_demux_only_workflow():
     demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input,
         name='viral-ngs-demux')
 
+    return wf
+
 demux_only_workflow = build_demux_only_workflow()
 
 ###############################################################################
@@ -258,9 +269,7 @@ demux_only_workflow = build_demux_only_workflow()
 
 def build_demux_plus_workflow():
     # Locate the file ID corresponding to the viral-ngs resource tarball
-    depletion_applet = find_applet("viral-ngs-human-depletion")
-    depletion_applet_inputSpec = depletion_applet.describe()["inputSpec"]
-    resource_tarball_id = [x for x in depletion_applet_inputSpec if x["name"] == "resources"][0]["default"]
+    resource_tarball_id = find_resource_tarball_id()
 
     wf = dxpy.new_dxworkflow(title='viral-ngs-demux-plus',
                               name='viral-ngs-demux-plus',
@@ -289,8 +298,8 @@ def build_demux_plus_workflow():
     # metagenomics
     metagenomics_applet = find_applet('viral-ngs-taxonomic-profiling')
     metagenomics_input = {
-        "reads" : dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
-        "resources": dxpy.dxlink(resources_tarball_id)
+        "mappings" : dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
+        "resources": dxpy.dxlink(resource_tarball_id)
     }
     metagenomics_stage_id = wf.add_stage(metagenomics_applet, stage_input=metagenomics_input, name="metagenomics")
 
