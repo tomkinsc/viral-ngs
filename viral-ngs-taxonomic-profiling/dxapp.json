@@ -4,42 +4,36 @@
   "inputSpec": [
     {
       "patterns": [ "*.bam" ],
-      "label": "Reads",
-      "help": "A file, in fasta or fastq format, containing the reads to be classified.",
-      "name": "reads",
+      "label": "Mappings files",
+      "help": "Files, in .bam format, that contain alignment and mapping information.",
+      "name": "mappings",
       "class": "array:file"
     },
     {
       "patterns": [ "*db*.tar.gz", "*db*.tar.lz4", "*db*.tgz" ],
       "label": "Kraken database",
-      "help": "A gzipped tar archive containing a kraken database (database.idx, database.kdb, taxonomy/nodes.dmp and taxonomy/names.dmp).",
+      "help": "A compressed archive containing a Kraken database (including database.idx, database.kdb, taxonomy/nodes.dmp and taxonomy/names.dmp).",
       "name": "database",
       "class": "file"
-    },
-    {
-      "group": "Advanced",
-      "help": "Extra command-line options that will be passed directly to the kraken invocation. Example: --quick --only-classified-output",
-      "label": "Extra command-line options",
-      "optional": true,
-      "class": "string",
-      "name": "extra_options"
     },
     {
       "name": "resources",
       "class": "file",
       "patterns": [ "viral-ngs-*.resources.tar.gz" ],
-      "label": "Viral-ngs resource tarball",
+      "label": "A pre-built viral-ngs resources bundle",
       "default": {"$dnanexus_link": "file-BvPxg200kfgZ1KZJ0bkx1zg7"}
     }
   ],
   "outputSpec": [
     {
       "patterns": [
-        "*.kraken-classified.txt.gz"
+        "*.kraken-classified.txt.gz",
+        "*.kraken-report.txt",
+        "*.html"
       ],
-      "label": "Classification",
-      "help": "A gzipped text file with the classification output.",
-      "name": "classified",
+      "label": "Outputs",
+      "help": "Taxonomic profiling output files from Kraken and Krona, for each input mappings file.",
+      "name": "outputs",
       "class": "array:file"
     }
   ],

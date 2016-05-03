@@ -38,12 +38,12 @@ function main() {
 
   mkdir -p ~/input/
 
-  for i in "${!reads[@]}"; do
-    dx cat "${reads[$i]}" > ~/input/"${reads_prefix[$i]}".bam
-    mkdir -p ~/out/classified/"${reads_prefix[$i]}"/
-    viral-ngs/metagenomics.py kraken ~/input/"${reads_prefix[$i]}".bam "./$database_prefix" --outReads ~/out/classified/"${reads_prefix[$i]}"/"${reads_prefix[$i]}".kraken-classified.txt.gz --outReport ~/out/classified/"${reads_prefix[$i]}"/"${reads_prefix[$i]}".kraken-report.txt --numThreads `nproc`
+  for i in "${!mappings[@]}"; do
+    dx cat "${mappings[$i]}" > ~/input/"${mappings_prefix[$i]}".bam
+    mkdir -p ~/out/outputs/"${mappings_prefix[$i]}"/
+    viral-ngs/metagenomics.py kraken ~/input/"${mappings_prefix[$i]}".bam "./$database_prefix" --outReads ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-classified.txt.gz --outReport ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-report.txt --numThreads `nproc`
 
-    # viral-ngs/metagenomics.py krona ~/out/classified/"${reads_prefix[$i]}".kraken-classified.txt.gz ~/out/html/"${reads_prefix[$i]}".report.html --noRank
+    # viral-ngs/metagenomics.py krona ~/out/outputs/"${mappings_prefix[$i]}".kraken-classified.txt.gz ~/out/html/"${mappings_prefix[$i]}".report.html --noRank
   done
 
   dx-upload-all-outputs --parallel
