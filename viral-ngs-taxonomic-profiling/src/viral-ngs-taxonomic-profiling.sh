@@ -1,8 +1,18 @@
 #!/bin/bash
 
-# The following line causes bash to exit at any point if there is any error
-# and to output each line as it is executed -- useful for debugging
+# (https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html)
+#   - `-e`: Exit immediately if any pipeline returns nonzero status.
+#   - `-o pipefail`: Return value of pipeline is value of last command to exit
+#     with nonzero status, or zero if all commands succeeded.
+#   - `-x`: Print trace of many of commands below; useful for debugging.
 set -e -x -o pipefail
+
+# Many executables in [viral-ngs](https://github.com/broadinstitute/viral-ngs)
+# depend on executables in this miniconda/bin/, so we add it to PATH env var
+# here.
+#
+# PRECONDITION: miniconda/bin/ must somehow be downloaded and unpackaged into
+# execution env.
 export PATH="$PATH:$HOME/miniconda/bin/"
 
 function main() {
