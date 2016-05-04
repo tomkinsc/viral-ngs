@@ -54,11 +54,23 @@ function main() {
   mkdir -p ~/input/
 
   for i in "${!mappings[@]}"; do
-    dx cat "${mappings[$i]}" > ~/input/"${mappings_prefix[$i]}".bam
-    mkdir -p ~/out/outputs/"${mappings_prefix[$i]}"/
-    viral-ngs/metagenomics.py kraken ~/input/"${mappings_prefix[$i]}".bam "./$database_prefix" --outReads ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-classified.txt.gz --outReport ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-report.txt --numThreads `nproc`
+    dx cat "${mappings[$i]}" > ~/input/"${mappings_name[$i]}"
 
-    viral-ngs/metagenomics.py krona ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-classified.txt.gz "./$krona_taxonomy_db_prefix" ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".krona-report.html --noRank
+    sample_name="${mappings_prefix[$i]%.cleaned}"
+    mkdir -p ~/out/outputs/"$sample_name"/
+
+    # Kraken classification
+    viral-ngs/metagenomics.py kraken ~/input/"${mappings_name[$i]}" "./$database_prefix" \
+    --outReads ~/out/outputs/"$sample_name"/"$sample_name".kraken-classified.txt.gz \
+    --outReport ~/out/outputs/"$sample_name"/"$sample_name".kraken-report.txt \
+    --numThreads `nproc`
+
+    # Krona report generation
+    viral-ngs/metagenomics.py krona ~/out/outputs/"$sample_name"/"$sample_name".kraken-classified.txt.gz \
+    "./$krona_taxonomy_db_prefix" \
+    ~/out/outputs/"$sample_name"/"$sample_name".krona-report.html \
+    --noRank
+
   done
 
   dx-upload-all-outputs --parallel
