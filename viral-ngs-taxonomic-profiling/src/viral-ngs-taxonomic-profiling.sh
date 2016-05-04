@@ -58,7 +58,7 @@ function main() {
     mkdir -p ~/out/outputs/"${mappings_prefix[$i]}"/
     viral-ngs/metagenomics.py kraken ~/input/"${mappings_prefix[$i]}".bam "./$database_prefix" --outReads ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-classified.txt.gz --outReport ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-report.txt --numThreads `nproc`
 
-    # viral-ngs/metagenomics.py krona ~/out/outputs/"${mappings_prefix[$i]}".kraken-classified.txt.gz "./$krona_taxonomy_db_prefix" ~/out/html/"${mappings_prefix[$i]}".report.html --noRank
+    viral-ngs/metagenomics.py krona ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-classified.txt.gz "./$krona_taxonomy_db_prefix" ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".krona-report.html --noRank
   done
 
   dx-upload-all-outputs --parallel
