@@ -17,6 +17,13 @@
       "class": "file"
     },
     {
+      "patterns": [ "*krona*.tar.lz4" ],
+      "label": "Krona database",
+      "help": "A compressed archive containing a taxonomy database for Krona.",
+      "name": "krona_taxonomy_db",
+      "class": "file"
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": [ "viral-ngs-*.resources.tar.gz" ],
