@@ -36,6 +36,21 @@ function main() {
   fi
   du -sh "./$database_prefix"
 
+  # Fetch and uncompress Krona db.
+  mkdir "./$krona_taxonomy_db_prefix"
+  db_decompressor="zcat"
+  if [[ "$krona_taxonomy_db_name" == *.lz4 ]]; then
+    db_decompressor="lz4 -d"
+  fi
+  dx cat "$krona_taxonomy_db" | $db_decompressor | tar -C "./$krona_taxonomy_db_prefix" -xvf -
+  # if the tarball had a top-level directory component, move the contents up.
+  if [ $(find "./$krona_taxonomy_db_prefix" -type f | cut -d / -f 2,3 | sort | uniq | wc -l) -eq "1" ]; then
+    mv ./${krona_taxonomy_db_prefix}/$(find "./$krona_taxonomy_db_prefix" -type f | cut -d / -f 3 | uniq)/* ./${krona_taxonomy_db_prefix}
+    find "./$krona_taxonomy_db_prefix" -type f
+  fi
+  du -sh "./$krona_taxonomy_db_prefix"
+
+
   mkdir -p ~/input/
 
   for i in "${!mappings[@]}"; do
@@ -43,7 +58,7 @@ function main() {
     mkdir -p ~/out/outputs/"${mappings_prefix[$i]}"/
     viral-ngs/metagenomics.py kraken ~/input/"${mappings_prefix[$i]}".bam "./$database_prefix" --outReads ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-classified.txt.gz --outReport ~/out/outputs/"${mappings_prefix[$i]}"/"${mappings_prefix[$i]}".kraken-report.txt --numThreads `nproc`
 
-    # viral-ngs/metagenomics.py krona ~/out/outputs/"${mappings_prefix[$i]}".kraken-classified.txt.gz ~/out/html/"${mappings_prefix[$i]}".report.html --noRank
+    # viral-ngs/metagenomics.py krona ~/out/outputs/"${mappings_prefix[$i]}".kraken-classified.txt.gz "./$krona_taxonomy_db_prefix" ~/out/html/"${mappings_prefix[$i]}".report.html --noRank
   done
 
   dx-upload-all-outputs --parallel
