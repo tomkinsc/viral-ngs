@@ -67,7 +67,7 @@ main() {
     job_id=$(dx run $demux_applet_id \
     --instance-type="$instance_type" \
     -iupload_sentinel_record="${upload_sentinel_record}" -iresources="${resources}" \
-    $opts \
+    -iper_sample_output="${per_sample_output}" $opts \
     --yes --brief)
 
     dx-jobutil-add-output bams $job_id:bams --class=jobref

@@ -283,7 +283,8 @@ def build_demux_plus_workflow():
     demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
     demux_wrapper_input = {
         "resources": dxpy.dxlink(resource_tarball_id),
-        "demux_applet_id": demux_applet.id
+        "demux_applet_id": demux_applet.id,
+        "per_sample_output": True
     }
     demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input, name="demux")
 
@@ -291,7 +292,8 @@ def build_demux_plus_workflow():
     depletion_input = {
         "bams": dxpy.dxlink({"stage": demux_stage_id, "outputField": "bams"}),
         "depletion_applet": dxpy.dxlink(find_applet("viral-ngs-human-depletion")),
-        "resources": dxpy.dxlink(resource_tarball_id)
+        "resources": dxpy.dxlink(resource_tarball_id),
+        "per_sample_output": True
     }
     depletion_stage_id = wf.add_stage(find_applet("viral-ngs-human-depletion-multiplex"), stage_input=depletion_input, name="human depletion")
 

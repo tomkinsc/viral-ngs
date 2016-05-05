@@ -33,6 +33,13 @@
       "default": "metrics.txt"
     },
     {
+      "name": "per_sample_output",
+      "class": "boolean",
+      "label": "Output samples in sub folders",
+      "help": "Create subfolder for each sample output file",
+      "default": false
+    },
+    {
       "name": "sample_sheet",
       "label": "Sample Sheet (override)",
       "class": "file",

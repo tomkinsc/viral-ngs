@@ -92,7 +92,7 @@ main() {
         # Subfolders by lane if multi-lane run
         if [ "$multi_lane" = true ]; then
             bam_out_dir="out/bams/lane_$lane"
-            metric_out_dir="out/bams/lane_$lane"
+            metric_out_dir="out/metrics/lane_$lane"
         fi
 
         mkdir -p $bam_out_dir
@@ -104,6 +104,15 @@ main() {
         --outMetrics "$metric_out_dir/$metrics_fn" --JVMmemory "$mem_in_mb" \
         $opts
 
+        # Per sample output, make output sub-folder for each sample
+        if [ "$per_sample_output" = 'true' ]; then
+            for file in `ls $bam_out_dir`
+            do
+                sample_name="${file%.bam}"
+                mkdir -p "$bam_out_dir/$sample_name"
+                mv "$bam_out_dir/$file" "$bam_out_dir/$sample_name/$file"
+            done
+        fi
     done
 
     dx-upload-all-outputs

@@ -50,6 +50,13 @@
       "help": "This flag causes the actual depletion steps to be skipped, instead just generating an unmapped BAM file containing the input reads."
     },
     {
+      "name": "per_sample_output",
+      "class": "boolean",
+      "label": "Output samples in sub folders",
+      "help": "Create subfolder for each sample output file",
+      "default": false
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],

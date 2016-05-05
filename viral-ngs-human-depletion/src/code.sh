@@ -118,14 +118,26 @@ main() {
         $($samtools view -c cleaned.bam)
     dx-jobutil-add-output depleted_base_count --class=int \
         $(bam_base_count cleaned.bam)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload --brief --destination ${sample_name}.raw.bam raw.bam)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload --brief --destination ${sample_name}.bmtagger_depleted.bam bmtagger_depleted.bam)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload --brief --destination ${sample_name}.rmdup.bam rmdup.bam)
-    dx-jobutil-add-output cleaned_reads --class=file \
-        $(dx upload --brief --destination ${sample_name}.cleaned.bam cleaned.bam)
+
+    if [ "$per_sample_output" == "true" ]; then
+        dx-jobutil-add-output intermediates --class=array:file \
+            $(dx upload --brief --destination ${sample_name}/${sample_name}.raw.bam raw.bam)
+        dx-jobutil-add-output intermediates --class=array:file \
+            $(dx upload --brief --destination ${sample_name}/${sample_name}.bmtagger_depleted.bam bmtagger_depleted.bam)
+        dx-jobutil-add-output intermediates --class=array:file \
+            $(dx upload --brief --destination ${sample_name}/${sample_name}.rmdup.bam rmdup.bam)
+        dx-jobutil-add-output cleaned_reads --class=file \
+            $(dx upload --brief --destination ${sample_name}/${sample_name}.cleaned.bam cleaned.bam)
+    else
+        dx-jobutil-add-output intermediates --class=array:file \
+            $(dx upload --brief --destination ${sample_name}.raw.bam raw.bam)
+        dx-jobutil-add-output intermediates --class=array:file \
+            $(dx upload --brief --destination ${sample_name}.bmtagger_depleted.bam bmtagger_depleted.bam)
+        dx-jobutil-add-output intermediates --class=array:file \
+            $(dx upload --brief --destination ${sample_name}.rmdup.bam rmdup.bam)
+        dx-jobutil-add-output cleaned_reads --class=file \
+            $(dx upload --brief --destination ${sample_name}.cleaned.bam cleaned.bam)
+    fi
 }
 
 maybe_dxzcat() {

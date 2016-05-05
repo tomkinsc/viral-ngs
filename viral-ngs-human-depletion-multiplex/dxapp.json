@@ -19,6 +19,13 @@
       "help": "The viral-ngs-human-depletion applet"
     },
     {
+      "name": "per_sample_output",
+      "class": "boolean",
+      "label": "Output samples in sub folders",
+      "help": "Create subfolder for each sample output file",
+      "default": false
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
@@ -33,7 +40,12 @@
   ],
   "runSpec": {
     "interpreter": "bash",
-    "file": "src/code.sh"
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x2"
+      }
+    }
   },
   "authorizedUsers": []
 }
