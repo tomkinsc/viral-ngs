@@ -7,6 +7,7 @@ main() {
     # Unpack viral-ngs resources
     export PATH="$PATH:$HOME/miniconda/bin"
     dx cat "$resources" | tar zx -C /
+    samtools=viral-ngs/tools/build/conda-tools/default/bin/samtools
 
      # Download the RunInfo.xml file
     runInfo_file_id=$(dx get_details "$upload_sentinel_record" | jq .runinfo_file_id -r)
@@ -103,6 +104,20 @@ main() {
         python viral-ngs/illumina.py illumina_demux input/ "$lane" "$bam_out_dir" \
         --outMetrics "$metric_out_dir/$metrics_fn" --JVMmemory "$mem_in_mb" \
         $opts
+
+        # Check that demuxed file is not empty (has 0 reads).
+        # Remove bam file if it's empty to prevent potential issues
+        # Dowstream that don't handle empty bam files elegantly
+        for bam_file in `ls $bam_out_dir`
+        do
+            read_count=`("$samtools" view -c "$bam_out_dir/$bam_file")`
+
+            if [ $read_count -eq 0 ]; then
+                echo "===WARNING=== No reads found in demuxed bam file: $bam_file. This file will be removed from output"
+                # Remove empty file
+                rm "$bam_out_dir/$bam_file"
+            fi
+        done
 
         # Per sample output, make output sub-folder for each sample
         if [ "$per_sample_output" = 'true' ]; then

@@ -295,7 +295,7 @@ def build_demux_plus_workflow():
         "resources": dxpy.dxlink(resource_tarball_id),
         "per_sample_output": True
     }
-    depletion_stage_id = wf.add_stage(find_applet("viral-ngs-human-depletion-multiplex"), stage_input=depletion_input, name="human depletion")
+    depletion_stage_id = wf.add_stage(find_applet("viral-ngs-human-depletion-multiplex"), stage_input=depletion_input, name="deplete")
 
     # metagenomics
     metagenomics_applet = find_applet('viral-ngs-taxonomic-profiling')
@@ -315,6 +315,8 @@ demux_plus_workflow = build_demux_plus_workflow()
 
 if args.run_tests is True or args.run_large_tests is True:
     muscle_applet = dxpy.DXApplet("applet-BXQxjv00QyB9QF3vP4BpXg95")
+
+    # Tests for Assembly Workflow
 
     # test data found in "bi-viral-ngs CI:/test_data"
     test_samples = {
@@ -362,7 +364,8 @@ if args.run_tests is True or args.run_large_tests is True:
             "expected_alignment_base_count": 485406
         }
 
-    test_analyses = []
+    # Launch assembly test workflows
+    test_assembly_analyses = []
     for test_sample in test_samples.keys():
         # create a subfolder for this sample
         test_folder = args.folder + "/" + test_sample
@@ -383,15 +386,45 @@ if args.run_tests is True or args.run_large_tests is True:
         if "reads2" in test_samples[test_sample]:
             test_input["deplete.paired_fastq"] = dxpy.dxlink(test_samples[test_sample]["reads2"])
 
-        test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, name=(git_revision+" "+test_sample))
+        test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, 
+                                     name=(git_revision+" "+test_sample+"-Assembly"))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
-        test_analyses.append((test_sample,test_analysis))
+        test_assembly_analyses.append((test_sample,test_analysis))
+
+    # Launch test workflows for "demux-plus"
+    demux_plus_samples = {
+        "run.150814": {
+            "upload_sentinel_record": "record-BvFz97j0Y7V5QPf09x9y91z1",
+        }
+    }
+
+    test_demux_analyses = []
+    for run in demux_plus_samples.keys():
+        # create a subfolder for this run
+        test_folder = args.folder + "/" + run
+        project.new_folder(test_folder)
+
+        test_input = {
+            "demux.upload_sentinel_record": dxpy.dxlink(demux_plus_samples[run]["upload_sentinel_record"]),
+
+            # Skip depletion to save time
+            "deplete.skip_depletion": True,
+
+            # Use minikraken database (instead of full one)
+            "metagenomics.database": dxpy.dxlink("file-Bqxxb8Q07q4bFjZZKJ25jyXb")
+        }
+
+        demux_plus_analysis = demux_plus_workflow.run(test_input, project=project.get_id(),
+                                                      folder=test_folder,
+                                                      name=(git_revision+" "+run+"-Demux-plus"))
+
+        test_demux_analyses.append((run, demux_plus_analysis))
 
     # wait for jobs to finish while working around Travis 10m console inactivity timeout
     print "Waiting for analyses to finish..."
     noise = subprocess.Popen(["/bin/bash", "-c", "while true; do date; sleep 60; done"])
     try:
-        for (test_sample,test_analysis) in test_analyses:
+        for (test_sample,test_analysis) in test_assembly_analyses:
             test_analysis.wait_on_done()
             workflow = assembly_workflows[test_samples[test_sample]["species"]]
 
@@ -410,11 +443,17 @@ if args.run_tests is True or args.run_large_tests is True:
                 "advanced_options": "-maxiters 2"
             }
             muscle_applet.run(muscle_input, project=project.get_id(), folder=(args.folder+"/"+test_sample), name=(git_revision+" "+test_sample+" MUSCLE"), instance_type="mem1_ssd1_x4")
+
+        for (run, demux_plus_analysis) in test_demux_analyses:
+            # Just make sure demux plus runs without failure now,
+            # TODO: check figure of merit for demux plus pipeline
+            demux_plus_analysis.wait_on_done()
+
     finally:
         noise.kill()
 
-    # check figures of merit
-    for (test_sample,test_analysis) in test_analyses:
+    # check figures of merit for assembly tests
+    for (test_sample,test_analysis) in test_assembly_analyses:
         workflow = assembly_workflows[test_samples[test_sample]["species"]]
         subsampled_base_count = test_analysis.describe()["output"][workflow.get_stage("trinity")["id"]+".subsampled_base_count"]
         expected_subsampled_base_count = test_samples[test_sample]["expected_subsampled_base_count"]

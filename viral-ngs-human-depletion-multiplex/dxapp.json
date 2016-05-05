@@ -26,6 +26,12 @@
       "default": false
     },
     {
+      "name": "skip_depletion",
+      "class": "boolean",
+      "default": false,
+      "help": "This flag causes the actual depletion steps to be skipped, instead just generating an unmapped BAM file containing the input reads."
+    },
+    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]
