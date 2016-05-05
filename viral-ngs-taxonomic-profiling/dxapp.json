@@ -15,14 +15,15 @@
       "help": "A compressed archive containing a Kraken database (including database.idx, database.kdb, taxonomy/nodes.dmp and taxonomy/names.dmp).",
       "name": "database",
       "class": "file",
-      "default": {"$dnanexus_link": "file-Bqxxb8Q07q4bFjZZKJ25jyXb"}
+      "default": {"$dnanexus_link": "file-Bqy2gb00JBBzPYf3J1ZJYFGz"}
     },
     {
       "patterns": [ "*krona*.tar.lz4" ],
       "label": "Krona database",
       "help": "A compressed archive containing a taxonomy database for Krona.",
       "name": "krona_taxonomy_db",
-      "class": "file"
+      "class": "file",
+      "default": {"$dnanexus_link": "file-Bqy2gb00JBBzPYf3J1ZJYFGz"}
     },
     {
       "group": "Advanced",
