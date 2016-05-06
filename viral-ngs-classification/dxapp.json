@@ -41,7 +41,7 @@
         "*.html"
       ],
       "label": "Outputs",
-      "help": "Taxonomic profiling output files from Kraken and Krona, for each input mappings file.",
+      "help": "Classification and taxonomic profile outputs from Kraken and Krona, for each input mappings file.",
       "name": "outputs",
       "class": "array:file"
     }
