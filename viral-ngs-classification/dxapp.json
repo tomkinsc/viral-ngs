@@ -57,7 +57,7 @@
         "instanceType": "mem1_ssd1_x8"
       }
     },
-    "file": "src/viral-ngs-taxonomic-profiling.sh",
+    "file": "src/viral-ngs-classification.sh",
     "release": "14.04",
     "interpreter": "bash",
     "distribution": "Ubuntu"
