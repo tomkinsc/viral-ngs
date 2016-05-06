@@ -73,6 +73,9 @@ function main() {
   mkdir -p ~/scratch/
 
   for i in "${!mappings[@]}"; do
+    # TODO: Consider streaming this into a Unix FIFO pipe (?). That being said,
+    # our depleted .bam files are rather small (on order of MiB), so streaming
+    # will not gain much.
     dx cat "${mappings[$i]}" > ~/scratch/"${mappings_name[$i]}"
 
     output_filename_prefix="${mappings_prefix[$i]%.cleaned}"
