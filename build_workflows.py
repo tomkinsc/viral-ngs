@@ -251,7 +251,7 @@ def build_demux_only_workflow():
 
     demux_wrapper_input = {
         "resources": dxpy.dxlink(resource_tarball_id),
-        "demux_applet_id": demux_applet.id
+        "demux_applet": dxpy.dxlink(demux_applet.id)
     }
 
     demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input,
@@ -283,7 +283,7 @@ def build_demux_plus_workflow():
     demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
     demux_wrapper_input = {
         "resources": dxpy.dxlink(resource_tarball_id),
-        "demux_applet_id": demux_applet.id,
+        "demux_applet": dxpy.dxlink(demux_applet.id),
         "per_sample_output": True
     }
     demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input, name="demux")

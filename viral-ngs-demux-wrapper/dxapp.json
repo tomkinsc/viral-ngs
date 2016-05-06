@@ -20,10 +20,11 @@
       "help": "The sentinel record produced by the the incremental_upload.sh script. When this record is closed it indicates that the upload is complete and demux can begin."
     },
     {
-      "name": "demux_applet_id",
-      "class": "string",
-      "label": "Applet ID for viral-ngs-demux",
-      "help": "The sentinel record produced by the the incremental_upload.sh script. When this record is closed it indicates that the upload is complete and demux can begin."
+      "name": "demux_applet",
+      "class": "applet",
+      "label": "DNAnexus applet for viral-ngs-demux",
+      "patterns": ["viral-ngs-demux"],
+      "help": "The DNAnexus viral-ngs-demux applet."
     },
     {
       "name": "metrics_fn",

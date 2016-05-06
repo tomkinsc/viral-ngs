@@ -61,6 +61,7 @@ main() {
 
     echo $opts
 
+    demux_applet_id=$(dx-jobutil-parse-link "$demux_applet")
     # Execute demux applet, shuttling all input variables as is
     # We do not quote opts as it may be empty and may be passed
     # as a confusing "" parameter if quoted

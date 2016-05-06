@@ -119,25 +119,24 @@ main() {
     dx-jobutil-add-output depleted_base_count --class=int \
         $(bam_base_count cleaned.bam)
 
+    cleaned_reads_out_folder="out/cleaned_reads"
+    intermediates_out_folder="out/intermediates"
+
     if [ "$per_sample_output" == "true" ]; then
-        dx-jobutil-add-output intermediates --class=array:file \
-            $(dx upload --brief --destination ${sample_name}/${sample_name}.raw.bam raw.bam)
-        dx-jobutil-add-output intermediates --class=array:file \
-            $(dx upload --brief --destination ${sample_name}/${sample_name}.bmtagger_depleted.bam bmtagger_depleted.bam)
-        dx-jobutil-add-output intermediates --class=array:file \
-            $(dx upload --brief --destination ${sample_name}/${sample_name}.rmdup.bam rmdup.bam)
-        dx-jobutil-add-output cleaned_reads --class=file \
-            $(dx upload --brief --destination ${sample_name}/${sample_name}.cleaned.bam cleaned.bam)
-    else
-        dx-jobutil-add-output intermediates --class=array:file \
-            $(dx upload --brief --destination ${sample_name}.raw.bam raw.bam)
-        dx-jobutil-add-output intermediates --class=array:file \
-            $(dx upload --brief --destination ${sample_name}.bmtagger_depleted.bam bmtagger_depleted.bam)
-        dx-jobutil-add-output intermediates --class=array:file \
-            $(dx upload --brief --destination ${sample_name}.rmdup.bam rmdup.bam)
-        dx-jobutil-add-output cleaned_reads --class=file \
-            $(dx upload --brief --destination ${sample_name}.cleaned.bam cleaned.bam)
+        cleaned_reads_out_folder="out/cleaned_reads/${sample_name}"
+        intermediates_out_folder="out/intermediates/${sample_name}"
     fi
+
+    mkdir -p $cleaned_reads_out_folder
+    mkdir -p $intermediates_out_folder
+
+    mv raw.bam "${intermediates_out_folder}/${sample_name}.raw.bam"
+    mv bmtagger_depleted.bam "${intermediates_out_folder}/${sample_name}.bmtagger_depleted.bam"
+    mv rmdup.bam "${intermediates_out_folder}/${sample_name}.rmdup.bam"
+
+    mv cleaned.bam "${cleaned_reads_out_folder}/${sample_name}.cleaned.bam"
+
+    dx-upload-all-outputs
 }
 
 maybe_dxzcat() {
