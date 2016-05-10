@@ -386,15 +386,15 @@ if args.run_tests is True or args.run_large_tests is True:
         if "reads2" in test_samples[test_sample]:
             test_input["deplete.paired_fastq"] = dxpy.dxlink(test_samples[test_sample]["reads2"])
 
-        test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder, 
+        test_analysis = workflow.run(test_input, project=project.get_id(), folder=test_folder,
                                      name=(git_revision+" "+test_sample+"-Assembly"))
         print "Launched {} for {}".format(test_analysis.get_id(), test_sample)
         test_assembly_analyses.append((test_sample,test_analysis))
 
     # Launch test workflows for "demux-plus"
     demux_plus_samples = {
-        "run.150814": {
-            "upload_sentinel_record": "record-BvFz97j0Y7V5QPf09x9y91z1",
+        "run.151023_0015": {
+            "upload_sentinel_record": "record-Bv8qkgQ0jy198GK0QVz2PV8Y",
         }
     }
 
