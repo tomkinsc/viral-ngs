@@ -39,7 +39,7 @@ def build_applets():
     applets = ["viral-ngs-human-depletion", "viral-ngs-human-depletion-multiplex",
                "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
                "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis",
-               "viral-ngs-demux-wrapper", "viral-ngs-demux", "viral-ngs-taxonomic-profiling"]
+               "viral-ngs-demux-wrapper", "viral-ngs-demux", "viral-ngs-classification"]
 
     # Build applets for assembly workflow in [args.folder]/applets/ folder
     project.new_folder(applets_folder, parents=True)
@@ -298,7 +298,7 @@ def build_demux_plus_workflow():
     depletion_stage_id = wf.add_stage(find_applet("viral-ngs-human-depletion-multiplex"), stage_input=depletion_input, name="deplete")
 
     # metagenomics
-    metagenomics_applet = find_applet('viral-ngs-taxonomic-profiling')
+    metagenomics_applet = find_applet('viral-ngs-classification')
     metagenomics_input = {
         "mappings" : dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
         "resources": dxpy.dxlink(resource_tarball_id)
@@ -411,7 +411,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "deplete.skip_depletion": True,
 
             # Use minikraken database (instead of full one)
-            "metagenomics.database": dxpy.dxlink("file-Bqxxb8Q07q4bFjZZKJ25jyXb")
+            "metagenomics.kraken_db": dxpy.dxlink("file-Bqxxb8Q07q4bFjZZKJ25jyXb")
         }
 
         demux_plus_analysis = demux_plus_workflow.run(test_input, project=project.get_id(),

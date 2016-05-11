@@ -90,17 +90,24 @@ function main() {
                               --outReport "$output_root_dir"/"$output_filename_prefix".kraken-report.txt \
                               --numThreads `nproc`
 
-    mkdir -p ~/scratch/delete_me/
+    mkdir -p ~/scratch/tmp/
 
     # Use Krona to visualize taxonomic profiling output from Kraken.
     viral-ngs/metagenomics.py krona \
                               "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
                               "./$krona_taxonomy_db_prefix" \
-                              ~/scratch/delete_me/"$output_filename_prefix".krona-report.html \
+                              ~/scratch/tmp/"$output_filename_prefix".krona-report.html \
                               --noRank
-    cp ~/scratch/delete_me/"$output_filename_prefix".krona-report.html "$output_root_dir"/
-    tar -Ccvf "$output_root_dir"/"$output_filename_prefix".krona-report.tar ~/scratch/delete_me/*
-    rm -rf ~/scratch/delete_me/
+
+    # Standalone html file output
+    cp ~/scratch/tmp/"$output_filename_prefix".krona-report.html "$output_root_dir"/
+
+    # Tar all html and attached js files for easy download
+    tar cvf "$output_root_dir"/"$output_filename_prefix".krona-report.tar -C ~/scratch/tmp/ .
+
+    # Clean up scratch folder for next sample
+    rm -rf ~/scratch/tmp/
+
   done
 
   dx-upload-all-outputs --parallel
