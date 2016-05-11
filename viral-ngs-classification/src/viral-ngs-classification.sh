@@ -90,12 +90,17 @@ function main() {
                               --outReport "$output_root_dir"/"$output_filename_prefix".kraken-report.txt \
                               --numThreads `nproc`
 
+    mkdir -p ~/scratch/delete_me/
+
     # Use Krona to visualize taxonomic profiling output from Kraken.
     viral-ngs/metagenomics.py krona \
                               "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
                               "./$krona_taxonomy_db_prefix" \
-                              "$output_root_dir"/"$output_filename_prefix".krona-report.html \
+                              ~/scratch/delete_me/"$output_filename_prefix".krona-report.html \
                               --noRank
+    cp ~/scratch/delete_me/"$output_filename_prefix".krona-report.html "$output_root_dir"/
+    tar -cvf "$output_root_dir"/archive.tar ~/scratch/delete_me/*
+    rm -rf ~/scratch/delete_me/
   done
 
   dx-upload-all-outputs --parallel
