@@ -99,7 +99,7 @@ function main() {
                               ~/scratch/delete_me/"$output_filename_prefix".krona-report.html \
                               --noRank
     cp ~/scratch/delete_me/"$output_filename_prefix".krona-report.html "$output_root_dir"/
-    tar -cvf "$output_root_dir"/archive.tar ~/scratch/delete_me/*
+    tar -Ccvf "$output_root_dir"/"$output_filename_prefix".krona-report.tar ~/scratch/delete_me/*
     rm -rf ~/scratch/delete_me/
   done
 
