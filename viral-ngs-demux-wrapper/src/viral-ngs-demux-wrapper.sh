@@ -31,7 +31,7 @@ main() {
 
     if [ "$sample_sheet" != "" ]
     then
-        opts="$opts -isampleSheet=$sample_sheet"
+        opts="$opts -isample_sheet=$sample_sheet"
     fi
 
     for lane in "${lanes[@]}"
@@ -62,14 +62,28 @@ main() {
     echo $opts
 
     demux_applet_id=$(dx-jobutil-parse-link "$demux_applet")
+
+    job_id=""
+
     # Execute demux applet, shuttling all input variables as is
-    # We do not quote opts as it may be empty and may be passed
-    # as a confusing "" parameter if quoted
-    job_id=$(dx run $demux_applet_id \
-    --instance-type="$instance_type" \
-    -iupload_sentinel_record="${upload_sentinel_record}" -iresources="${resources}" \
-    -iper_sample_output="${per_sample_output}" $opts \
-    --yes --brief)
+    if [ "$opts" == "" ]
+    then
+        # We do not quote opts if it's empty otherwise it'll be passed
+        # as a confusing "" parameter if quoted
+        job_id=$(dx run $demux_applet_id \
+        --instance-type="$instance_type" \
+        -iupload_sentinel_record="${upload_sentinel_record}" -iresources="${resources}" \
+        -iper_sample_output="${per_sample_output}" $opts \
+        --yes --brief)
+    else
+        # If opts is not empty, we try and quote it... because of dnanexus link
+        # which has whitespace
+        job_id=$(dx run $demux_applet_id \
+        --instance-type="$instance_type" \
+        -iupload_sentinel_record="${upload_sentinel_record}" -iresources="${resources}" \
+        -iper_sample_output="${per_sample_output}" "$opts" \
+        --yes --brief)
+    fi
 
     dx-jobutil-add-output bams $job_id:bams --class=jobref
     dx-jobutil-add-output metrics $job_id:metrics --class=jobref
