@@ -19,7 +19,7 @@ main() {
     # Decide on the correct instance type to use
     if (( $lane_count > 1 ));
     then
-        instance_type="mem1_ssd_x32"
+        instance_type="mem1_ssd1_x32"
         echo "Detected $lane_count lanes, interpreting as HiSeq run, executing on a $instance_type machine."
     else
         instance_type="mem1_ssd1_x4"
@@ -31,32 +31,32 @@ main() {
 
     if [ "$sample_sheet" != "" ]
     then
-        opts="$opts -isample_sheet=$sample_sheet"
+        opts="-isample_sheet=$sample_sheet $opts"
     fi
 
     for lane in "${lanes[@]}"
     do
-        opts="$opts -ilanes=$lane"
+        opts="-ilanes=$lane $opts"
     done
 
     if [ "$flowcell" != "" ]
     then
-        opts="$opts -iflowcell=$flowcell"
+        opts="-iflowcell=$flowcell $opts"
     fi
 
     if [ "$read_structure" != "" ]
     then
-        opts="$opts -iread_structure=$read_structure"
+        opts="-iread_structure=$read_structure $opts"
     fi
 
     if [ "$sequencing_center" != "" ]
     then
-        opts="$opts -isequencing_center=$sequencing_center"
+        opts="-isequencing_center=$sequencing_center $opts"
     fi
 
     if [ "$advanced_opt" != "" ]
     then
-        opts="opts -iadvanced_opt=$advanced_opt"
+        opts="-iadvanced_opt=$advanced_opt $opts"
     fi
 
     echo $opts
