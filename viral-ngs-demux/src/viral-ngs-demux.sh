@@ -27,7 +27,7 @@ main() {
 
     # This has to be done in order, so no parallelization
     for file_id in ${file_ids[@]}; do
-        dx cat $file_id | tar xzf - -C ./input/
+        dx cat $file_id | tar xzf - -C ./input/ --owner root --group root --no-same-owner
     done
 
     # Locate root of run directory
@@ -72,13 +72,13 @@ main() {
 
     multi_lane=false
 
-    if [ ${#lanes[@]} -gt 1 ];
+    if [ "${#lanes}" -gt 1 ];
     then
         multi_lane=true
     fi
 
     # Perform demux iteratively over lanes
-    for lane in "${lanes[@]}"
+    for lane in ${lanes[@]}
     do
         # Make sure that the lane specified is valid
         if [ $lane -gt $lane_count ];
