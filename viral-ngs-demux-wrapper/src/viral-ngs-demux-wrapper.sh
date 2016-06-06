@@ -4,30 +4,52 @@
 set -e -x -o pipefail
 main() {
 
-    # Download the RunInfo.xml file
-    runInfo_file_id=$(dx get_details "$upload_sentinel_record" | jq .runinfo_file_id -r)
-    dx cat $runInfo_file_id > RunInfo.xml
+    instance_type="mem1_ssd1_x4"
 
-    # Parse the lane count from RunInfo.xml file
-    lane_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@LaneCount)" RunInfo.xml)
+    # Sentinel Record Given
+    if [ "$upload_sentinel_record" != "" ];
+    then
+        # Download the RunInfo.xml file
+        runInfo_file_id=$(dx get_details "$upload_sentinel_record" | jq .runinfo_file_id -r)
+        dx cat $runInfo_file_id > RunInfo.xml
 
-    # Raise error if laneCount could not be found in the expected XML path
-    if [ -z "$lane_count" ]; then
-        dx-jobutil-report-error "Could not parse laneCount from RunInfo.xml. Please check RunInfo.xml is properful formatted"
+        # Parse the lane count from RunInfo.xml file
+        lane_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@LaneCount)" RunInfo.xml)
+
+        # Raise error if laneCount could not be found in the expected XML path
+        if [ -z "$lane_count" ]; then
+            dx-jobutil-report-error "Could not parse laneCount from RunInfo.xml. Please check RunInfo.xml is properful formatted"
+        fi
+
+        # Decide on the correct instance type to use
+        if (( $lane_count > 1 ));
+        then
+            instance_type="mem1_ssd1_x32"
+            echo "Detected $lane_count lanes, interpreting as HiSeq run, executing on a $instance_type machine."
+        fi
     fi
 
-    # Decide on the correct instance type to use
-    if (( $lane_count > 1 ));
+    if [ "$upload_sentinel_record" == "" && "$is_hiseq" = 'true' ];
     then
         instance_type="mem1_ssd1_x32"
-        echo "Detected $lane_count lanes, interpreting as HiSeq run, executing on a $instance_type machine."
-    else
-        instance_type="mem1_ssd1_x4"
-        echo "Detected $lane_count lane, interpreting as MiSeq run, executing on a $instance_type machine."
     fi
 
     # Populate command line options
     opts=""
+
+    if [ "$run_tarballs" != "" ]
+    then
+        for tarball in "${run_tarballs[@]}"
+        do
+            echo $tarball
+            opts="-irun_tarballs=$tarball $opts"
+        done
+    fi
+
+    if [ "$upload_sentinel_record" != "" ]
+    then
+        opts="-iupload_sentinel_record=${upload_sentinel_record} $opts"
+    fi
 
     if [ "$sample_sheet" != "" ]
     then
@@ -72,7 +94,7 @@ main() {
         # as a confusing "" parameter if quoted
         job_id=$(dx run $demux_applet_id \
         --instance-type="$instance_type" \
-        -iupload_sentinel_record="${upload_sentinel_record}" -iresources="${resources}" \
+        -iresources="${resources}" \
         -iper_sample_output="${per_sample_output}" $opts \
         --yes --brief)
     else
@@ -80,7 +102,7 @@ main() {
         # which has whitespace
         job_id=$(dx run $demux_applet_id \
         --instance-type="$instance_type" \
-        -iupload_sentinel_record="${upload_sentinel_record}" -iresources="${resources}" \
+        -iresources="${resources}" \
         -iper_sample_output="${per_sample_output}" "$opts" \
         --yes --brief)
     fi

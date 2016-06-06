@@ -17,7 +17,15 @@
       "name": "upload_sentinel_record",
       "class": "record",
       "label": "Incremental upload sentinel record",
+      "optional": true,
       "help": "The sentinel record produced by the the incremental_upload.sh script. When this record is closed it indicates that the upload is complete and demux can begin."
+    },
+    {
+      "name": "run_tarballs",
+      "class": "array:file",
+      "label": "Tarball(s) that reconstitute the RUN folder",
+      "optional": true,
+      "help": "Tarball(s), supplied in the order that they should be untarred in, which reconstitute the RUN folder of a single sequencing run"
     },
     {
       "name": "demux_applet",
@@ -74,6 +82,13 @@
       "class": "string",
       "help": "Sequencing Center Name",
       "optional": true
+    },
+    {
+      "name": "is_hiseq",
+      "label": "Run is from a HiSeq machine",
+      "class": "boolean",
+      "help": "Set to true if RUN is from a HiSeq machine and require additional computational resource",
+      "default": false
     },
     {
       "name": "advanced_opt",

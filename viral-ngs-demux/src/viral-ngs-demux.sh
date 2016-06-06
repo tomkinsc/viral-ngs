@@ -9,32 +9,54 @@ main() {
     dx cat "$resources" | tar zx -C /
     samtools=viral-ngs/tools/build/conda-tools/default/bin/samtools
 
-     # Download the RunInfo.xml file
-    runInfo_file_id=$(dx get_details "$upload_sentinel_record" | jq .runinfo_file_id -r)
-    dx cat $runInfo_file_id > RunInfo.xml
-
-    # Parse the lane count from RunInfo.xml file
-    lane_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@LaneCount)" RunInfo.xml)
-
-    # Raise error if laneCount could not be found in the expected XML path
-    if [ -z "$lane_count" ]; then
-        dx-jobutil-report-error "Could not parse laneCount from RunInfo.xml. Please check RunInfo.xml is properful formatted"
+    # Raise error if both of upload_sentinel_record and tarballs are specified
+    if [ "$upload_sentinel_record" != "" ] && [ "$run_tarballs" != "" ]; then
+        dx-jobutil-report-error "Both upload sentinel and run tarballs were specified. Exactly 1 (or the other) should be specified"
     fi
 
-    # Get file IDs of run directory tarballs
-    mkdir ./input
-    file_ids=$(dx get_details "$upload_sentinel_record" | jq .tar_file_ids | grep -Po '(?<=\")file-.*(?=\")')
+    # Raise error if neither of upload_sentinel_record and tarballs are specified
+    if [ "$upload_sentinel_record" == "" ] && [ "$run_tarballs" == "" ]; then
+        dx-jobutil-report-error "Neither upload sentinel nor run tarballs was specified. Exactly 1 (or the other) shoud be specified"
+    fi
 
-    # This has to be done in order, so no parallelization
-    for file_id in ${file_ids[@]}; do
-        dx cat $file_id | tar xzf - -C ./input/ --owner root --group root --no-same-owner
-    done
+    mkdir ./input
+
+    # Unpack RUN directory
+    if [ "$upload_sentinel_record" != "" ]; then
+        # Unpack from sentinel_record
+
+        # Get file IDs of run directory tarballs
+        file_ids=$(dx get_details "$upload_sentinel_record" | jq .tar_file_ids | grep -Po '(?<=\")file-.*(?=\")')
+        for file_id in "${file_ids[@]}"; do
+            dx cat "$file_id" | tar xzf - -C ./input/
+        done
+    else
+        # Unpack from run_tarballs
+        for file_id in "${run_tarballs[@]}"; do
+            echo "$file_id"
+            dx cat "$file_id" | tar xzf - -C ./input/
+        done
+    fi
 
     # Locate root of run directory
-    location_of_data=$(find . -type d -name "Data")
+    location_of_data=$(find ./input/ -type d -name "Data")
     if [ "$location_of_data" == "" ]
     then
       dx-jobutil-report-error "The Data folder could not be found."
+    fi
+
+    location_of_input="${location_of_data%/Data}"
+
+    # Parse the lane count from RunInfo.xml file in the root of the unpacked RUN folder
+    runinfo_path=$(find $location_of_input -type f -name "RunInfo.xml" -maxdepth 1)
+    if [ "$runinfo_path" == "" ]; then
+        dx-jobutil-report-error "The RunInfo.xml could not be found."
+    fi
+
+    # Ensure that we have successfully parsed a lane count
+    lane_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@LaneCount)" "$runinfo_path")
+    if [ -z lane_count ]; then
+        dx-jobutil-report-error "Could not parse the number of lanes from RunInfo.xml"
     fi
 
     # Populate command line options
@@ -101,7 +123,7 @@ main() {
 
         # Execute viral-ngs demux, $opts may be empty so we do not quote it
         # to prevent expansion to an empty "" argument
-        python viral-ngs/illumina.py illumina_demux input/ "$lane" "$bam_out_dir" \
+        python viral-ngs/illumina.py illumina_demux "$location_of_input" "$lane" "$bam_out_dir" \
         --outMetrics "$metric_out_dir/$metrics_fn" --JVMmemory "$mem_in_mb" \
         $opts
 
