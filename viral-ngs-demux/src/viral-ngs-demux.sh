@@ -27,11 +27,15 @@ main() {
 
         # Get file IDs of run directory tarballs
         file_ids=$(dx get_details "$upload_sentinel_record" | jq .tar_file_ids | grep -Po '(?<=\")file-.*(?=\")')
-        for file_id in "${file_ids[@]}"; do
+
+        # This array is space separated, do not quote
+        for file_id in ${file_ids[@]}; do
             dx cat "$file_id" | tar xzf - -C ./input/
         done
     else
-        # Unpack from run_tarballs
+        # Unpack from run_tarballs, this array contain
+        # Elements with spaces, so we need to quote to retain
+        # the dnanexus link field intact
         for file_id in "${run_tarballs[@]}"; do
             echo "$file_id"
             dx cat "$file_id" | tar xzf - -C ./input/
@@ -64,8 +68,8 @@ main() {
 
     if [ "$sample_sheet" != "" ]
     then
-        dx cat "$sample_sheet" > SampleSheet.txt
-        opts="$opts --sampleSheet SampleSheet.txt "
+        dx cat "$sample_sheet" > "$sample_sheet_name"
+        opts="$opts --sampleSheet $sample_sheet_name "
     fi
 
     if [ "$flowcell" != "" ]
