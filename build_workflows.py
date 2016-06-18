@@ -395,18 +395,19 @@ if args.run_tests is True or args.run_large_tests is True:
     demux_plus_samples = {
         "run.151023_0015": {
             "upload_sentinel_record": "record-Bv8qkgQ0jy198GK0QVz2PV8Y",
+        },
+        "tar.run.151023_0015": {
+            "run_tarballs": ["file-Bv8qyX00jy17QYqVpkJb7Gfj"],
         }
     }
 
     test_demux_analyses = []
-    for run in demux_plus_samples.keys():
+    for run, opts in demux_plus_samples.items():
         # create a subfolder for this run
         test_folder = args.folder + "/" + run
         project.new_folder(test_folder)
 
         test_input = {
-            "demux.upload_sentinel_record": dxpy.dxlink(demux_plus_samples[run]["upload_sentinel_record"]),
-
             # Skip depletion to save time
             "deplete.skip_depletion": True,
 
@@ -414,10 +415,16 @@ if args.run_tests is True or args.run_large_tests is True:
             "metagenomics.kraken_db": dxpy.dxlink("file-Bqxxb8Q07q4bFjZZKJ25jyXb")
         }
 
+        if "upload_sentinel_record" in opts:
+            test_input["demux.upload_sentinel_record"] = dxpy.dxlink(opts["upload_sentinel_record"])
+        elif "run_tarballs" in opts:
+            test_input["demux.run_tarballs"] = [dxpy.dxlink(run_tarball) for run_tarball in opts["run_tarballs"]]
+        else:
+            exit("In Demux test run ({0}), neither sentinel record nor run_tarballs is specified".format(run))
+
         demux_plus_analysis = demux_plus_workflow.run(test_input, project=project.get_id(),
                                                       folder=test_folder,
                                                       name=(git_revision+" "+run+"-Demux-plus"))
-
         test_demux_analyses.append((run, demux_plus_analysis))
 
     # wait for jobs to finish while working around Travis 10m console inactivity timeout
