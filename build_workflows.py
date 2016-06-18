@@ -300,7 +300,7 @@ def build_demux_plus_workflow():
     # metagenomics
     metagenomics_applet = find_applet('viral-ngs-classification')
     metagenomics_input = {
-        "mappings" : dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
+        "mappings" : dxpy.dxlink({"stage": demux_stage_id, "outputField": "bams"}),
         "resources": dxpy.dxlink(resource_tarball_id)
     }
     metagenomics_stage_id = wf.add_stage(metagenomics_applet, stage_input=metagenomics_input, name="metagenomics")
