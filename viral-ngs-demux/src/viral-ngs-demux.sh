@@ -114,11 +114,13 @@ main() {
 
         # Prepare output folders
         bam_out_dir="out/bams"
+        unmatched_out_dir="out/unmatched_bams"
         metric_out_dir="out/metrics"
 
         # Subfolders by lane if multi-lane run
         if [ "$multi_lane" = true ]; then
             bam_out_dir="out/bams/lane_$lane"
+            unmatched_out_dir="out/unmatched_bams/lane_$lane"
             metric_out_dir="out/metrics/lane_$lane"
         fi
 

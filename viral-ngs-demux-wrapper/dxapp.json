@@ -102,7 +102,13 @@
     {
       "name": "bams",
       "label": "Demuxed Bam files",
-      "help": "Unmapped bam files from demultiplexing",
+      "help": "Demuxed bam files from demultiplexing",
+      "class": "array:file"
+    },
+    {
+      "name": "unmatched_bams",
+      "label": "Unmatched Bam files",
+      "help": "Unmatched bam files from demultiplexing (may be empty)",
       "class": "array:file"
     },
     {
