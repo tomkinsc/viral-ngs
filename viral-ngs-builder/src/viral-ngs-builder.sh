@@ -52,6 +52,9 @@ main() {
     # run upstream tests from upstream:/travis/tests-unit.sh
     py.test test/unit
 
+    # Make /dev/shm which is assumed to exist by Diamond
+    mkdir -p /dev/shm
+
     # run upstream tests from upstream:/travis/tests-long.sh
     py.test --cov-append test/integration
 
