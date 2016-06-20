@@ -23,9 +23,8 @@ main() {
 
     # Check for DenovoAssemblyError raised by assemble_trinity
     if [ "$exit_code" -ne "0" ]; then
-        cat trinity.stderr.log
         if grep DenovoAssemblyError trinity.stderr.log ; then
-            dx-jobutil-report-error "DenovoAssemblyError raised by assemble_trinity step. Please check job log for detailed logging" AppError
+            dx-jobutil-report-error "DenovoAssemblyError raised by assemble_trinity step. Please check job log for detailed information." AppError
         else
             dx-jobutil-report-error "Please check the job log" AppInternalError
         fi
