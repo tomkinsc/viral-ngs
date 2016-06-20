@@ -94,7 +94,8 @@
       "name": "unmatched_bams",
       "label": "Unmatched Bam files",
       "help": "Unmatched bam files from demultiplexing (may be empty)",
-      "class": "array:file"
+      "class": "array:file",
+      "optional": true
     },
     {
       "name": "metrics",

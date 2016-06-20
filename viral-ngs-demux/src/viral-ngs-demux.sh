@@ -126,12 +126,18 @@ main() {
 
         mkdir -p $bam_out_dir
         mkdir -p $metric_out_dir
+        mkdir -p $unmatched_out_dir
 
         # Execute viral-ngs demux, $opts may be empty so we do not quote it
         # to prevent expansion to an empty "" argument
         python viral-ngs/illumina.py illumina_demux "$location_of_input" "$lane" "$bam_out_dir" \
         --outMetrics "$metric_out_dir/$metrics_fn" --JVMmemory "$mem_in_mb" \
         $opts
+
+        # Move unmatched bam file to unmatched_out_dir, if present
+        if [ -f "$bam_out_dir/Unmatched.bam" ]; then
+            mv "$bam_out_dir/Unmatched.bam" "$unmatched_out_dir/"
+        fi
 
         # Check that demuxed file is not empty (has 0 reads).
         # Remove bam file if it's empty to prevent potential issues
