@@ -30,7 +30,7 @@ main() {
 
     # installations from upstream:/travis/install-pip.sh
     pip install -r requirements.txt
-    pip install mock==2.0.0
+    pip install -r requirements-tests.txt
 
     # installations from upstream:/travis/install-conda.sh
     wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -46,23 +46,17 @@ main() {
     conda info -a
 
     # installations from upstream:/travis/install-tools.sh
-    nosetests -v test.unit.test_tools
+    echo "Installing and validating bioinformatic tools"
+    py.test test/unit/test_tools.py
 
     # run upstream tests from upstream:/travis/tests-unit.sh
-    nosetests -v \
-    --logging-clear-handlers \
-    --with-xunit --with-coverage \
-    --cover-inclusive --cover-branches --cover-tests \
-    --cover-package broad_utils,illumina,assembly,interhost,intrahost,metagenomics,ncbi,read_utils,reports,taxon_filter,tools,util \
-    -w test/unit/
+    py.test test/unit
 
-    # run upstream tests from upstream:/travis/tests-unit.sh
-    nosetests -v \
-    --logging-clear-handlers \
-    --with-xunit --with-coverage \
-    --cover-inclusive --cover-branches --cover-tests \
-    --cover-package broad_utils,illumina,assembly,interhost,intrahost,metagenomics,ncbi,read_utils,reports,taxon_filter,tools,util \
-    -w test/integration/
+    # Make /dev/shm which is assumed to exist by Diamond
+    mkdir -p /dev/shm
+
+    # run upstream tests from upstream:/travis/tests-long.sh
+    py.test --cov-append test/integration
 
     # record a new filesystem manifest
     (find / -type f -o -type l 2> /dev/null || true) | sort > /tmp/fs-manifest.1
