@@ -1,6 +1,6 @@
 #!/bin/bash
 
-samtools=viral-ngs/tools/build/conda-tools/bin/samtools
+samtools=viral-ngs/tools/build/conda-tools/default/bin/samtools
 
 main() {
     set -e -x -o pipefail
@@ -39,7 +39,7 @@ main() {
             dx-jobutil-report-error "The second input file doesn't appear to be a FASTQ file (*.fastq or *.fastq.gz)" AppError
             exit 1
         fi
-        
+
         pids=()
         dx cat "$resources" | zcat | tar x -C / & pids+=($!)
         # hack SRA FASTQ read names to make them acceptable to Picard FastqToSam
@@ -108,7 +108,8 @@ main() {
     mem_in_mb=`head -n1 /proc/meminfo | awk '{print int($2*0.9/1024)}'`
 
     # run deplete_human
-    python viral-ngs/taxon_filter.py deplete_human --JVMmemory ${mem_in_mb}m \
+    python viral-ngs/taxon_filter.py deplete_human \
+        --JVMmemory ${mem_in_mb}m --threads `nproc` \
         input.bam raw.bam bmtagger_depleted.bam rmdup.bam cleaned.bam \
         --bmtaggerDbs $local_bmtagger_dbs --blastDbs $local_blast_dbs
 
@@ -117,14 +118,25 @@ main() {
         $($samtools view -c cleaned.bam)
     dx-jobutil-add-output depleted_base_count --class=int \
         $(bam_base_count cleaned.bam)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload --brief --destination ${sample_name}.raw.bam raw.bam)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload --brief --destination ${sample_name}.bmtagger_depleted.bam bmtagger_depleted.bam)
-    dx-jobutil-add-output intermediates --class=array:file \
-        $(dx upload --brief --destination ${sample_name}.rmdup.bam rmdup.bam)
-    dx-jobutil-add-output cleaned_reads --class=file \
-        $(dx upload --brief --destination ${sample_name}.cleaned.bam cleaned.bam)
+
+    cleaned_reads_out_folder="out/cleaned_reads"
+    intermediates_out_folder="out/intermediates"
+
+    if [ "$per_sample_output" == "true" ]; then
+        cleaned_reads_out_folder="out/cleaned_reads/${sample_name}"
+        intermediates_out_folder="out/intermediates/${sample_name}"
+    fi
+
+    mkdir -p $cleaned_reads_out_folder
+    mkdir -p $intermediates_out_folder
+
+    mv raw.bam "${intermediates_out_folder}/${sample_name}.raw.bam"
+    mv bmtagger_depleted.bam "${intermediates_out_folder}/${sample_name}.bmtagger_depleted.bam"
+    mv rmdup.bam "${intermediates_out_folder}/${sample_name}.rmdup.bam"
+
+    mv cleaned.bam "${cleaned_reads_out_folder}/${sample_name}.cleaned.bam"
+
+    dx-upload-all-outputs
 }
 
 maybe_dxzcat() {

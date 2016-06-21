@@ -11,7 +11,7 @@ script:
 # pre-warm later workflow stages
 - for i in $(seq 1 2); do dx run --project-context-id project-BXBXK180x0z7x5kxq11p886f /assets/eval -i sh="sleep 1" --name "prewarming no-op" --instance-type mem1_ssd1_x4 --brief -y; done
 # execute workflow builder script
-- python build_assembly_workflow.py --workflows Ebola Lassa Generic Abridged --run-tests
+- python build_workflows.py --run-tests
 env:
   global:
   - secure: "hqaflXcPTtAoDDA/KmsTOT8P3tbRQoPLzpzN65UlN0ZlvMM61MjnY0fOQxKNLKrwgQzZWehNt/iXHkEvnYAQopUNlfQ7By5M1njFJSKbdix9UG+B4uF7/ERfxnT+F+AyXiJM974l6uvXAE5s3k7CVTwMol6Rx9XcEA7Sq5sVs/8="

@@ -12,12 +12,6 @@
       "patterns": ["*.unmapped.filtered.bam", "*.cleaned.filtered.bam", "*.filtered.bam", "*.bam"]
     },
     {
-      "name": "min_base_count",
-      "help": "Fail the analysis if the sum of the length of all surviving reads is below this",
-      "class": "int",
-      "default": 0
-    },
-    {
       "name": "contaminants",
       "class": "file",
       "patterns": ["*.fasta"]

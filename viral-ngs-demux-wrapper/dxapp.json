@@ -1,7 +1,7 @@
 {
-  "name": "viral-ngs-demux",
-  "title": "illumina-demux",
-  "summary": "Perform BCL conversion and de-multiplexing from Illumina RUN directory using viral-ngs' custom demux script",
+  "name": "viral-ngs-demux-wrapper",
+  "title": "illumina-demux wrapper",
+  "summary": "Wrapper around viral-ngs-demux to perform BCL conversion and de-multiplexing from Illumina RUN directory using viral-ngs' custom demux script",
   "dxapi": "1.0.0",
   "version": "0.0.1",
   "categories": [],
@@ -10,7 +10,8 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],
-      "label": "Viral-ngs resource tarball"
+      "label": "Viral-ngs resource tarball",
+      "default": {"$dnanexus_link": "file-BxY2vJj0q548kZkfFQV8vbPb"}
     },
     {
       "name": "upload_sentinel_record",
@@ -27,11 +28,11 @@
       "help": "Tarball(s), supplied in the order that they should be untarred in, which reconstitute the RUN folder of a single sequencing run"
     },
     {
-      "name": "lanes",
-      "class": "array:int",
-      "label": "Lane(s) to perform demux",
-      "help": "If not specified, demux will be performed over all lane(s)",
-      "optional": true
+      "name": "demux_applet",
+      "class": "applet",
+      "label": "DNAnexus applet for viral-ngs-demux",
+      "patterns": ["viral-ngs-demux"],
+      "help": "The DNAnexus viral-ngs-demux applet."
     },
     {
       "name": "metrics_fn",
@@ -49,7 +50,7 @@
     },
     {
       "name": "sample_sheet",
-      "label": "Sample Sheet (override)",
+      "label": "Sample Sheet",
       "class": "file",
       "help": "Override SampleSheet. Input tab or CSV file w/header and four named columns:barcode_name, library_name, barcode_sequence_1, barcode_sequence_2. Default is to look for a SampleSheet.csv in the inDir.",
       "optional": true
@@ -59,6 +60,13 @@
       "label": "Flowcell ID",
       "class": "string",
       "help": "Override flowcell ID (default: read from RunInfo.xml)",
+      "optional": true
+    },
+    {
+      "name": "lanes",
+      "class": "array:int",
+      "label": "Lane(s) to perform demux",
+      "help": "If not specified, demux will be performed over all lane(s)",
       "optional": true
     },
     {
@@ -74,6 +82,13 @@
       "class": "string",
       "help": "Sequencing Center Name",
       "optional": true
+    },
+    {
+      "name": "is_hiseq",
+      "label": "Run is from a HiSeq machine",
+      "class": "boolean",
+      "help": "Set to true if RUN is from a HiSeq machine and require additional computational resource",
+      "default": false
     },
     {
       "name": "advanced_opt",
@@ -94,8 +109,7 @@
       "name": "unmatched_bams",
       "label": "Unmatched Bam files",
       "help": "Unmatched bam files from demultiplexing (may be empty)",
-      "class": "array:file",
-      "optional": true
+      "class": "array:file"
     },
     {
       "name": "metrics",
@@ -106,10 +120,10 @@
   ],
   "runSpec": {
     "interpreter": "bash",
-    "file": "src/viral-ngs-demux.sh",
+    "file": "src/viral-ngs-demux-wrapper.sh",
     "systemRequirements": {
       "*": {
-        "instanceType": "mem1_ssd1_x4"
+        "instanceType": "mem1_ssd1_x2"
       }
     },
     "execDepends": [

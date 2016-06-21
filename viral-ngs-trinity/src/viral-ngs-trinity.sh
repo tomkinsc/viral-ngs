@@ -1,6 +1,6 @@
 #!/bin/bash
 
-samtools=viral-ngs/tools/build/conda-tools/bin/samtools
+samtools=viral-ngs/tools/build/conda-tools/default/bin/samtools
 
 main() {
     set -e -x -o pipefail
@@ -13,16 +13,23 @@ main() {
     dx download "$contaminants" -o contaminants.fasta
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
-    # check min_base_count
-    filtered_base_count=$(bam_base_count reads.bam)
-    if [ "$filtered_base_count" -lt "$min_base_count" ]; then
-        dx-jobutil-report-error "Too few bases survived filtering (${filtered_base_count} < ${min_base_count})" AppError
-        exit 1
-    fi
+    ulimit -s unlimited
+    exit_code=0
 
     # run trinity
-    ulimit -s unlimited
-    python viral-ngs/assembly.py assemble_trinity reads.bam contaminants.fasta assembly.fasta --n_reads=$subsample --outReads subsamp.bam
+    python viral-ngs/assembly.py assemble_trinity reads.bam \
+    contaminants.fasta assembly.fasta --n_reads=$subsample \
+    --outReads subsamp.bam 2> >(tee trinity.stderr.log >&2) || exit_code=$?
+
+    # Check for DenovoAssemblyError raised by assemble_trinity
+    if [ "$exit_code" -ne "0" ]; then
+        if grep DenovoAssemblyError trinity.stderr.log ; then
+            dx-jobutil-report-error "DenovoAssemblyError raised by assemble_trinity step. Please check job log for detailed information." AppError
+        else
+            dx-jobutil-report-error "Please check the job log" AppInternalError
+        fi
+        exit $exit_code
+    fi
 
     # collect figures of merit
     subsampled_read_pair_count=$(expr $($samtools view -c subsamp.bam) / 2)
