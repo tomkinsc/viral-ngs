@@ -41,19 +41,21 @@ main() {
     then
         for tarball in "${run_tarballs[@]}"
         do
-            echo $tarball
-            opts="-irun_tarballs=$tarball $opts"
+            tarball_id=$(dx-jobutil-parse-link "$tarball")
+            opts="-irun_tarballs=$tarball_id $opts"
         done
     fi
 
     if [ "$upload_sentinel_record" != "" ]
     then
-        opts="-iupload_sentinel_record=${upload_sentinel_record} $opts"
+        record_id=$(dx-jobutil-parse-link "$upload_sentinel_record")
+        opts="-iupload_sentinel_record=${record_id} $opts"
     fi
 
     if [ "$sample_sheet" != "" ]
     then
-        opts="-isample_sheet=$sample_sheet $opts"
+        sample_sheet_id=$(dx-jobutil-parse-link "$sample_sheet")
+        opts="-isample_sheet=$sample_sheet_id $opts"
     fi
 
     for lane in "${lanes[@]}"
@@ -88,24 +90,16 @@ main() {
     job_id=""
 
     # Execute demux applet, shuttling all input variables as is
-    if [ "$opts" == "" ]
-    then
-        # We do not quote opts if it's empty otherwise it'll be passed
-        # as a confusing "" parameter if quoted
-        job_id=$(dx run $demux_applet_id \
-        --instance-type="$instance_type" \
-        -iresources="${resources}" \
-        -iper_sample_output="${per_sample_output}" $opts \
-        --yes --brief)
-    else
-        # If opts is not empty, we try and quote it... because of dnanexus link
-        # which has whitespace
-        job_id=$(dx run $demux_applet_id \
-        --instance-type="$instance_type" \
-        -iresources="${resources}" \
-        -iper_sample_output="${per_sample_output}" "$opts" \
-        --yes --brief)
-    fi
+    # NOTE: $opts is not quoted because intorduction of quotes
+    # can be confusing for dx run parameter parsing. This means
+    # that caution should be exercised so that $opts does not contain
+    # fields which contain meaningful whitespace or colon (specifically,
+    # $opts should not contain DNAnexus links)
+    job_id=$(dx run $demux_applet_id \
+    --instance-type="$instance_type" \
+    -iresources="${resources}" \
+    -iper_sample_output="${per_sample_output}" $opts \
+    --yes --brief)
 
     dx-jobutil-add-output bams $job_id:bams --class=jobref
     dx-jobutil-add-output unmatched_bams $job_id:unmatched_bams --class=jobref
