@@ -30,7 +30,7 @@ main() {
 
         # This array is space separated, do not quote
         for file_id in ${file_ids[@]}; do
-            dx cat "$file_id" | tar xzf - -C ./input/
+            dx cat "$file_id" | tar xzf - -C ./input/ --owner root --group root --no-same-owner
         done
     else
         # Unpack from run_tarballs, this array contain
@@ -38,7 +38,7 @@ main() {
         # the dnanexus link field intact
         for file_id in "${run_tarballs[@]}"; do
             echo "$file_id"
-            dx cat "$file_id" | tar xzf - -C ./input/
+            dx cat "$file_id" | tar xzf - -C ./input/ --owner root --group root --no-same-owner
         done
     fi
 
