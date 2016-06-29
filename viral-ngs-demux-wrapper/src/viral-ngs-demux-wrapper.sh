@@ -73,6 +73,16 @@ main() {
         opts="-iread_structure=$read_structure $opts"
     fi
 
+    if [ "$minimum_base_quality" != "" ]
+    then
+        opts="-iminimum_base_quality=$minimum_base_quality $opts"
+    fi
+
+    if [ "$max_mismatches" != "" ]
+    then
+        opts="-imax_mismatches=$max_mismatches $opts"
+    fi
+
     if [ "$sequencing_center" != "" ]
     then
         opts="-isequencing_center=$sequencing_center $opts"

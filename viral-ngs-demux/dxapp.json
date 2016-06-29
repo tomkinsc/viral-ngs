@@ -76,6 +76,20 @@
       "optional": true
     },
     {
+      "name": "minimum_base_quality",
+      "label": "Mimimum Base Quality",
+      "class": "int",
+      "help": "Picard ExtractIlluminaBarcodes MINIMUM_QUALITY",
+      "optional": true
+    },
+    {
+      "name": "max_mismatches",
+      "label": "Maximum mismatches",
+      "class": "int",
+      "help": "Picard ExtractIlluminaBarcodes MAX_MISMATCHES ",
+      "optional": true
+    },
+    {
       "name": "advanced_opt",
       "label": "Advanced options",
       "class": "string",
