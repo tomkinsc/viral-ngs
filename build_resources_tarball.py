@@ -7,8 +7,6 @@ import time
 import os
 
 argparser = argparse.ArgumentParser(description="Build the viral-ngs resources tarball on DNAnexus.")
-argparser.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
-                                      default="file-BXJvFq00QyBKgFj9PZBqgbXg")
 argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
                                  default="file-BXK8p100QyB0JVff3j9Y1Bf5")
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
@@ -27,14 +25,13 @@ print "folder: {}".format(args.folder)
 if args.reuse_builder is not True:
     subprocess.check_call(["dx","build","-f","--destination",args.project+":"+args.folder+"/",
                            os.path.join(os.path.dirname(sys.argv[0]),"viral-ngs-builder")])
-            
+
 builder = dxpy.find_one_data_object(classname='applet', name="viral-ngs-builder",
                                      project=args.project, folder=args.folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
 builder_input = {
     "git_commit": args.gitref,
-    "novocraft_tarball": dxpy.dxlink(args.novocraft),
     "gatk_tarball": dxpy.dxlink(args.gatk)
 }
 job = builder.run(builder_input, project=args.project, folder=args.folder, name=("viral-ngs-bulder " + args.gitref))
