@@ -21,11 +21,6 @@
       "default": "https://github.com/dnanexus/viral-ngs.git"
     },
     {
-      "name": "novocraft_tarball",
-      "class": "file",
-      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
-    },
-    {
       "name": "gatk_tarball",
       "class": "file",
       "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
