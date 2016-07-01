@@ -7,7 +7,7 @@ main() {
     # Unpack viral-ngs resources
     export PATH="$PATH:$HOME/miniconda/bin"
     dx cat "$resources" | tar zx -C /
-    samtools=viral-ngs/tools/build/conda-tools/default/bin/samtools
+    samtools=/home/dnanexus/viral-ngs/tools/conda-cache/.pkgs/samtools-1.2-2/bin/samtools
 
     # Raise error if both of upload_sentinel_record and tarballs are specified
     if [ "$upload_sentinel_record" != "" ] && [ "$run_tarballs" != "" ]; then
