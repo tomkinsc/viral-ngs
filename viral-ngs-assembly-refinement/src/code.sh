@@ -12,11 +12,15 @@ main() {
     dx cat "$resources" | tar zx -C / & pids+=($!)
     dx download "$assembly" -o assembly.fasta & pids+=($!)
     dx download "$reads" -o reads.bam & pids+=($!)
-    dx cat "$novocraft_tarball" | tar zx & pids+=($!)
     mkdir gatk/
     dx cat "$gatk_tarball" | tar jx -C gatk/
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
-    export NOVOALIGN_PATH=/home/dnanexus/novocraft
+
+    if [ "$novocraft_license" != "" ]; then
+        dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
+        export NOVOALIGN_LICENSE_PATH=/home/dnanexus/novoalign.lic
+    fi
+
     export GATK_PATH=/home/dnanexus/gatk
 
     novocraft/novoindex assembly.nix assembly.fasta

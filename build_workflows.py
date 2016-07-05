@@ -11,8 +11,7 @@ import hashlib
 argparser = argparse.ArgumentParser(description="Build the viral-ngs assembly workflow on DNAnexus.")
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
-argparser.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
-                                      default="file-BXJvFq00QyBKgFj9PZBqgbXg")
+argparser.add_argument("--novocraft", help="Novocraft license file. Optional: multithreading enabled with license")
 argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
                                  default="file-BXK8p100QyB0JVff3j9Y1Bf5")
 argparser.add_argument("--run-tests", help="run small test assemblies", action="store_true")
@@ -171,7 +170,7 @@ def build_assembly_workflow(species, resources):
             "reads": dxpy.dxlink({"stage": depletion_stage_id, "outputField": "cleaned_reads"}),
             "min_coverage": 2,
             "novoalign_options": "-r Random -l 30 -g 40 -x 20 -t 502",
-            "novocraft_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_tarball"}),
+            "novocraft_license": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_license"}),
             "gatk_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "gatk_tarball"}),
             "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"})
         }
@@ -189,7 +188,7 @@ def build_assembly_workflow(species, resources):
             "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
             "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
             "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"}),
-            "novocraft_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_tarball"}),
+            "novocraft_license": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_license"}),
             "gatk_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "gatk_tarball"})
         }
         analysis_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-analysis"), stage_input=analysis_input, name="analysis")
@@ -210,7 +209,7 @@ def build_assembly_workflow(species, resources):
             "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100",
             "resources": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "resources"}),
             "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"}),
-            "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"})
+            "novocraft_license": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_license"})
         }
         refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2", folder="refinement_2")
 
@@ -219,7 +218,7 @@ def build_assembly_workflow(species, resources):
             "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
             "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
             "resources": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "resources"}),
-            "novocraft_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_tarball"}),
+            "novocraft_license": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_license"}),
             "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
         }
         analysis_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-analysis"), stage_input=analysis_input, name="analysis")
@@ -379,9 +378,13 @@ if args.run_tests is True or args.run_large_tests is True:
         test_input = {
             "deplete.file": dxpy.dxlink(test_samples[test_sample]["reads"]),
             "deplete.skip_depletion": True,
-            "scaffold.novocraft_tarball": dxpy.dxlink(args.novocraft),
             "scaffold.gatk_tarball": dxpy.dxlink(args.gatk),
         }
+
+        # Chain in novocraft license, when provided (optional)
+        if args.novocraft:
+            test_input["scaffold.novocraft_license"] = dxpy.dxlink(args.novocraft)
+
         if "reads2" in test_samples[test_sample]:
             test_input["deplete.paired_fastq"] = dxpy.dxlink(test_samples[test_sample]["reads2"])
 

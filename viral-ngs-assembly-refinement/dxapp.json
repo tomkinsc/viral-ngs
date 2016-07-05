@@ -35,9 +35,10 @@
       "patterns": ["viral-ngs-*.resources.tar.gz"]
     },
     {
-      "name": "novocraft_tarball",
+      "name": "novocraft_license",
       "class": "file",
-      "patterns": ["novocraftV3.*.Linux*.tar.gz"]
+      "patterns": ["novoalign.lic", "Novoalign.lic"],
+      "optional": true
     },
     {
       "name": "gatk_tarball",
