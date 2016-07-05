@@ -1,6 +1,6 @@
 #!/bin/bash
 
-samtools=/home/dnanexus/viral-ngs/tools/conda-cache/.pkgs/samtools-1.2-2/bin/samtools
+samtools=/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/samtools
 
 main() {
     set -e -x -o pipefail

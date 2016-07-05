@@ -23,7 +23,10 @@ main() {
 
     export GATK_PATH=/home/dnanexus/gatk
 
-    novocraft/novoindex assembly.nix assembly.fasta
+    novoindex="/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/novoindex"
+
+    "$novoindex" assembly.nix assembly.fasta
+
     python viral-ngs/assembly.py refine_assembly assembly.fasta reads.bam refined_assembly.fasta \
         --outVcf sites.vcf.gz --min_coverage "$min_coverage" --novo_params "$novoalign_options" \
 

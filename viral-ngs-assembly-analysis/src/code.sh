@@ -25,8 +25,11 @@ main() {
 
     python viral-ngs/read_utils.py index_fasta_picard assembly.fasta
     python viral-ngs/read_utils.py index_fasta_samtools assembly.fasta
-    novocraft/novoindex assembly.nix assembly.fasta
-    samtools=/home/dnanexus/viral-ngs/tools/conda-cache/.pkgs/samtools-1.2-2/bin/samtools
+    samtools=/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/samtools
+    novoindex="/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/novoindex"
+
+    # Prep fasta: index using novoalign
+    "$novoindex" assembly.nix assembly.fasta
 
     # align reads, dedup, realign, filter
     python viral-ngs/read_utils.py align_and_fix reads.bam assembly.fasta --outBamAll all.bam --outBamFiltered mapped.bam --novoalign_options "$novoalign_options"
