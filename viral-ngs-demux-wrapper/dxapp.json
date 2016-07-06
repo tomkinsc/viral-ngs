@@ -130,6 +130,12 @@
       "label": "Metrics file",
       "help": "ExtractIlluminaBarcodes metrics file",
       "class": "array:file"
+    },
+    {
+      "name": "barcodes",
+      "label": "Report of barcode counts",
+      "help": "TSV report of all barcode counts, in descending order",
+      "class": "array:file"
     }
   ],
   "runSpec": {

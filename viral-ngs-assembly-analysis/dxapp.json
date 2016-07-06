@@ -32,7 +32,8 @@
       "name": "novocraft_license",
       "class": "file",
       "patterns": ["novoalign.lic", "Novoalign.lic"],
-      "optional": true
+      "optional": true,
+      "help": "(Optional) license for novocraft, which enables multi-threaded novoalign"
     },
     {
       "name": "gatk_tarball",

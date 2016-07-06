@@ -126,22 +126,27 @@ main() {
         bam_out_dir="out/bams"
         unmatched_out_dir="out/unmatched_bams"
         metric_out_dir="out/metrics"
+        barcode_out_dir="out/barcodes"
 
         # Subfolders by lane if multi-lane run
         if [ "$multi_lane" = true ]; then
-            bam_out_dir="out/bams/lane_$lane"
-            unmatched_out_dir="out/unmatched_bams/lane_$lane"
-            metric_out_dir="out/metrics/lane_$lane"
+            bam_out_dir="$bam_out_dir/lane_$lane"
+            unmatched_out_dir="$unmatched_out_dir/lane_$lane"
+            metric_out_dir="$metric_out_dir/lane_$lane"
+            barcode_out_dir="$barcode_out_dir/lane_$lane/"
         fi
 
         mkdir -p $bam_out_dir
         mkdir -p $metric_out_dir
         mkdir -p $unmatched_out_dir
+        mkdir -p $barcode_out_dir
 
         # Execute viral-ngs demux, $opts may be empty so we do not quote it
         # to prevent expansion to an empty "" argument
         python viral-ngs/illumina.py illumina_demux "$location_of_input" "$lane" "$bam_out_dir" \
-        --outMetrics "$metric_out_dir/$metrics_fn" --JVMmemory "$mem_in_mb" \
+        --outMetrics "$metric_out_dir/$metrics_fn" \
+        --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
+        --JVMmemory "$mem_in_mb" \
         $opts
 
         # Move unmatched bam file to unmatched_out_dir, if present

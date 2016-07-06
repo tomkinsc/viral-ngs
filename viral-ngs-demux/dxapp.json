@@ -41,6 +41,13 @@
       "default": "metrics.txt"
     },
     {
+      "name": "barcodes_fn",
+      "class": "string",
+      "label": "Common Barcode Report filename",
+      "help": "Filename for output CommonBarcodes report. Default is barcodes.txt",
+      "default": "barcodes.txt"
+    },
+    {
       "name": "per_sample_output",
       "class": "boolean",
       "label": "Output samples in sub folders",
@@ -115,6 +122,12 @@
       "name": "metrics",
       "label": "Metrics file",
       "help": "ExtractIlluminaBarcodes metrics file",
+      "class": "array:file"
+    },
+    {
+      "name": "barcodes",
+      "label": "Report of barcode counts",
+      "help": "TSV report of all barcode counts, in descending order",
       "class": "array:file"
     }
   ],

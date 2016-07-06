@@ -114,5 +114,6 @@ main() {
     dx-jobutil-add-output bams $job_id:bams --class=jobref
     dx-jobutil-add-output unmatched_bams $job_id:unmatched_bams --class=jobref
     dx-jobutil-add-output metrics $job_id:metrics --class=jobref
+    dx-jobutil-add-output barcodes $job_id:barcodes --class=jobref
 
 }
