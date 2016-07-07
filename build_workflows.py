@@ -38,7 +38,8 @@ def build_applets():
     applets = ["viral-ngs-human-depletion", "viral-ngs-human-depletion-multiplex",
                "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
                "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis",
-               "viral-ngs-demux-wrapper", "viral-ngs-demux", "viral-ngs-classification"]
+               "viral-ngs-demux-wrapper", "viral-ngs-demux", "viral-ngs-classification",
+               "viral-ngs-count-hits", "viral-ngs-count-hits-multiplex"]
 
     # Build applets for assembly workflow in [args.folder]/applets/ folder
     project.new_folder(applets_folder, parents=True)
@@ -237,9 +238,6 @@ assembly_workflows = build_assembly_workflows(assembly_workflow_resources.keys()
 def build_demux_only_workflow():
     resource_tarball_id = find_resource_tarball_id()
 
-    demux_applet = find_applet('viral-ngs-demux')
-    demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
-
     wf = dxpy.new_dxworkflow(title='viral-ngs-demux-only',
                               name='viral-ngs-demux-only',
                               description='viral-ngs demultiplexing',
@@ -247,13 +245,33 @@ def build_demux_only_workflow():
                               folder=args.folder,
                               properties={"git_revision": git_revision})
 
+    # Demux
+
+    demux_applet = find_applet('viral-ngs-demux')
+    demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
+
     demux_wrapper_input = {
         "resources": dxpy.dxlink(resource_tarball_id),
         "demux_applet": dxpy.dxlink(demux_applet.id)
     }
 
     demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input,
-        name='viral-ngs-demux')
+        name='demux')
+
+    # QC
+    count_hits_applet = find_applet('viral-ngs-count-hits')
+    count_hits_multiplex_applet = find_applet('viral-ngs-count-hits-multiplex')
+
+    count_hits_multiplex_input = {
+        "resources": dxpy.dxlink({"stage": demux_stage_id, "inputField": "resources"}),
+        "in_bams": dxpy.dxlink({"stage": demux_stage_id, "outputField": "bams"}),
+        "per_sample_output": True,
+        "count_hits_applet": dxpy.dxlink(count_hits_applet.id)
+    }
+
+    count_hits_stage_id = wf.add_stage(count_hits_multiplex_applet,
+        stage_input=count_hits_multiplex_input,
+        name='count hits, fastqc')
 
     return wf
 
@@ -279,12 +297,28 @@ def build_demux_plus_workflow():
     # demux
     demux_applet = find_applet('viral-ngs-demux')
     demux_wrapper_applet = find_applet('viral-ngs-demux-wrapper')
+
     demux_wrapper_input = {
         "resources": dxpy.dxlink(resource_tarball_id),
         "demux_applet": dxpy.dxlink(demux_applet.id),
         "per_sample_output": True
     }
     demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input, name="demux")
+
+    # QC
+    count_hits_applet = find_applet('viral-ngs-count-hits')
+    count_hits_multiplex_applet = find_applet('viral-ngs-count-hits-multiplex')
+
+    count_hits_multiplex_input = {
+        "resources": dxpy.dxlink({"stage": demux_stage_id, "inputField": "resources"}),
+        "in_bams": dxpy.dxlink({"stage": demux_stage_id, "outputField": "bams"}),
+        "per_sample_output": True,
+        "count_hits_applet": dxpy.dxlink(count_hits_applet.id)
+    }
+
+    count_hits_stage_id = wf.add_stage(count_hits_multiplex_applet,
+        stage_input=count_hits_multiplex_input,
+        name='count hits, fastqc')
 
     # depletion
     depletion_input = {

@@ -47,19 +47,25 @@ main() {
     #########################################
     # Lauch viral-ngs-count-hits and fastqc #
     #########################################
-    for bam in "${in_bams[@]}"; do
+    for i in "${!in_bams[@]}"; do
+
+        bam="${in_bams[$i]}"
+        bam_name="${in_bams_prefix[$i]}"
+
         count_hit_job_id=$(dx run $count_hits_applet_id \
         -iin_bam="${bam}" \
         -iresources="${resources}" \
         -iper_sample_output="${per_sample_output}" \
         -iref_fasta="${ref_fasta}" \
         -iout_fn="${out_fn}" \
+        --name "count_hits $bam_name" \
         $opts --yes --brief)
 
         fastqc_job_id=$(dx run $fastqc_applet_id \
         -ireads="${bam}" \
         -iformat="${format}" -ikmer_size="${kmer_size}" \
         -inogroup="${nogroup}" $fastqc_opts \
+        --name "fastqc $bam_name" \
         --yes --brief)
 
         fastqc_job_ids+=($fastqc_job_id)

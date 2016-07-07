@@ -6,7 +6,7 @@ main() {
 
     set -e -x -o pipefail
 
-    # resources includes Novoalign
+    # unpack resources which includes Novoalign
     dx cat "$resources" | tar zx -C /
     export PATH="$PATH:$HOME/miniconda/bin"
 
