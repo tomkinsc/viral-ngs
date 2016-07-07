@@ -7,13 +7,7 @@ main() {
     # Prepare input/params for count_hits #
     #######################################
     if [ -z "$out_fn" ]; then
-        out_fn="counts.txt"
-    fi
-
-    opts=""
-    if [ -n "$novocraft_license" ]; then
-        novocraft_license=$(dx-jobutil-parse-link "$novocraft_license")
-        opts="-inovocraft_licence $novocraft_license $opts"
+        out_fn="hit_counts.txt"
     fi
 
     ###################################
@@ -54,9 +48,8 @@ main() {
 
         count_hit_job_id=$(dx run $count_hits_applet_id \
         -iin_bam="${bam}" \
-        -iresources="${resources}" \
         -iper_sample_output="${per_sample_output}" \
-        -iref_fasta="${ref_fasta}" \
+        -iref_fasta_tar="${ref_fasta}" \
         -iout_fn="${out_fn}" \
         --name "count_hits $bam_name" \
         $opts --yes --brief)

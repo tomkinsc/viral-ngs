@@ -39,7 +39,7 @@ def build_applets():
                "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
                "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis",
                "viral-ngs-demux-wrapper", "viral-ngs-demux", "viral-ngs-classification",
-               "viral-ngs-count-hits", "viral-ngs-count-hits-multiplex"]
+               "viral-ngs-bwa-count-hits", "viral-ngs-count-hits-multiplex"]
 
     # Build applets for assembly workflow in [args.folder]/applets/ folder
     project.new_folder(applets_folder, parents=True)
@@ -259,7 +259,7 @@ def build_demux_only_workflow():
         name='demux')
 
     # QC
-    count_hits_applet = find_applet('viral-ngs-count-hits')
+    count_hits_applet = find_applet('viral-ngs-bwa-count-hits')
     count_hits_multiplex_applet = find_applet('viral-ngs-count-hits-multiplex')
 
     count_hits_multiplex_input = {
@@ -306,7 +306,7 @@ def build_demux_plus_workflow():
     demux_stage_id = wf.add_stage(demux_wrapper_applet, stage_input=demux_wrapper_input, name="demux")
 
     # QC
-    count_hits_applet = find_applet('viral-ngs-count-hits')
+    count_hits_applet = find_applet('viral-ngs-bwa-count-hits')
     count_hits_multiplex_applet = find_applet('viral-ngs-count-hits-multiplex')
 
     count_hits_multiplex_input = {

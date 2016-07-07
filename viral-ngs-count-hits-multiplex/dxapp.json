@@ -14,10 +14,10 @@
     },
     {
       "name": "ref_fasta",
-      "label": "Reference genome to be aligned against by Novoalign",
+      "label": "BWA-indexed reference genome tarball",
       "class": "file",
       "optional": false,
-      "default": {"$dnanexus_link": "file-Bxf6B280fZvKgPQ59vx3fp4p"}
+      "default": {"$dnanexus_link": "file-Bxz9x3800Vfz7Fbz4Jyv56p8"}
     },
     {
       "name": "out_fn",
@@ -46,7 +46,7 @@
     {
       "name": "count_hits_applet",
       "class": "applet",
-      "label": "DNAnexus applet for viral-ngs-count-hits",
+      "label": "DNAnexus applet for viral-ngs-bwa-count-hits",
       "patterns": ["viral-ngs-count-hits"],
       "help": "The DNAnexus viral-ngs-count-hits applet."
     },
