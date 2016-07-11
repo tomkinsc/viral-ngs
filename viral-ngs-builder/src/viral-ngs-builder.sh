@@ -56,7 +56,8 @@ main() {
     echo "Trying to run integration test with rerouted tmp dir"
 
     # run upstream tests from upstream:/travis/tests-long.sh
-    py.test --cov-append test/integration --basetemp=/tmp
+    mkdir -p /home/dnanexus/pytest-temp
+    py.test --cov-append test/integration --basetemp=/home/dnanexus/pytest-temp
 
     # record a new filesystem manifest
     (find / -type f -o -type l 2> /dev/null || true) | sort > /tmp/fs-manifest.1

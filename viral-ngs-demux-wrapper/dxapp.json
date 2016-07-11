@@ -11,7 +11,7 @@
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],
       "label": "Viral-ngs resource tarball",
-      "default": {"$dnanexus_link": "file-BxY2vJj0q548kZkfFQV8vbPb"}
+      "default": {"$dnanexus_link": "file-BxqFkKj0xbJkXYj9yJgG7Vyx"}
     },
     {
       "name": "upload_sentinel_record",
@@ -77,6 +77,20 @@
       "optional": true
     },
     {
+      "name": "minimum_base_quality",
+      "label": "Mimimum Base Quality",
+      "class": "int",
+      "help": "Picard ExtractIlluminaBarcodes MINIMUM_QUALITY",
+      "optional": true
+    },
+    {
+      "name": "max_mismatches",
+      "label": "Maximum mismatches",
+      "class": "int",
+      "help": "Picard ExtractIlluminaBarcodes MAX_MISMATCHES ",
+      "optional": true
+    },
+    {
       "name": "sequencing_center",
       "label": "Sequencing Center",
       "class": "string",
@@ -115,6 +129,12 @@
       "name": "metrics",
       "label": "Metrics file",
       "help": "ExtractIlluminaBarcodes metrics file",
+      "class": "array:file"
+    },
+    {
+      "name": "barcodes",
+      "label": "Report of barcode counts",
+      "help": "TSV report of all barcode counts, in descending order",
       "class": "array:file"
     }
   ],

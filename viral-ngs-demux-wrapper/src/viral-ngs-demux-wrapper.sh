@@ -73,6 +73,16 @@ main() {
         opts="-iread_structure=$read_structure $opts"
     fi
 
+    if [ "$minimum_base_quality" != "" ]
+    then
+        opts="-iminimum_base_quality=$minimum_base_quality $opts"
+    fi
+
+    if [ "$max_mismatches" != "" ]
+    then
+        opts="-imax_mismatches=$max_mismatches $opts"
+    fi
+
     if [ "$sequencing_center" != "" ]
     then
         opts="-isequencing_center=$sequencing_center $opts"
@@ -104,5 +114,6 @@ main() {
     dx-jobutil-add-output bams $job_id:bams --class=jobref
     dx-jobutil-add-output unmatched_bams $job_id:unmatched_bams --class=jobref
     dx-jobutil-add-output metrics $job_id:metrics --class=jobref
+    dx-jobutil-add-output barcodes $job_id:barcodes --class=jobref
 
 }

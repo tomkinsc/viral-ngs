@@ -7,7 +7,7 @@ main() {
     # Unpack viral-ngs resources
     export PATH="$PATH:$HOME/miniconda/bin"
     dx cat "$resources" | tar zx -C /
-    samtools=viral-ngs/tools/build/conda-tools/default/bin/samtools
+    samtools=/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/samtools
 
     # Raise error if both of upload_sentinel_record and tarballs are specified
     if [ "$upload_sentinel_record" != "" ] && [ "$run_tarballs" != "" ]; then
@@ -82,6 +82,16 @@ main() {
         opts="$opts --read_structure $read_structure "
     fi
 
+    if [ "$minimum_base_quality" != "" ]
+    then
+        opts="$opts --minimum_base_quality $minimum_base_quality"
+    fi
+
+    if [ "$max_mismatches" != "" ]
+    then
+        opts="$opts --max_mismatches $max_mismatches"
+    fi
+
     if [ "$sequencing_center" != "" ]
     then
         opts="$opts --sequencing_center $sequencing_center "
@@ -116,22 +126,27 @@ main() {
         bam_out_dir="out/bams"
         unmatched_out_dir="out/unmatched_bams"
         metric_out_dir="out/metrics"
+        barcode_out_dir="out/barcodes"
 
         # Subfolders by lane if multi-lane run
         if [ "$multi_lane" = true ]; then
-            bam_out_dir="out/bams/lane_$lane"
-            unmatched_out_dir="out/unmatched_bams/lane_$lane"
-            metric_out_dir="out/metrics/lane_$lane"
+            bam_out_dir="$bam_out_dir/lane_$lane"
+            unmatched_out_dir="$unmatched_out_dir/lane_$lane"
+            metric_out_dir="$metric_out_dir/lane_$lane"
+            barcode_out_dir="$barcode_out_dir/lane_$lane/"
         fi
 
         mkdir -p $bam_out_dir
         mkdir -p $metric_out_dir
         mkdir -p $unmatched_out_dir
+        mkdir -p $barcode_out_dir
 
         # Execute viral-ngs demux, $opts may be empty so we do not quote it
         # to prevent expansion to an empty "" argument
         python viral-ngs/illumina.py illumina_demux "$location_of_input" "$lane" "$bam_out_dir" \
-        --outMetrics "$metric_out_dir/$metrics_fn" --JVMmemory "$mem_in_mb" \
+        --outMetrics "$metric_out_dir/$metrics_fn" \
+        --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
+        --JVMmemory "$mem_in_mb" \
         $opts
 
         # Move unmatched bam file to unmatched_out_dir, if present

@@ -6,12 +6,15 @@ main() {
 
     pids=()
     dx cat "$resources" | zcat | tar x -C / & pids+=($!)
-    dx cat "$novocraft_tarball" | tar zx & pids+=($!)
     dx download "$trinity_contigs" -o trinity_contigs.fasta & pids+=($!)
     dx download "$reference_genome" -o reference_genome.fasta & pids+=($!)
     dx download "$trinity_reads" -o reads.bam
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
-    export NOVOALIGN_PATH=/home/dnanexus/novocraft
+
+    if [ "$novocraft_license" != "" ]; then
+        dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
+        export NOVOALIGN_LICENSE_PATH=/home/dnanexus/novoalign.lic
+    fi
 
     # run assembly.py order_and_orient to scaffold the contigs
     python viral-ngs/assembly.py order_and_orient \
