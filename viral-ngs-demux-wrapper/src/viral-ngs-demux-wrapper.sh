@@ -29,7 +29,7 @@ main() {
         fi
     fi
 
-    if [ "$upload_sentinel_record" == "" && "$is_hiseq" = 'true' ];
+    if [ "$upload_sentinel_record" == "" && "$is_hiseq" == 'true' ];
     then
         instance_type="mem1_ssd1_x32"
     fi
