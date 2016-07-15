@@ -101,7 +101,7 @@
       }
     },
     "execDepends": [
-      {"name": "openjdk-7-jre-headless"},
+      {"name": "openjdk-8-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"}
     ]
