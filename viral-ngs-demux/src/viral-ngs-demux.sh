@@ -64,40 +64,52 @@ main() {
     fi
 
     # Populate command line options
-    opts="$advanced_opts"
+    # The --JVMemory arg ensures that $opts is non-empty
+    mem_in_mb="`head -n1 /proc/meminfo | awk '{print int($2*0.9/1024)}'`m"
+    opts=()
 
     if [ "$sample_sheet" != "" ]
     then
         dx cat "$sample_sheet" > "$sample_sheet_name"
-        opts="$opts --sampleSheet $sample_sheet_name "
+        # Introduce single quotes to handle filenames with whitespace
+        opts+=("--sampleSheet")
+        opts+=("$sample_sheet_name")
+    fi
+
+    if [ "$advanced_opts" != "" ]
+    then
+        opts+=("$advanced_opts")
     fi
 
     if [ "$flowcell" != "" ]
     then
-        opts="$opts --flowcell $flowcell "
+        opts+=("--flowcell")
+        opts+=("$flowcell")
     fi
 
     if [ "$read_structure" != "" ]
     then
-        opts="$opts --read_structure $read_structure "
+        opts+=("--read_structure")
+        opts+=("$read_structure")
     fi
 
     if [ "$minimum_base_quality" != "" ]
     then
-        opts="$opts --minimum_base_quality $minimum_base_quality"
+        opts+=("--minimum_base_quality")
+        opts+=("$minimum_base_quality")
     fi
 
     if [ "$max_mismatches" != "" ]
     then
-        opts="$opts --max_mismatches $max_mismatches"
+        opts+=("--max_mismatches")
+        opts+=("$max_mismatches")
     fi
 
     if [ "$sequencing_center" != "" ]
     then
-        opts="$opts --sequencing_center $sequencing_center "
+        opts+=("--sequencing_center")
+        opts+=("$sequencing_center")
     fi
-
-    mem_in_mb="`head -n1 /proc/meminfo | awk '{print int($2*0.9/1024)}'`m"
 
     # Find the lanes to perform demux on, if no lanes
     # specified, demux over all lanes
@@ -141,13 +153,23 @@ main() {
         mkdir -p $unmatched_out_dir
         mkdir -p $barcode_out_dir
 
-        # Execute viral-ngs demux, $opts may be empty so we do not quote it
-        # to prevent expansion to an empty "" argument
-        python viral-ngs/illumina.py illumina_demux "$location_of_input" "$lane" "$bam_out_dir" \
-        --outMetrics "$metric_out_dir/$metrics_fn" \
-        --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
-        --JVMmemory "$mem_in_mb" \
-        $opts
+        if [ ${#opts[@]} -eq 0 ]; then
+            python viral-ngs/illumina.py illumina_demux \
+            "$location_of_input" "$lane" "$bam_out_dir" \
+            --outMetrics "$metric_out_dir/$metrics_fn" \
+            --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
+            --JVMmemory "$mem_in_mb"
+        else
+            # Execute viral-ngs demux, $opts is guaranteed to be
+            # not empty, so we can safely quote it without introducing
+            # extraneous quotes
+            echo "${opts[@]}"
+            python viral-ngs/illumina.py illumina_demux \
+            "$location_of_input" "$lane" "$bam_out_dir" \
+            --outMetrics "$metric_out_dir/$metrics_fn" \
+            --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
+            --JVMmemory "$mem_in_mb" "${opts[@]}"
+        fi
 
         # Move unmatched bam file to unmatched_out_dir, if present
         if [ -f "$bam_out_dir/Unmatched.bam" ]; then
