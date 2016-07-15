@@ -11,7 +11,7 @@
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],
       "label": "Viral-ngs resource tarball",
-      "default": {"$dnanexus_link": "file-BxqFkKj0xbJkXYj9yJgG7Vyx"}
+      "default": {"$dnanexus_link": "file-By2Ybg00pVgPBgpq1Vq6b3BK"}
     },
     {
       "name": "upload_sentinel_record",
