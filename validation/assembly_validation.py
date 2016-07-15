@@ -102,7 +102,7 @@ parser_launch.add_argument("--folder", help="Folder within project (default: tim
 parser_launch.add_argument("--novocraft", help="Novocraft tarball (default: %(default)s)",
                                           default="file-BXJvFq00QyBKgFj9PZBqgbXg")
 parser_launch.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
-                                     default="file-BXK8p100QyB0JVff3j9Y1Bf5")
+                                     default="file-By20P600jy1JY9q634Yq5PQQ")
 parser_launch.add_argument("--muscle", help="Muscle applet ID (default: %(default)s)",
                                        default="applet-BXQxjv00QyB9QF3vP4BpXg95")
 parser_launch.add_argument("--limit", metavar="N", type=int, default=None,

@@ -13,7 +13,7 @@ argparser.add_argument("--project", help="DNAnexus project ID", default="project
 argparser.add_argument("--folder", help="Folder within project (default: timestamp-based)", default=None)
 argparser.add_argument("--novocraft", help="Novocraft license file. Optional: multithreading enabled with license")
 argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
-                                 default="file-BXK8p100QyB0JVff3j9Y1Bf5")
+                                 default="file-By20P600jy1JY9q634Yq5PQQ")
 argparser.add_argument("--run-tests", help="run small test assemblies", action="store_true")
 argparser.add_argument("--run-large-tests", help="run test assemblies of varying sizes", action="store_true")
 args = argparser.parse_args()
