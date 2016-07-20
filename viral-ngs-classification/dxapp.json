@@ -15,7 +15,7 @@
       "help": "A compressed archive containing a Kraken database (including database.idx, database.kdb, taxonomy/nodes.dmp and taxonomy/names.dmp).",
       "name": "kraken_db",
       "class": "file",
-      "default": {"$dnanexus_link": "file-Bxz93j00qz8yZx8531qB5j4q"}
+      "default": {"$dnanexus_link": "file-By76qBj0x2x3yPqVZvB09QXV"}
     },
     {
       "patterns": [ "*krona*.tar.lz4" ],
