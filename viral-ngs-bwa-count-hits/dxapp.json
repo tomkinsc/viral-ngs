@@ -49,7 +49,7 @@
       }
     },
     "execDepends": [
-      {"name": "default-jre-headless"}
+      {"name": "openjdk-8-jre-headless"}
     ],
     "distribution": "Ubuntu",
     "release": "12.04"

@@ -8,7 +8,7 @@ import os
 
 argparser = argparse.ArgumentParser(description="Build the viral-ngs resources tarball on DNAnexus.")
 argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
-                                 default="file-BXK8p100QyB0JVff3j9Y1Bf5")
+                                 default="file-By20P600jy1JY9q634Yq5PQQ")
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
 argparser.add_argument("--folder", help="Folder within project (default: %(default)s)", default="/resources_tarball")
 argparser.add_argument("--reuse-builder", help="Reuse the existing 'builder' applet instead of recreating it", action="store_true")

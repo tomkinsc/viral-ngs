@@ -140,7 +140,7 @@
       }
     },
     "execDepends": [
-      {"name": "default-jre-headless"},
+      {"name": "openjdk-8-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"},
       {"name": "libxml2-utils"}

@@ -44,7 +44,7 @@
       {"name": "build-essential"},
       {"name": "unzip"},
       {"name": "libncurses5-dev"},
-      {"name": "openjdk-7-jre-headless"},
+      {"name": "openjdk-8-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"},
       {"name": "pep8"},
