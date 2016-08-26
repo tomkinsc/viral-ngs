@@ -2,7 +2,6 @@
 
 main() {
     set -e -x -o pipefail
-    export PATH="$PATH:$HOME/miniconda/bin"
 
     if [ -z "$name" ]; then
         name="${assembly_prefix%.refined.refined}"
@@ -16,32 +15,54 @@ main() {
     dx cat "$gatk_tarball" | tar jx -C gatk/
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
+
+    # Stash the PYTHONPATH used by dx
+    DX_PYTHONPATH=$PYTHONPATH
+    DX_PATH=$PATH
+
     if [ "$novocraft_license" != "" ]; then
         dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
-        export NOVOALIGN_LICENSE_PATH=/home/dnanexus/novoalign.lic
     fi
 
-    export GATK_PATH=/home/dnanexus/gatk
+    # Load viral-ngs virtual environment
+    # Disable error propagation for now (there are warning :/ )
+    unset PYTHONPATH
 
-    python viral-ngs/read_utils.py index_fasta_picard assembly.fasta
-    python viral-ngs/read_utils.py index_fasta_samtools assembly.fasta
-    samtools=/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/samtools
-    novoindex="/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/novoindex"
+    set +e +o pipefail
+    source easy-deploy-viral-ngs.sh load
+
+    if [ -f /home/dnanexus/novoalign.lic ]; then
+        novoalign-register-license /home/dnanexus/novoalign.lic
+    fi
+
+    gatk-register /home/dnanexus/gatk/GenomeAnalysisTK.jar
+
+    read_utils.py index_fasta_picard assembly.fasta
+    read_utils.py index_fasta_samtools assembly.fasta
 
     # Prep fasta: index using novoalign
-    "$novoindex" assembly.nix assembly.fasta
+    novoindex assembly.nix assembly.fasta
 
     # align reads, dedup, realign, filter
-    python viral-ngs/read_utils.py align_and_fix reads.bam assembly.fasta --outBamAll all.bam --outBamFiltered mapped.bam --novoalign_options "$novoalign_options"
+    read_utils.py align_and_fix reads.bam assembly.fasta --outBamAll all.bam --outBamFiltered mapped.bam --aligner_options "$novoalign_options"
 
     # collect some statistics
     assembly_length=$(tail -n +1 assembly.fasta | tr -d '\n' | wc -c)
-    alignment_read_count=$($samtools view -c mapped.bam)
-    reads_paired_count=$($samtools flagstat all.bam | grep properly | awk '{print $1}')
-    alignment_base_count=$($samtools view mapped.bam | cut -f10 | tr -d '\n' | wc -c)
+    alignment_read_count=$(samtools view -c mapped.bam)
+    reads_paired_count=$(samtools flagstat all.bam | grep properly | awk '{print $1}')
+    alignment_base_count=$(samtools view mapped.bam | cut -f10 | tr -d '\n' | wc -c)
     mean_coverage_depth=$(expr $alignment_base_count / $assembly_length)
+    samtools flagstat  all.bam > stats.txt
+
+    # deactivate viral-ngs virtual environment
+    source deactivate
+
+    # restore paths from DX
+    export PYTHONPATH=$DX_PYTHONPATH
+    export PATH=$DX_PATH
+
+    # Continue gathering statistics
     genomecov=$(bedtools genomecov -ibam mapped.bam | dx upload -o "${name}.genomecov.txt" --brief -)
-    $samtools flagstat  all.bam > stats.txt
 
     # upload outputs
     dx-jobutil-add-output assembly_length $assembly_length

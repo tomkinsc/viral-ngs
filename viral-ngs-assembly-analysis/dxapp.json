@@ -18,7 +18,7 @@
       "patterns": ["*.bam"]
     },
     {
-      "name": "novoalign_options",
+      "name": "aligner_options",
       "class": "string",
       "optional": false,
       "default": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3"

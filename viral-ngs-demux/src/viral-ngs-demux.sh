@@ -4,10 +4,12 @@ main() {
 
     set -e -x -o pipefail
 
+    # Stash the PYTHONPATH used by dx
+    DX_PYTHONPATH=$PYTHONPATH
+    DX_PATH=$PATH
+
     # Unpack viral-ngs resources
-    export PATH="$PATH:$HOME/miniconda/bin"
     dx cat "$resources" | tar zx -C /
-    samtools=/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/samtools
 
     # Raise error if both of upload_sentinel_record and tarballs are specified
     if [ "$upload_sentinel_record" != "" ] && [ "$run_tarballs" != "" ]; then
@@ -125,15 +127,24 @@ main() {
         multi_lane=true
     fi
 
-    # Perform demux iteratively over lanes
+    # Make sure that the lane specified is valid
     for lane in ${lanes[@]}
     do
-        # Make sure that the lane specified is valid
         if [ $lane -gt $lane_count ];
         then
             dx-jobutil-report-error "Invalid lane: $lane, there are only $lane_count lane(s) detected in the run."
         fi
+    done
 
+    # Load viral-ngs virtual environment
+    # Disable error propagation for now (there are warning :/ )
+    unset PYTHONPATH
+
+    set +e +o pipefail
+    source easy-deploy-viral-ngs.sh load
+
+    for lane in ${lanes[@]}
+    do
         # Prepare output folders
         bam_out_dir="out/bams"
         unmatched_out_dir="out/unmatched_bams"
@@ -154,7 +165,7 @@ main() {
         mkdir -p $barcode_out_dir
 
         if [ ${#opts[@]} -eq 0 ]; then
-            python viral-ngs/illumina.py illumina_demux \
+            illumina.py illumina_demux \
             "$location_of_input" "$lane" "$bam_out_dir" \
             --outMetrics "$metric_out_dir/$metrics_fn" \
             --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
@@ -164,7 +175,7 @@ main() {
             # not empty, so we can safely quote it without introducing
             # extraneous quotes
             echo "${opts[@]}"
-            python viral-ngs/illumina.py illumina_demux \
+            illumina.py illumina_demux \
             "$location_of_input" "$lane" "$bam_out_dir" \
             --outMetrics "$metric_out_dir/$metrics_fn" \
             --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
@@ -181,7 +192,7 @@ main() {
         # Dowstream that don't handle empty bam files elegantly
         for bam_file in `ls $bam_out_dir`
         do
-            read_count=`("$samtools" view -c "$bam_out_dir/$bam_file")`
+            read_count=`("samtools" view -c "$bam_out_dir/$bam_file")`
 
             if [ $read_count -eq 0 ]; then
                 echo "===WARNING=== No reads found in demuxed bam file: $bam_file. This file will be removed from output"
@@ -200,6 +211,13 @@ main() {
             done
         fi
     done
+
+    # deactivate viral-ngs virtual environment
+    source deactivate
+
+    # restore paths from DX
+    export PYTHONPATH=$DX_PYTHONPATH
+    export PATH=$DX_PATH
 
     dx-upload-all-outputs
 
