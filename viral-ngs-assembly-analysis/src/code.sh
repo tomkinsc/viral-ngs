@@ -15,14 +15,13 @@ main() {
     dx cat "$gatk_tarball" | tar jx -C gatk/
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
+    if [ "$novocraft_license" != "" ]; then
+        dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
+    fi
 
     # Stash the PYTHONPATH used by dx
     DX_PYTHONPATH=$PYTHONPATH
     DX_PATH=$PATH
-
-    if [ "$novocraft_license" != "" ]; then
-        dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
-    fi
 
     # Load viral-ngs virtual environment
     # Disable error propagation for now (there are warning :/ )
@@ -45,6 +44,8 @@ main() {
 
     # align reads, dedup, realign, filter
     read_utils.py align_and_fix reads.bam assembly.fasta --outBamAll all.bam --outBamFiltered mapped.bam --aligner_options "$novoalign_options"
+
+    reports.py plot_coverage mapped.bam coverage_plot.pdf --plotFormat pdf --plotWidth 1100 --plotHeight 850 --plotDPI 100
 
     # collect some statistics
     assembly_length=$(tail -n +1 assembly.fasta | tr -d '\n' | wc -c)
@@ -79,4 +80,6 @@ main() {
     dx-jobutil-add-output alignment_genomecov "$genomecov"
     dx-jobutil-add-output final_assembly --class=file \
         $(dx upload assembly.fasta --destination "${name}.fasta" --brief)
+    dx-jobutil-add-output coverage_plot --class=file \
+        $(dx upload coverage_plot.pdf --destination "${name}.coverage_plot.pdf" --brief)
 }

@@ -71,6 +71,12 @@
       "patterns": ["*.mapped.bam", "*.bam"]
     },
     {
+      "name": "coverage_plot",
+      "help": "PDF report of coverage of mapped reads",
+      "class": "file",
+      "patterns": ["*.pdf"]
+    },
+    {
       "name": "assembly_length",
       "class": "int"
     },

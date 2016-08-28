@@ -7,13 +7,9 @@
 #   - `-x`: Print trace of many of commands below; useful for debugging.
 set -e -x -o pipefail
 
-# Many executables in [viral-ngs](https://github.com/broadinstitute/viral-ngs)
-# depend on executables in this miniconda/bin/, so we add it to PATH env var
-# here.
-#
-# PRECONDITION: miniconda/bin/ must somehow be downloaded and unpackaged into
-# execution env.
-export PATH="$PATH:$HOME/miniconda/bin/"
+# Stash the PYTHONPATH used by dx
+DX_PYTHONPATH=$PYTHONPATH
+DX_PATH=$PATH
 
 # Log system resource statistics every 1m.
 dstat -cmdn 60 &
@@ -82,22 +78,36 @@ function main() {
     output_root_dir=~/"out/outputs/$output_filename_prefix"
     mkdir -p "$output_root_dir"/
 
+    # Load viral-ngs virtual environment
+    # Disable error propagation for now (there are warning :/ )
+    unset PYTHONPATH
+
+    set +e +o pipefail
+    source easy-deploy-viral-ngs.sh load
+
     # Use Kraken to classify taxonomic profile of sample.
-    viral-ngs/metagenomics.py kraken \
-                              ~/scratch/"${mappings_name[$i]}" \
-                              "./$kraken_db_prefix" \
-                              --outReads "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
-                              --outReport "$output_root_dir"/"$output_filename_prefix".kraken-report.txt \
-                              --numThreads `nproc`
+    metagenomics.py kraken \
+                    ~/scratch/"${mappings_name[$i]}" \
+                    "./$kraken_db_prefix" \
+                    --outReads "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
+                    --outReport "$output_root_dir"/"$output_filename_prefix".kraken-report.txt \
+                    --numThreads `nproc`
 
     mkdir -p ~/scratch/tmp/
 
     # Use Krona to visualize taxonomic profiling output from Kraken.
-    viral-ngs/metagenomics.py krona \
-                              "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
-                              "./$krona_taxonomy_db_prefix" \
-                              ~/scratch/tmp/"$output_filename_prefix".krona-report.html \
-                              --noRank
+    metagenomics.py krona \
+                    "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
+                    "./$krona_taxonomy_db_prefix" \
+                    ~/scratch/tmp/"$output_filename_prefix".krona-report.html \
+                    --noRank
+
+    # deactivate viral-ngs virtual environment
+    source deactivate
+
+    # restore paths from DX
+    export PYTHONPATH=$DX_PYTHONPATH
+    export PATH=$DX_PATH
 
     # Standalone html file output
     cp ~/scratch/tmp/"$output_filename_prefix".krona-report.html "$output_root_dir"/

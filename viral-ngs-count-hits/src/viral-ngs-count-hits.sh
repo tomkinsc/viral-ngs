@@ -6,23 +6,31 @@ main() {
 
     set -e -x -o pipefail
 
-    # unpack resources which includes Novoalign
     dx cat "$resources" | tar zx -C /
-    export PATH="$PATH:$HOME/miniconda/bin"
+
+    # Stash the PYTHONPATH used by dx
+    DX_PYTHONPATH=$PYTHONPATH
+    DX_PATH=$PATH
+
+    # Load viral-ngs virtual environment
+    # Disable error propagation for now (there are warning :/ )
+    unset PYTHONPATH
+
+    set +e +o pipefail
+    source easy-deploy-viral-ngs.sh load
 
     # Novoindex the reference fasta file
-    novoindex="/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/novoindex"
     index_output="${ref_fasta_path%.fasta}"
     index_output="${index_output%.fa}.nix"
 
-    $novoindex "$index_output" "$ref_fasta_path"
+    novoindex "$index_output" "$ref_fasta_path"
 
     # Prepare output folders
     out_dir="out/count_files"
     mkdir -p $out_dir
 
     if [ -z "$out_fn" ]; then
-        out_fn="hit_counts.txt"
+        out_fn="hit_counts.pdf"
     fi
 
     # Output file name / directory wrangling
@@ -36,7 +44,14 @@ main() {
     fi
 
     # read_utils.py align_and_count_hits <input> <reference DB> <output>
-    viral-ngs/read_utils.py align_and_count_hits "${in_bam_path}" "${ref_fasta_path}" "$out_dir/$sample_out_fn"
+    reports.py align_and_plot_coverage "${in_bam_path}"  "$out_dir/$sample_out_fn" "${ref_fasta_path}"
+
+    # deactivate viral-ngs virtual environment
+    source deactivate
+
+    # restore paths from DX
+    export PYTHONPATH=$DX_PYTHONPATH
+    export PATH=$DX_PATH
 
     dx-upload-all-outputs
 }

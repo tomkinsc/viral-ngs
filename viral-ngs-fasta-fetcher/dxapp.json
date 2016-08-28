@@ -42,6 +42,11 @@
     "interpreter": "bash",
     "file": "src/viral-ngs-fasta-fetcher.sh"
   },
+  "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x4"
+      }
+    },
   "access": {
     "network": [
       "*"
