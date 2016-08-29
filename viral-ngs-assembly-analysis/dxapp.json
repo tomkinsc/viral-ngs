@@ -71,6 +71,12 @@
       "patterns": ["*.mapped.bam", "*.bam"]
     },
     {
+      "name": "assembly_read_index",
+      "help": "index of reads aligned to final assembly (mapped reads only)",
+      "class": "file",
+      "patterns": ["*.mapped.bam.bai", "*.bam.bai"]
+    },
+    {
       "name": "coverage_plot",
       "help": "PDF report of coverage of mapped reads",
       "class": "file",

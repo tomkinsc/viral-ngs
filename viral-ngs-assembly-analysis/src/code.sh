@@ -44,6 +44,7 @@ main() {
 
     # align reads, dedup, realign, filter
     read_utils.py align_and_fix reads.bam assembly.fasta --outBamAll all.bam --outBamFiltered mapped.bam --aligner_options "$novoalign_options"
+    samtools index mapped.bam
 
     reports.py plot_coverage mapped.bam coverage_plot.pdf --plotFormat pdf --plotWidth 1100 --plotHeight 850 --plotDPI 100
 
@@ -77,6 +78,8 @@ main() {
         $(dx upload stats.txt --destination "${name}.flagstat.txt" --brief)
     dx-jobutil-add-output assembly_read_alignments --class=file \
         $(dx upload mapped.bam --destination "${name}.mapped.bam" --brief)
+    dx-jobutil-add-output assembly_read_index --class=file \
+        $(dx upload mapped.bam.bai --destination "${name}.mapped.bam.bai" --brief)
     dx-jobutil-add-output alignment_genomecov "$genomecov"
     dx-jobutil-add-output final_assembly --class=file \
         $(dx upload assembly.fasta --destination "${name}.fasta" --brief)
