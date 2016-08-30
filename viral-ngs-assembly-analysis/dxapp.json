@@ -18,7 +18,7 @@
       "patterns": ["*.bam"]
     },
     {
-      "name": "novoalign_options",
+      "name": "aligner_options",
       "class": "string",
       "optional": false,
       "default": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3"
@@ -69,6 +69,18 @@
       "help": "reads aligned to final assembly (mapped reads only)",
       "class": "file",
       "patterns": ["*.mapped.bam", "*.bam"]
+    },
+    {
+      "name": "assembly_read_index",
+      "help": "index of reads aligned to final assembly (mapped reads only)",
+      "class": "file",
+      "patterns": ["*.mapped.bam.bai", "*.bam.bai"]
+    },
+    {
+      "name": "coverage_plot",
+      "help": "PDF report of coverage of mapped reads",
+      "class": "file",
+      "patterns": ["*.pdf"]
     },
     {
       "name": "assembly_length",

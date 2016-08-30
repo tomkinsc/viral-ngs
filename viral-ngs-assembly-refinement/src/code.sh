@@ -2,10 +2,9 @@
 
 main() {
     set -e -x -o pipefail
-    export PATH="$PATH:$HOME/miniconda/bin"
 
     if [ -z "$name" ]; then
-        name="$assembly_prefix"
+        name="${assembly_prefix%.scaffold}"
     fi
 
     pids=()
@@ -16,19 +15,34 @@ main() {
     dx cat "$gatk_tarball" | tar jx -C gatk/
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
-    if [ "$novocraft_license" != "" ]; then
-        dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
-        export NOVOALIGN_LICENSE_PATH=/home/dnanexus/novoalign.lic
+    # Stash the PYTHONPATH used by dx
+    DX_PYTHONPATH=$PYTHONPATH
+    DX_PATH=$PATH
+
+    # Load viral-ngs virtual environment
+    # Disable error propagation for now (there are warning :/ )
+    unset PYTHONPATH
+
+    set +e +o pipefail
+    source easy-deploy-viral-ngs.sh load
+
+    if [ -f /home/dnanexus/novoalign.lic ]; then
+        novoalign-register-license /home/dnanexus/novoalign.lic
     fi
 
-    export GATK_PATH=/home/dnanexus/gatk
+    gatk-register /home/dnanexus/gatk/GenomeAnalysisTK.jar
 
-    novoindex="/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/novoindex"
+    novoindex assembly.nix assembly.fasta
 
-    "$novoindex" assembly.nix assembly.fasta
-
-    python viral-ngs/assembly.py refine_assembly assembly.fasta reads.bam refined_assembly.fasta \
+    assembly.py refine_assembly assembly.fasta reads.bam refined_assembly.fasta \
         --outVcf sites.vcf.gz --min_coverage "$min_coverage" --novo_params "$novoalign_options" \
+
+    # deactivate viral-ngs virtual environment
+    source deactivate
+
+    # restore paths from DX
+    export PYTHONPATH=$DX_PYTHONPATH
+    export PATH=$DX_PATH
 
     dx-jobutil-add-output assembly_sites_vcf --class=file \
         $(zcat sites.vcf.gz | dx upload --destination "${name}.refinement.vcf" --brief -)

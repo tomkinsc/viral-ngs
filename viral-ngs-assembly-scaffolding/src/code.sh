@@ -2,7 +2,6 @@
 
 main() {
     set -e -x -o pipefail
-    export PATH="$PATH:$HOME/miniconda/bin"
 
     pids=()
     dx cat "$resources" | zcat | tar x -C / & pids+=($!)
@@ -13,11 +12,25 @@ main() {
 
     if [ "$novocraft_license" != "" ]; then
         dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
-        export NOVOALIGN_LICENSE_PATH=/home/dnanexus/novoalign.lic
+    fi
+
+    # Stash the PYTHONPATH used by dx
+    DX_PYTHONPATH=$PYTHONPATH
+    DX_PATH=$PATH
+
+    # Load viral-ngs virtual environment
+    # Disable error propagation for now (there are warning :/ )
+    unset PYTHONPATH
+
+    set +e +o pipefail
+    source easy-deploy-viral-ngs.sh load
+
+    if [ -f /home/dnanexus/novoalign.lic ]; then
+        novoalign-register-license /home/dnanexus/novoalign.lic
     fi
 
     # run assembly.py order_and_orient to scaffold the contigs
-    python viral-ngs/assembly.py order_and_orient \
+    assembly.py order_and_orient \
         trinity_contigs.fasta reference_genome.fasta intermediate_scaffold.fasta
 
     if [ -z "$name" ]; then
@@ -26,11 +39,18 @@ main() {
 
     # run assembly.py impute_from_reference to check assembly quality and clean the contigs
     exit_code=0
-    python viral-ngs/assembly.py impute_from_reference \
+    assembly.py impute_from_reference \
         intermediate_scaffold.fasta reference_genome.fasta scaffold.fasta \
         --newName "${name}" --replaceLength "$replace_length" \
         --minLengthFraction "$min_length_fraction" --minUnambig "$min_unambig" \
         --aligner "$aligner" 2> >(tee impute.stderr.log >&2) || exit_code=$?
+
+    # deactivate viral-ngs virtual environment
+    source deactivate
+
+    # restore paths from DX
+    export PYTHONPATH=$DX_PYTHONPATH
+    export PATH=$DX_PATH
 
     if [ "$exit_code" -ne "0" ]; then
         if grep PoorAssemblyError impute.stderr.log ; then

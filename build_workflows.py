@@ -187,7 +187,7 @@ def build_assembly_workflow(species, resources):
         analysis_input = {
             "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
             "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
-            "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
+            "aligner_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
             "resources": dxpy.dxlink({"stage": depletion_stage_id, "inputField": "resources"}),
             "novocraft_license": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "novocraft_license"}),
             "gatk_tarball": dxpy.dxlink({"stage": scaffold_stage_id, "inputField": "gatk_tarball"})
@@ -217,7 +217,7 @@ def build_assembly_workflow(species, resources):
         analysis_input = {
             "assembly": dxpy.dxlink({"stage": refine2_stage_id, "outputField": "refined_assembly"}),
             "reads": dxpy.dxlink({"stage": refine2_stage_id, "inputField": "reads"}),
-            "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
+            "aligner_options": "-r Random -l 40 -g 40 -x 20 -t 100 -k",
             "resources": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "resources"}),
             "novocraft_license": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_license"}),
             "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"})
@@ -359,13 +359,15 @@ if args.run_tests is True or args.run_large_tests is True:
             "broad_assembly": "file-BXQx6G00QyB6PQVYKQBgzxv4",
             "expected_assembly_sha256sum": "3a849c1e545bca1ff938fe847f09206c0d5001de6153bf65831eb21513f1c3fa",
             # Note: contig name line (>....) removed
-            "expected_subsampled_base_count":  469496,
-            "expected_alignment_base_count": 590547
+            "expected_subsampled_base_count":  729174,
+            "expected_alignment_base_count": 1135543
         }
     }
 
     if args.run_large_tests is True:
         # nb these samples takes too long for Travis
+        # TODO: Update figures of merit for v1.10.1 udpates, which
+        # overhauls subsampled and alignment base counts
         test_samples["SRR1553468"] = {
             "species": "Ebola",
             "reads": "file-BXYqZj80Fv4YqP151Zy9291y",

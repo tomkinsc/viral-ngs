@@ -15,7 +15,7 @@
       "help": "A compressed archive containing a Kraken database (including database.idx, database.kdb, taxonomy/nodes.dmp and taxonomy/names.dmp).",
       "name": "kraken_db",
       "class": "file",
-      "default": {"$dnanexus_link": "file-Bxz93j00qz8yZx8531qB5j4q"}
+      "default": {"$dnanexus_link": "file-By76qBj0x2x3yPqVZvB09QXV"}
     },
     {
       "patterns": [ "*krona*.tar.lz4" ],
@@ -30,7 +30,7 @@
       "class": "file",
       "patterns": [ "viral-ngs-*.resources.tar.gz" ],
       "label": "A pre-built viral-ngs resources bundle",
-      "default": {"$dnanexus_link": "file-By2Ybg00pVgPBgpq1Vq6b3BK"}
+      "default": {"$dnanexus_link": "file-Bz08Q7j037vV22qgZ4YPKyk7"}
     }
   ],
   "outputSpec": [

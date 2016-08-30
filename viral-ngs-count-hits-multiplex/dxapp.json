@@ -33,12 +33,6 @@
       "default": false
     },
     {
-      "name": "novocraft_license",
-      "class": "file",
-      "patterns": ["novoalign.lic", "Novoalign.lic"],
-      "optional": true
-    },
-    {
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"]

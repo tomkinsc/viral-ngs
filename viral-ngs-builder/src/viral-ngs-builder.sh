@@ -2,7 +2,7 @@
 
 main() {
     set -e -x -o pipefail
-    export PATH="$PATH:$HOME/miniconda/bin"
+    # export PATH="$PATH:$HOME/miniconda/bin"
 
     # deploy proprietary software (needed for build, but excluded from the
     # resources tarball)
@@ -10,9 +10,6 @@ main() {
     dx cat "$gatk_tarball" | tar jx -C gatk/
     wait $pid
     export GATK_PATH=/home/dnanexus/gatk
-
-    # record a manifest of the filesystem before doing anything further
-    (find / -type f -o -type l 2> /dev/null || true) | sort > /tmp/fs-manifest.0
 
     # clone viral-ngs
     git clone -n "$git_url" viral-ngs
@@ -26,38 +23,22 @@ main() {
     # detect revision
     GIT_REVISION=$(git describe --long --tags --dirty --always)
 
-    # installations from upstream:/travis/install-pip.sh
-    pip install -r requirements.txt
-    pip install -r requirements-tests.txt
+    # we're done with the viral-ngs repo and can remove it
+    cd ~
+    rm -rf viral-ngs
 
-    # installations from upstream:/travis/install-conda.sh
-    wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    bash miniconda.sh -b -p $HOME/miniconda
-    user=$(whoami)
-    chown -R $user $HOME/miniconda
-    export PATH="$PATH:$HOME/miniconda/bin"
-    hash -r
-    conda config --set always_yes yes --set changeps1 no
-    conda config --add channels bioconda
-    conda config --add channels r
-    conda update -q conda
-    conda info -a
+    # record a manifest of the filesystem before doing anything further
+    (find / -type f -o -type l 2> /dev/null || true) | sort > /tmp/fs-manifest.0
 
-    # installations from upstream:/travis/install-tools.sh
-    echo "Installing and validating bioinformatic tools"
-    py.test test/unit/test_tools.py
+    # we need to unset the PYTHONPATH for the conda env
+    DX_PYTHON_PATH=$PYTHONPATH
+    unset PYTHONPATH
 
-    # run upstream tests from upstream:/travis/tests-unit.sh
-    py.test test/unit
-
-    # Make /dev/shm which is assumed to exist by Diamond
-    mkdir -p /dev/shm
-
-    echo "Trying to run integration test with rerouted tmp dir"
-
-    # run upstream tests from upstream:/travis/tests-long.sh
-    mkdir -p /home/dnanexus/pytest-temp
-    py.test --cov-append test/integration --basetemp=/home/dnanexus/pytest-temp
+    # Use the upstream easy deploy script to install viral-ngs
+    # (including tools and dependencies)
+    wget https://raw.githubusercontent.com/broadinstitute/viral-ngs/master/easy-deploy-script/easy-deploy-viral-ngs.sh
+    chmod u+x easy-deploy-viral-ngs.sh
+    ./easy-deploy-viral-ngs.sh setup
 
     # record a new filesystem manifest
     (find / -type f -o -type l 2> /dev/null || true) | sort > /tmp/fs-manifest.1
@@ -66,6 +47,9 @@ main() {
     comm -1 -3 /tmp/fs-manifest.0 /tmp/fs-manifest.1 | \
       egrep -v "^/proc" | egrep -v "^/sys" | egrep -v "^/tmp" | egrep -v "/\.git/" \
       > /tmp/resources-manifest.txt
+
+    # reset the PYTHONPATH for dx upload to work
+    export PYTHONPATH=$DX_PYTHON_PATH
 
     # upload a tarball with the new files
     resources=`tar -c -v -z -T /tmp/resources-manifest.txt | \

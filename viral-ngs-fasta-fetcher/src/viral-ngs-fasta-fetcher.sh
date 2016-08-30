@@ -2,7 +2,6 @@
 
 main() {
     set -e -x -o pipefail
-    export PATH="$PATH:$HOME/miniconda/bin"
 
     accessions=$(echo ${accession_numbers[*]})
     dx cat "$resources" | tar zx -C /
@@ -15,17 +14,35 @@ main() {
     # if a command is present (even if arguments are missing), we can use exit codes
     # to determine the correct functions to call
 
-    if viral-ngs/ncbi.py fetch_fastas_and_feature_tables &> /dev/null ; then
+    # Stash the PYTHONPATH used by dx
+    DX_PYTHONPATH=$PYTHONPATH
+    DX_PATH=$PATH
+
+    # Load viral-ngs virtual environment
+    # Disable error propagation for now (there are warning :/ )
+    unset PYTHONPATH
+
+    set +e +o pipefail
+    source easy-deploy-viral-ngs.sh load
+
+    if ncbi.py fetch_fastas_and_feature_tables &> /dev/null ; then
         # this is the old interface
-        viral-ngs/ncbi.py fetch_fastas_and_feature_tables $user_email ./ $accessions --combinedGenomeFilePrefix genome --removeSeparateFastas
+        ncbi.py fetch_fastas_and_feature_tables $user_email ./ $accessions --combinedGenomeFilePrefix genome --removeSeparateFastas
     fi
 
-    if viral-ngs/ncbi.py fetch_fastas &> /dev/null ; then
+    if ncbi.py fetch_fastas &> /dev/null ; then
         # this is the new interface
-        viral-ngs/ncbi.py fetch_fastas $user_email ./ $accessions --combinedFilePrefix genome --removeSeparateFiles
+        ncbi.py fetch_fastas $user_email ./ $accessions --combinedFilePrefix genome --removeSeparateFiles
         # if feature tables are needed, uncomment this:
         #viral-ngs/ncbi.py fetch_feature_tables $user_email ./ $accessions
     fi
+
+    # deactivate viral-ngs virtual environment
+    source deactivate
+
+    # restore paths from DX
+    export PYTHONPATH=$DX_PYTHONPATH
+    export PATH=$DX_PATH
 
     genome_fasta=$(dx upload genome.fasta --destination "${combined_genome_prefix}.fasta" --brief)
 
