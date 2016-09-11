@@ -35,7 +35,10 @@
       "class": "array:file",
       "patterns": ["*.blastndb.tar.gz"],
       "help": "Tarball(s) containing nucleotide BLAST databases to deplete",
-      "default": [{"$dnanexus_link": "file-BYFv7bQ0QyBFXQBkX1Jqz88g"}]
+      "default": [
+        {"$dnanexus_link": "file-BYFv7bQ0QyBFXQBkX1Jqz88g"},
+        {"$dnanexus_link": "file-BzBpkK80x0z8GBQPfZ4kgPKp"}
+      ]
     },
     {
       "name": "sample_name",

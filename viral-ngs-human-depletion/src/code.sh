@@ -110,6 +110,11 @@ main() {
 
 
     # stage the databases for BMTagger and BLAST
+    # assumptions: each database is stored in a tarball. If the database name
+    # is X then the tarball is named X.bmtagger_db.tar.gz or X.blastndb.tar.gz.
+    # The tarball contains the database files in the root (NOT in subdirectory
+    # X/). The individual database files have X as their base name, e.g.
+    # X.srprism.amp, X.nin
     pids=()
     mkdir bmtagger_db
     local_bmtagger_dbs=""
