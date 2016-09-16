@@ -54,11 +54,17 @@ main() {
         --name "count_hits $bam_name" \
         $opts --yes --brief)
 
+        fastqc_dest=""
+        if [ "$per_sample_output" == "true" ]; then
+            fastqc_dest="/$bam_name"
+        fi
+
         fastqc_job_id=$(dx run $fastqc_applet_id \
         -ireads="${bam}" \
         -iformat="${format}" -ikmer_size="${kmer_size}" \
         -inogroup="${nogroup}" $fastqc_opts \
         --name "fastqc $bam_name" \
+        ${fastqc_dest:+--destination "$fastqc_dest"} \
         --yes --brief)
 
         fastqc_job_ids+=($fastqc_job_id)
@@ -67,15 +73,4 @@ main() {
         dx-jobutil-add-output report_html $fastqc_job_id:report_html --class=array:jobref
         dx-jobutil-add-output stats_txt $fastqc_job_id:stats_txt --class=array:jobref
     done
-
-    # Marshall fastqc output files in workspace container to per-sample
-    # sub-folder
-    if [ "$per_sample_output" == "true" ]; then
-        dx wait ${fastqc_job_ids[@]}
-        for fastqc_report in `dx ls $DX_WORKSPACE_ID:/*.stats-fastqc.html`; do
-            sample_name="${fastqc_report%.stats-fastqc.html}"
-            dx mkdir -p "${DX_WORKSPACE_ID}:/${sample_name}"
-            dx mv "${DX_WORKSPACE_ID}:/${sample_name}.*" "${DX_WORKSPACE_ID}:/${sample_name}/"
-        done
-    fi
 }
