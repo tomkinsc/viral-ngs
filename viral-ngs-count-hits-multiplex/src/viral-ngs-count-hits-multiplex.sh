@@ -56,7 +56,14 @@ main() {
 
         fastqc_dest=""
         if [ "$per_sample_output" == "true" ]; then
-            fastqc_dest="/$bam_name"
+            # folder structure for multi-lane outputs uses lane metadata recorded
+            # in BAM property at the end of demux
+            lane=$(dx describe --json "$bam" | jq -r .properties.lane)
+            if [ "$lane" == "null" ]; then
+                fastqc_dest="/$bam_name"
+            else
+                fastqc_dest="/lane_$lane/$bam_name"
+            fi
         fi
 
         fastqc_job_id=$(dx run $fastqc_applet_id \

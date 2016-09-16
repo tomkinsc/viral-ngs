@@ -74,8 +74,17 @@ function main() {
     # will not gain much.
     dx cat "${mappings[$i]}" > ~/scratch/"${mappings_name[$i]}"
 
+    # folder structure for multi-lane outputs uses lane metadata recorded
+    # in BAM property at the end of demux
+    lane=$(dx describe --json "${mappings[$i]}" | jq -r .properties.lane)
+    if [ "$lane" == "null" ]; then
+        output_root_dir=~/"out/outputs/"
+    else
+        output_root_dir=~/"out/outputs/lane_$lane/"
+    fi
+
     output_filename_prefix="${mappings_prefix[$i]%.cleaned}"
-    output_root_dir=~/"out/outputs/$output_filename_prefix"
+    output_root_dir="${output_root_dir}$output_filename_prefix"
     mkdir -p "$output_root_dir"/
 
     # Load viral-ngs virtual environment

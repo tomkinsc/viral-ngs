@@ -174,8 +174,16 @@ main() {
     intermediates_out_folder="out/intermediates"
 
     if [ "$per_sample_output" == "true" ]; then
-        cleaned_reads_out_folder="out/cleaned_reads/${sample_name}"
-        intermediates_out_folder="out/intermediates/${sample_name}"
+        # folder structure for multi-lane outputs uses lane metadata recorded
+        # in BAM property at the end of demux
+        lane=$(dx describe --json "$file" | jq -r .properties.lane)
+        if [ "$lane" == "null" ]; then
+            cleaned_reads_out_folder="out/cleaned_reads/${sample_name}"
+            intermediates_out_folder="out/intermediates/${sample_name}"
+        else
+            cleaned_reads_out_folder="out/cleaned_reads/lane_$lane/${sample_name}"
+            intermediates_out_folder="out/intermediates/lane_$lane/${sample_name}"
+        fi
     fi
 
     mkdir -p $cleaned_reads_out_folder

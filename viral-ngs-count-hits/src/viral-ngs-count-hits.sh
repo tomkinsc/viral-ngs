@@ -35,9 +35,16 @@ main() {
 
     # Output file name / directory wrangling
     sample_name="${in_bam_prefix}"
-    sample_out_fn=$out_fn
+    sample_out_fn="$out_fn"
     if [ "$per_sample_output" == "true" ]; then
-        out_dir="$out_dir/$sample_name"
+        # folder structure for multi-lane outputs uses lane metadata recorded
+        # in BAM property at the end of demux
+        lane=$(dx describe --json "$in_bam" | jq -r .properties.lane)
+        if [ "$lane" == "null" ]; then
+            out_dir="$out_dir/$sample_name"
+        else
+            out_dir="$out_dir/lane_$lane/$sample_name"
+        fi
         mkdir -p "$out_dir"
     else
         sample_out_fn="$sample_name.$out_fn"
