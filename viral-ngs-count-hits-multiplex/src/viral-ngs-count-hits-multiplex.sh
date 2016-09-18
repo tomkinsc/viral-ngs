@@ -45,6 +45,11 @@ main() {
 
         bam="${in_bams[$i]}"
         bam_name="${in_bams_prefix[$i]}"
+        lane_folder=""
+        lane=$(dx describe --json "$bam" | jq -r .properties.lane)
+        if [ "$lane" != "null" ]; then
+            lane_folder="/lane_$lane"
+        fi
 
         count_hit_job_id=$(dx run $count_hits_applet_id \
         -iin_bam="${bam}" \
@@ -52,18 +57,12 @@ main() {
         -iref_fasta_tar="${ref_fasta}" \
         -iout_fn="${out_fn}" \
         --name "count_hits $bam_name" \
+        ${lane_folder:+--destination "$lane_folder"} \
         $opts --yes --brief)
 
-        fastqc_dest=""
+        fastqc_dest="$lane_folder"
         if [ "$per_sample_output" == "true" ]; then
-            # folder structure for multi-lane outputs uses lane metadata recorded
-            # in BAM property at the end of demux
-            lane=$(dx describe --json "$bam" | jq -r .properties.lane)
-            if [ "$lane" == "null" ]; then
-                fastqc_dest="/$bam_name"
-            else
-                fastqc_dest="/lane_$lane/$bam_name"
-            fi
+            fastqc_dest="$fastqc_dest/$bam_name"
         fi
 
         fastqc_job_id=$(dx run $fastqc_applet_id \
