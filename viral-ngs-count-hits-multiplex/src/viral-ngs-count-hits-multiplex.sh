@@ -54,11 +54,24 @@ main() {
         --name "count_hits $bam_name" \
         $opts --yes --brief)
 
+        fastqc_dest=""
+        if [ "$per_sample_output" == "true" ]; then
+            # folder structure for multi-lane outputs uses lane metadata recorded
+            # in BAM property at the end of demux
+            lane=$(dx describe --json "$bam" | jq -r .properties.lane)
+            if [ "$lane" == "null" ]; then
+                fastqc_dest="/$bam_name"
+            else
+                fastqc_dest="/lane_$lane/$bam_name"
+            fi
+        fi
+
         fastqc_job_id=$(dx run $fastqc_applet_id \
         -ireads="${bam}" \
         -iformat="${format}" -ikmer_size="${kmer_size}" \
         -inogroup="${nogroup}" $fastqc_opts \
         --name "fastqc $bam_name" \
+        ${fastqc_dest:+--destination "$fastqc_dest"} \
         --yes --brief)
 
         fastqc_job_ids+=($fastqc_job_id)
@@ -67,15 +80,4 @@ main() {
         dx-jobutil-add-output report_html $fastqc_job_id:report_html --class=array:jobref
         dx-jobutil-add-output stats_txt $fastqc_job_id:stats_txt --class=array:jobref
     done
-
-    # Marshall fastqc output files in workspace container to per-sample
-    # sub-folder
-    if [ "$per_sample_output" == "true" ]; then
-        dx wait ${fastqc_job_ids[@]}
-        for fastqc_report in `dx ls $DX_WORKSPACE_ID:/*.stats-fastqc.html`; do
-            sample_name="${fastqc_report%.stats-fastqc.html}"
-            dx mkdir -p "${DX_WORKSPACE_ID}:/${sample_name}"
-            dx mv "${DX_WORKSPACE_ID}:/${sample_name}.*" "${DX_WORKSPACE_ID}:/${sample_name}/"
-        done
-    fi
 }

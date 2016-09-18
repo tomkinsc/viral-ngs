@@ -221,4 +221,19 @@ main() {
 
     dx-upload-all-outputs
 
+    # add flowcell and lane properties to bams
+    for lane in ${lanes[@]}; do
+        bam_out_dir="/"
+        if [ "$multi_lane" = true ]; then
+            bam_out_dir="/lane_$lane"
+        fi
+        for dxfile in $(dx find data --folder "$bam_out_dir" --class file --brief); do
+            if [ -n "$flowcell" ]; then
+                dx set_properties "$dxfile" "flowcell=$flowcell"
+            fi
+            if [ "$multi_lane" = true ]; then
+                dx set_properties "$dxfile" "lane=$lane"
+            fi
+        done
+    done
 }
