@@ -36,6 +36,7 @@ main() {
 
     assembly.py refine_assembly assembly.fasta reads.bam refined_assembly.fasta \
         --outVcf sites.vcf.gz --min_coverage "$min_coverage" --novo_params "$novoalign_options" \
+        --major_cutoff "$major_cutoff"
 
     # deactivate viral-ngs virtual environment
     source deactivate

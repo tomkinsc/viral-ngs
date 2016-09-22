@@ -24,6 +24,12 @@
       "default": 1
     },
     {
+      "name": "major_cutoff",
+      "help": "Minimum allele observation frequency to call an unambiguous base",
+      "class": "float",
+      "default": 0.5
+    },
+    {
       "name": "novoalign_options",
       "class": "string",
       "optional": false,
