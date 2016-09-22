@@ -44,13 +44,13 @@
       "name": "min_length_fraction",
       "help": "Fail if the assembly is below this fraction of the target reference",
       "class": "float",
-      "default": 0.9
+      "default": 0.5
     },
     {
       "name": "min_unambig",
       "help": "Fail if the assembly has less than this proportion of non-N bases",
       "class": "float",
-      "default": 0.95
+      "default": 0.5
     },
     {
       "name": "replace_length",
