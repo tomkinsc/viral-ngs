@@ -181,6 +181,7 @@ def build_assembly_workflow(species, resources):
         refine2_input["assembly"] = dxpy.dxlink({"stage": refine1_stage_id, "outputField": "refined_assembly"})
         refine2_input["min_coverage"] = 3
         refine2_input["novoalign_options"] = "-r Random -l 40 -g 40 -x 20 -t 100"
+        refine2_input["major_cutoff"] = dxpy.dxlink({"stage": refine1_stage_id, "inputField": "major_cutoff"})
 
         refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2", folder="intermediates")
 
@@ -210,7 +211,8 @@ def build_assembly_workflow(species, resources):
             "novoalign_options": "-r Random -l 40 -g 40 -x 20 -t 100",
             "resources": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "resources"}),
             "gatk_tarball": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "gatk_tarball"}),
-            "novocraft_license": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_license"})
+            "novocraft_license": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "novocraft_license"}),
+            "major_cutoff": dxpy.dxlink({"stage": refine1_stage_id, "inputField": "major_cutoff"})
         }
         refine2_stage_id = wf.add_stage(find_applet("viral-ngs-assembly-refinement"), stage_input=refine2_input, name="refine2", folder="refinement_2")
 
