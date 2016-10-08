@@ -30,7 +30,7 @@
       "class": "file",
       "patterns": [ "viral-ngs-*.resources.tar.gz" ],
       "label": "A pre-built viral-ngs resources bundle",
-      "default": {"$dnanexus_link": "file-BzvX9P005KkZbPXk54X25Z31"}
+      "default": {"$dnanexus_link": "file-BzvkJ1Q0546QV5jy84XGBZ5J"}
     }
   ],
   "outputSpec": [
