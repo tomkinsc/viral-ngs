@@ -23,6 +23,7 @@ main() {
     unset PYTHONPATH
 
     set +e +o pipefail
+    export SKIP_VERSION_CHECK=1
     source easy-deploy-viral-ngs.sh load
 
     if ncbi.py fetch_fastas_and_feature_tables &> /dev/null ; then
