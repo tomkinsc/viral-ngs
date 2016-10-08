@@ -52,7 +52,7 @@
       {"name": "openjdk-8-jre-headless"}
     ],
     "distribution": "Ubuntu",
-    "release": "12.04"
+    "release": "14.04"
   },
   "authorizedUsers": []
 }

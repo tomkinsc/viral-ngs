@@ -26,7 +26,9 @@
       {"name": "openjdk-8-jre-headless"},
       {"name": "python-numpy"},
       {"name": "python-scipy"}
-    ]
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
   },
   "access": {
     "network": [

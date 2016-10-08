@@ -105,7 +105,9 @@
     },
     "execDepends": [
       {"name": "openjdk-8-jre-headless"}
-    ]
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
   },
   "authorizedUsers": []
 }
