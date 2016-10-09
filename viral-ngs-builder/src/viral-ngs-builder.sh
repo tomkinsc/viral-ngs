@@ -42,7 +42,8 @@ main() {
     # TODO: remove source and --entrypoint once related dx-docker beta issues are resolved
     echo "#!/bin/bash
 source /dx-docker-beta/environment
-dx-docker run -v \$(pwd):/user-data --entrypoint ./env_wrapper.sh broadinstitute/viral-ngs$viral_ngs_version $@" > /usr/local/bin/viral-ngs
+set -x
+dx-docker run -v \$(pwd):/user-data --entrypoint ./env_wrapper.sh broadinstitute/viral-ngs$viral_ngs_version \$@" > /usr/local/bin/viral-ngs
     chmod +x /usr/local/bin/viral-ngs
 
 

@@ -10,26 +10,14 @@ main() {
     dx download "$reads" -o reads.bam
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
-    # Stash the PYTHONPATH used by dx
-    DX_PYTHONPATH=$PYTHONPATH
-    DX_PATH=$PATH
-
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
     # build Lastal target database to working dir with prefix targets.db
     # taxon_filter.py lastal_build_db [input_fasta] [output_dir] [output_prefix]
-    taxon_filter.py lastal_build_db targets.fasta ./ --outputFilePrefix targets.db
+    viral-ngs taxon_filter.py lastal_build_db /user-data/targets.fasta /user-data --outputFilePrefix targets.db
     ls
     sha256sum targets.*
 
     # filter the reads
-    taxon_filter.py filter_lastal_bam reads.bam targets.db filtered_reads.bam
+    viral-ngs taxon_filter.py filter_lastal_bam /user-data/reads.bam /user-data/targets.db /user-data/filtered_reads.bam
 
     prefiltration_read_count=$(samtools view -c reads.bam)
     prefiltration_base_count=$(bam_base_count reads.bam)
@@ -37,21 +25,12 @@ main() {
     filtered_read_count=$(samtools view -c filtered_reads.bam)
     filtered_base_count=$(bam_base_count filtered_reads.bam)
 
-    # deactivate viral-ngs virtual environment
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
-
-    set -x -o pipefail
-
     dx-jobutil-add-output prefiltration_read_count $prefiltration_read_count
     dx-jobutil-add-output prefiltration_base_count $prefiltration_base_count
     dx-jobutil-add-output filtered_read_count $filtered_read_count
     dx-jobutil-add-output filtered_base_count $filtered_base_count
-    dx-jobutil-add-output filtered_reads --class=file \
-        $(dx upload --brief --destination "${reads_prefix}.filtered.bam" filtered_reads.bam)
+    dxid=$(dx upload --brief --destination "${reads_prefix}.filtered.bam" filtered_reads.bam)
+    dx-jobutil-add-output filtered_reads --class=file "$dxid"
 }
 
 bam_base_count() {
