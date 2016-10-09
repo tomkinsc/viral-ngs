@@ -1,10 +1,7 @@
 #!/bin/bash
 
-samtools=/home/dnanexus/viral-ngs/tools/conda-tools/default/bin/samtools
-
 main() {
     set -e -x -o pipefail
-    export PATH="$PATH:$HOME/miniconda/bin"
 
     # stage the inputs
     pids=()
@@ -16,34 +13,15 @@ main() {
     ulimit -s unlimited
     exit_code=0
 
-    # Stash the PYTHONPATH used by dx
-    DX_PYTHONPATH=$PYTHONPATH
-    DX_PATH=$PATH
-
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
     # run trinity
-    assembly.py assemble_trinity reads.bam \
-    contaminants.fasta assembly.fasta --n_reads=$subsample \
-    --outReads subsamp.bam 2> >(tee trinity.stderr.log >&2) || exit_code=$?
+    viral-ngs assembly.py assemble_trinity /user-data/reads.bam \
+        /user-data/contaminants.fasta /user-data/assembly.fasta --n_reads=$subsample \
+        --outReads /user-data/subsamp.bam 2> >(tee trinity.stderr.log >&2) || exit_code=$?
 
     # collect figures of merit
     subsampled_read_count=$(samtools view -c subsamp.bam)
     subsampled_read_pair_count=$(expr $subsampled_read_count / 2)
     subsampled_base_count=$(samtools view subsamp.bam | cut -f10 | tr -d '\n' | wc -c)
-
-    # deactivate viral-ngs virtual environment
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
 
     # Check for DenovoAssemblyError raised by assemble_trinity
     if [ "$exit_code" -ne "0" ]; then
@@ -56,14 +34,14 @@ main() {
     fi
 
     # output
-    dx-jobutil-add-output subsampled_reads --class=file \
-            $(dx upload --brief --destination "${reads_prefix}.trimmed_subsample.bam" subsamp.bam)
+    dxid=$(dx upload --brief --destination "${reads_prefix}.trimmed_subsample.bam" subsamp.bam)
+    dx-jobutil-add-output subsampled_reads --class=file "$dxid"
     dx-jobutil-add-output subsampled_read_pair_count --class=int $subsampled_read_pair_count
     dx-jobutil-add-output subsampled_base_count --class=int $subsampled_base_count
-    dx-jobutil-add-output contigs --class=file \
-            $(dx upload --brief --destination "${reads_prefix}.trinity.fasta" assembly.fasta)
+    dxid=$(dx upload --brief --destination "${reads_prefix}.trinity.fasta" assembly.fasta)
+    dx-jobutil-add-output contigs --class=file "$dxid"
 }
 
 bam_base_count() {
-    $samtools view $1 | cut -f10 | tr -d '\n' | wc -c
+    samtools view $1 | cut -f10 | tr -d '\n' | wc -c
 }

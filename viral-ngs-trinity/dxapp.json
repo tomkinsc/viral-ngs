@@ -57,9 +57,7 @@
       }
     },
     "execDepends": [
-      {"name": "openjdk-6-jre-headless"},
-      {"name": "python-numpy"},
-      {"name": "python-scipy"}
+      {"name": "samtools"}
     ],
     "distribution": "Ubuntu",
     "release": "14.04"
