@@ -11,28 +11,12 @@ main() {
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
     if [ "$novocraft_license" != "" ]; then
-        dx cat "$novocraft_license" > /home/dnanexus/novoalign.lic
-    fi
-
-    # Stash the PYTHONPATH used by dx
-    DX_PYTHONPATH=$PYTHONPATH
-    DX_PATH=$PATH
-
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
-    if [ -f /home/dnanexus/novoalign.lic ]; then
-        novoalign-register-license /home/dnanexus/novoalign.lic
+        dx cat "$novocraft_license" > novoalign.lic
     fi
 
     # run assembly.py order_and_orient to scaffold the contigs
-    assembly.py order_and_orient \
-        trinity_contigs.fasta reference_genome.fasta intermediate_scaffold.fasta
+    viral-ngs assembly.py order_and_orient \
+        /user-data/trinity_contigs.fasta /user-data/reference_genome.fasta /user-data/intermediate_scaffold.fasta
 
     if [ -z "$name" ]; then
         name=${trinity_contigs_prefix%_1}
@@ -40,18 +24,12 @@ main() {
 
     # run assembly.py impute_from_reference to check assembly quality and clean the contigs
     exit_code=0
-    assembly.py impute_from_reference \
-        intermediate_scaffold.fasta reference_genome.fasta scaffold.fasta \
+    viral-ngs assembly.py impute_from_reference \
+        /user-data/intermediate_scaffold.fasta /user-data/reference_genome.fasta /user-data/scaffold.fasta \
+        --NOVOALIGN_LICENSE_PATH /user-data/novoalign.lic \
         --newName "${name}" --replaceLength "$replace_length" \
         --minLengthFraction "$min_length_fraction" --minUnambig "$min_unambig" \
         --aligner "$aligner" 2> >(tee impute.stderr.log >&2) || exit_code=$?
-
-    # deactivate viral-ngs virtual environment
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
 
     if [ "$exit_code" -ne "0" ]; then
         if grep PoorAssemblyError impute.stderr.log ; then
@@ -65,10 +43,10 @@ main() {
     test -s scaffold.fasta
 
     # upload outputs
-    dx-jobutil-add-output modified_scaffold --class=file \
-        $(dx upload scaffold.fasta --destination "${name}.scaffold.fasta" --brief)
-    dx-jobutil-add-output intermediate_scaffold --class=file \
-        $(dx upload intermediate_scaffold.fasta --destination "${name}.mummer.fasta" --brief)
+    dxid=$(dx upload scaffold.fasta --destination "${name}.scaffold.fasta" --brief)
+    dx-jobutil-add-output modified_scaffold --class=file "$dxid"
+    dxid=$(dx upload intermediate_scaffold.fasta --destination "${name}.mummer.fasta" --brief)
+    dx-jobutil-add-output intermediate_scaffold --class=file "$dxid"
 }
 
 first_fasta_header() {
