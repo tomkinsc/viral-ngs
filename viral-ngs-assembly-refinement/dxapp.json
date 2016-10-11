@@ -74,11 +74,7 @@
         "instanceType": "mem1_ssd1_x4"
       }
     },
-    "execDepends": [
-      {"name": "openjdk-8-jre-headless"},
-      {"name": "python-numpy"},
-      {"name": "python-scipy"}
-    ],
+    "execDepends": [],
     "distribution": "Ubuntu",
     "release": "14.04"
   },
