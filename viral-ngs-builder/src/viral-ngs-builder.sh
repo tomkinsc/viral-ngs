@@ -43,7 +43,7 @@ main() {
     echo "#!/bin/bash
 source /dx-docker-beta/environment
 set -x
-dx-docker run -v \$(pwd):/user-data --entrypoint ./env_wrapper.sh broadinstitute/viral-ngs$viral_ngs_version \$@" > /usr/local/bin/viral-ngs
+dx-docker run -v \$(pwd):/user-data --entrypoint ./env_wrapper.sh broadinstitute/viral-ngs$viral_ngs_version \"\$@\"" > /usr/local/bin/viral-ngs
     chmod +x /usr/local/bin/viral-ngs
 
 
