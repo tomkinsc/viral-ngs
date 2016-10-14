@@ -24,7 +24,7 @@ print "folder: {}".format(args.folder)
 
 if args.reuse_builder is not True:
     subprocess.check_call(["dx","build","-f","--destination",args.project+":"+args.folder+"/",
-                           os.path.join(os.path.dirname(sys.argv[0]),"viral-ngs-builder")])
+                           os.path.join(os.path.dirname(sys.argv[0]),"util/viral-ngs-builder")])
 
 builder = dxpy.find_one_data_object(classname='applet', name="viral-ngs-builder",
                                      project=args.project, folder=args.folder,

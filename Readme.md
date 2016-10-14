@@ -65,10 +65,10 @@ git push -u origin dnanexus-resources-tarball -f
 #### Updates to the resources building process / viral-ngs-builder
 The viral-ngs-builder uses the `easy-deploy setup` routine provided by the [upstream repo](https://github.com/broadinstitute/viral-ngs/tree/master/easy-deploy-script) to complete installation of the viral-ngs resources and virtual environment. Changes upstream on how installation of resources happen should trickle down to our building routine.
 
-After making the appropriate changes to the `viral-ngs-builder` applet (which one should commit to the default `dnanexus` branch), rebuild the applet into the [bi-viral-ngs CI:/resources_tarball](https://platform.dnanexus.com/projects/BXBXK180x0z7x5kxq11p886f/data/resources_tarball), archiving the older version:
+After making the appropriate changes to the `util/viral-ngs-builder` applet (which one should commit to the default `dnanexus` branch), rebuild the applet into the [bi-viral-ngs CI:/resources_tarball](https://platform.dnanexus.com/projects/BXBXK180x0z7x5kxq11p886f/data/resources_tarball), archiving the older version:
 
 ```shell
-dx build viral-ngs-builder --destination "bi-viral-ngs CI:/resources_tarball/" -a
+dx build util/viral-ngs-builder --destination "bi-viral-ngs CI:/resources_tarball/" -a
 ```
 
 The newly built version will be automatically used in future resource building process (see section on **Resources tarball**).

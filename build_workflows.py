@@ -35,11 +35,11 @@ print "folder: {}".format(args.folder)
 ###############################################################################
 
 def build_applets():
-    applets = ["viral-ngs-human-depletion", "viral-ngs-human-depletion-multiplex",
-               "viral-ngs-filter", "viral-ngs-trinity", "viral-ngs-assembly-scaffolding",
-               "viral-ngs-assembly-refinement", "viral-ngs-assembly-analysis",
-               "viral-ngs-demux-wrapper", "viral-ngs-demux", "viral-ngs-classification",
-               "viral-ngs-bwa-count-hits", "viral-ngs-count-hits-multiplex"]
+    applets = ["assembly/viral-ngs-human-depletion", "demux/viral-ngs-human-depletion-multiplex",
+               "assembly/viral-ngs-filter", "assembly/viral-ngs-trinity", "assembly/viral-ngs-assembly-scaffolding",
+               "assembly/viral-ngs-assembly-refinement", "assembly/viral-ngs-assembly-analysis",
+               "demux/viral-ngs-demux-wrapper", "demux/viral-ngs-demux", "demux/viral-ngs-classification",
+               "demux/viral-ngs-bwa-count-hits", "demux/viral-ngs-count-hits-multiplex"]
 
     # Build applets for assembly workflow in [args.folder]/applets/ folder
     project.new_folder(applets_folder, parents=True)
@@ -53,7 +53,7 @@ def build_applets():
         applet.set_properties({"git_revision": git_revision})
 
     # Build applets that user interact with directly in [args.folder]/ main folder
-    exposed_applets = ["viral-ngs-fasta-fetcher"]
+    exposed_applets = ["util/viral-ngs-fasta-fetcher"]
     for applet in exposed_applets:
         print "building {}...".format(applet),
         sys.stdout.flush()
