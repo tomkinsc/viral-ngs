@@ -3,10 +3,6 @@
 main() {
     set -e -x -o pipefail
 
-    # Stash the PYTHONPATH used by dx
-    DX_PYTHONPATH=$PYTHONPATH
-    DX_PATH=$PATH
-
     # Receive the input reads as either a BAM file or a pair of FASTQs
     filename=$(dx describe "$file" --name)
     if [[ "$filename" == *.bam ]]; then
@@ -53,27 +49,11 @@ main() {
             sample_name="${sample_name%.1}"
         fi
 
-        # Load viral-ngs virtual environment
-        # Disable error propagation for now (there are warning :/ )
-        unset PYTHONPATH
-
-        set +e +o pipefail
-        export SKIP_VERSION_CHECK=1
-        source easy-deploy-viral-ngs.sh load
-
-        read_utils.py fastq_to_bam reads.fastq.gz reads2.fastq.gz input.bam --sampleName "$sample_name"
-
-        # deactivate viral-ngs virtual environment
-        source deactivate
-
-        # restore paths from DX
-        export PYTHONPATH=$DX_PYTHONPATH
-        export PATH=$DX_PATH
-        set -e -o pipefail
+        viral-ngs read_utils.py fastq_to_bam /user-data/reads.fastq.gz /user-data/reads2.fastq.gz /user-data/input.bam --sampleName "$sample_name"
 
         if [ "$skip_depletion" == "true" ]; then
-            dx-jobutil-add-output cleaned_reads --class=file \
-                $(dx upload --brief --destination ${sample_name}.unmapped.bam input.bam)
+            dxid=$(dx upload --brief --destination "${sample_name}.unmapped.bam" input.bam)
+            dx-jobutil-add-output cleaned_reads --class=file "$dxid"
             # will quit below after counting reads/bases
         fi
     else
@@ -81,24 +61,9 @@ main() {
         exit 1
     fi
 
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
     # count reads and bases in the input
     predepletion_read_count=$(samtools view -c input.bam)
     predepletion_base_count=$(bam_base_count input.bam)
-
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
-    set -e -o pipefail
 
     dx-jobutil-add-output predepletion_read_count --class=int "$predepletion_read_count"
     dx-jobutil-add-output predepletion_base_count --class=int "$predepletion_base_count"
@@ -124,7 +89,7 @@ main() {
         dbname=$(dx describe "$tarball" --name)
         dbname=${dbname%.bmtagger_db.tar.gz}
         mkdir "bmtagger_db/${dbname}"
-        local_bmtagger_dbs="${local_bmtagger_dbs} bmtagger_db/${dbname}/${dbname}"
+        local_bmtagger_dbs="${local_bmtagger_dbs} /user-data/bmtagger_db/${dbname}/${dbname}"
         dx cat "$tarball" | zcat | tar x -C "bmtagger_db/${dbname}" & pids+=($!)
     done
 
@@ -134,7 +99,7 @@ main() {
         dbname=$(dx describe "$tarball" --name)
         dbname=${dbname%.blastndb.tar.gz}
         mkdir "blast_db/${dbname}"
-        local_blast_dbs="${local_blast_dbs} blast_db/${dbname}/${dbname}"
+        local_blast_dbs="${local_blast_dbs} /user-data/blast_db/${dbname}/${dbname}"
         dx cat "$tarball" | zcat | tar x -C "blast_db/${dbname}" & pids+=($!)
     done
 
@@ -145,29 +110,15 @@ main() {
     # find 90% memory, for java
     mem_in_mb=`head -n1 /proc/meminfo | awk '{print int($2*0.9/1024)}'`
 
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
     # run deplete_human
-    taxon_filter.py deplete_human \
+    viral-ngs taxon_filter.py deplete_human \
         --JVMmemory ${mem_in_mb}m --threads `nproc` \
-        input.bam raw.bam bmtagger_depleted.bam rmdup.bam cleaned.bam \
+        /user-data/input.bam /user-data/raw.bam /user-data/bmtagger_depleted.bam \
+        /user-data/rmdup.bam /user-data/cleaned.bam \
         --bmtaggerDbs $local_bmtagger_dbs --blastDbs $local_blast_dbs
 
     depleted_read_count=$(samtools view -c cleaned.bam)
     depleted_base_count=$(bam_base_count cleaned.bam)
-    # deactivate viral-ngs virtual environment
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
-
 
     # upload outputs
     dx-jobutil-add-output depleted_read_count --class=int $depleted_read_count
