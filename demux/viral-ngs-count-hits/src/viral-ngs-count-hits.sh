@@ -8,23 +8,12 @@ main() {
 
     dx cat "$resources" | tar zx -C /
 
-    # Stash the PYTHONPATH used by dx
-    DX_PYTHONPATH=$PYTHONPATH
-    DX_PATH=$PATH
-
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
     # Novoindex the reference fasta file
+    ref_fasta_path="in/ref_fasta/*"
     index_output="${ref_fasta_path%.fasta}"
     index_output="${index_output%.fa}.nix"
 
-    novoindex "$index_output" "$ref_fasta_path"
+    viral-ngs novoindex "/user-data/$index_output" "/user-data/$ref_fasta_path"
 
     # Prepare output folders
     out_dir="out/count_files"
@@ -45,14 +34,8 @@ main() {
     fi
 
     # read_utils.py align_and_count_hits <input> <reference DB> <output>
-    reports.py align_and_plot_coverage "${in_bam_path}"  "$out_dir/$sample_out_fn" "${ref_fasta_path}"
-
-    # deactivate viral-ngs virtual environment
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
+    in_bam_path="in/in_bam/*"
+    viral-ngs reports.py align_and_plot_coverage "/user-data/${in_bam_path}"  "/user-data/$out_dir/$sample_out_fn" "/user-data/${ref_fasta_path}"
 
     dx-upload-all-outputs
 }

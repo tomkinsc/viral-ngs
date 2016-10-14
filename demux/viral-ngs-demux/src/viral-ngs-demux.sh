@@ -4,10 +4,6 @@ main() {
 
     set -e -x -o pipefail
 
-    # Stash the PYTHONPATH used by dx
-    DX_PYTHONPATH=$PYTHONPATH
-    DX_PATH=$PATH
-
     # Unpack viral-ngs resources
     dx cat "$resources" | tar zx -C /
 
@@ -136,14 +132,6 @@ main() {
         fi
     done
 
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
     for lane in ${lanes[@]}
     do
         # Prepare output folders
@@ -166,20 +154,20 @@ main() {
         mkdir -p $barcode_out_dir
 
         if [ ${#opts[@]} -eq 0 ]; then
-            illumina.py illumina_demux \
-            "$location_of_input" "$lane" "$bam_out_dir" \
-            --outMetrics "$metric_out_dir/$metrics_fn" \
-            --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
+            viral-ngs illumina.py illumina_demux \
+            "/user-data/$location_of_input" "$lane" "/user-data/$bam_out_dir" \
+            --outMetrics "/user-data/$metric_out_dir/$metrics_fn" \
+            --commonBarcodes "/user-data/$barcode_out_dir/$barcodes_fn" \
             --JVMmemory "$mem_in_mb"
         else
             # Execute viral-ngs demux, $opts is guaranteed to be
             # not empty, so we can safely quote it without introducing
             # extraneous quotes
             echo "${opts[@]}"
-            illumina.py illumina_demux \
-            "$location_of_input" "$lane" "$bam_out_dir" \
-            --outMetrics "$metric_out_dir/$metrics_fn" \
-            --commonBarcodes "$barcode_out_dir/$barcodes_fn" \
+            viral-ngs illumina.py illumina_demux \
+            "/user-data/$location_of_input" "$lane" "/user-data/$bam_out_dir" \
+            --outMetrics "/user-data/$metric_out_dir/$metrics_fn" \
+            --commonBarcodes "/user-data/$barcode_out_dir/$barcodes_fn" \
             --JVMmemory "$mem_in_mb" "${opts[@]}"
         fi
 
@@ -212,13 +200,6 @@ main() {
             done
         fi
     done
-
-    # deactivate viral-ngs virtual environment
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
 
     dx-upload-all-outputs
 

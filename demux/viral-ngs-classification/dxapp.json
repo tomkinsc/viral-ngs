@@ -49,8 +49,7 @@
   "runSpec": {
     "execDepends": [
       { "name": "liblz4-tool" },
-      { "name": "pigz" },
-      { "name": "openjdk-7-jre-headless" }
+      { "name": "pigz" }
     ],
     "systemRequirements": {
       "main": {

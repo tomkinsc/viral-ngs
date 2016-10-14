@@ -140,9 +140,7 @@
       }
     },
     "execDepends": [
-      {"name": "openjdk-8-jre-headless"},
-      {"name": "python-numpy"},
-      {"name": "python-scipy"},
+      {"name": "samtools"},
       {"name": "libxml2-utils"}
     ],
     "distribution": "Ubuntu",

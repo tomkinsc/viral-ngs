@@ -7,10 +7,6 @@
 #   - `-x`: Print trace of many of commands below; useful for debugging.
 set -e -x -o pipefail
 
-# Stash the PYTHONPATH used by dx
-DX_PYTHONPATH=$PYTHONPATH
-DX_PATH=$PATH
-
 # Log system resource statistics every 1m.
 dstat -cmdn 60 &
 
@@ -66,67 +62,52 @@ function main() {
   # Process input samples. #
   ##########################
 
-  mkdir -p ~/scratch/
+  mkdir -p scratch/
 
   for i in "${!mappings[@]}"; do
     # TODO: Consider streaming this into a Unix FIFO pipe (?). That being said,
     # our depleted .bam files are rather small (on order of MiB), so streaming
     # will not gain much.
-    dx cat "${mappings[$i]}" > ~/scratch/"${mappings_name[$i]}"
+    dx cat "${mappings[$i]}" > scratch/"${mappings_name[$i]}"
 
     # folder structure for multi-lane outputs uses lane metadata recorded
     # in BAM property at the end of demux
     lane=$(dx describe --json "${mappings[$i]}" | jq -r .properties.lane)
     if [ "$lane" == "null" ]; then
-        output_root_dir=~/"out/outputs/"
+        output_root_dir="out/outputs/"
     else
-        output_root_dir=~/"out/outputs/lane_$lane/"
+        output_root_dir="out/outputs/lane_$lane/"
     fi
 
     output_filename_prefix="${mappings_prefix[$i]%.cleaned}"
     output_root_dir="${output_root_dir}$output_filename_prefix"
     mkdir -p "$output_root_dir"/
 
-    # Load viral-ngs virtual environment
-    # Disable error propagation for now (there are warning :/ )
-    unset PYTHONPATH
-
-    set +e +o pipefail
-    export SKIP_VERSION_CHECK=1
-    source easy-deploy-viral-ngs.sh load
-
     # Use Kraken to classify taxonomic profile of sample.
-    metagenomics.py kraken \
-                    ~/scratch/"${mappings_name[$i]}" \
-                    "./$kraken_db_prefix" \
-                    --outReads "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
-                    --outReport "$output_root_dir"/"$output_filename_prefix".kraken-report.txt \
+    viral-ngs metagenomics.py kraken \
+                    /user-data/scratch/"${mappings_name[$i]}" \
+                    "/user-data/$kraken_db_prefix" \
+                    --outReads /user-data/"$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
+                    --outReport /user-data/"$output_root_dir"/"$output_filename_prefix".kraken-report.txt \
                     --numThreads `nproc`
 
-    mkdir -p ~/scratch/tmp/
+    mkdir -p scratch/tmp/
 
     # Use Krona to visualize taxonomic profiling output from Kraken.
-    metagenomics.py krona \
-                    "$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
-                    "./$krona_taxonomy_db_prefix" \
-                    ~/scratch/tmp/"$output_filename_prefix".krona-report.html \
+    viral-ngs metagenomics.py krona \
+                    /user-data/"$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
+                    "/user-data/$krona_taxonomy_db_prefix" \
+                    /user-data/scratch/tmp/"$output_filename_prefix".krona-report.html \
                     --noRank
 
-    # deactivate viral-ngs virtual environment
-    source deactivate
-
-    # restore paths from DX
-    export PYTHONPATH=$DX_PYTHONPATH
-    export PATH=$DX_PATH
-
     # Standalone html file output
-    cp ~/scratch/tmp/"$output_filename_prefix".krona-report.html "$output_root_dir"/
+    cp scratch/tmp/"$output_filename_prefix".krona-report.html "$output_root_dir"/
 
     # Tar all html and attached js files for easy download
-    tar cvf "$output_root_dir"/"$output_filename_prefix".krona-report.tar -C ~/scratch/tmp/ .
+    tar cvf "$output_root_dir"/"$output_filename_prefix".krona-report.tar -C scratch/tmp/ .
 
     # Clean up scratch folder for next sample
-    rm -rf ~/scratch/tmp/
+    rm -rf scratch/tmp/
 
   done
 
