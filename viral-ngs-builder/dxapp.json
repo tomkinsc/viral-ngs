@@ -50,7 +50,9 @@
       {"name": "pep8"},
       {"name": "cython"},
       {"name": "libtool"}
-    ]
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
   },
   "access": {
     "network": [

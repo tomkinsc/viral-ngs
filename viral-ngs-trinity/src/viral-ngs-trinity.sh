@@ -25,6 +25,7 @@ main() {
     unset PYTHONPATH
 
     set +e +o pipefail
+    export SKIP_VERSION_CHECK=1
     source easy-deploy-viral-ngs.sh load
 
     # run trinity

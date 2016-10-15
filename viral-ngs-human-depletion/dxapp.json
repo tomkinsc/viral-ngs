@@ -63,7 +63,7 @@
       "name": "resources",
       "class": "file",
       "patterns": ["viral-ngs-*.resources.tar.gz"],
-      "default": {"$dnanexus_link": "file-BzX8Pk803k56PPjBV5jbQ9GB"}
+      "default": {"$dnanexus_link": "file-BzvX9P005KkZbPXk54X25Z31"}
     }
   ],
   "outputSpec": [
@@ -100,12 +100,14 @@
     "file": "src/code.sh",
     "systemRequirements": {
       "main": {
-        "instanceType": "mem1_ssd1_x8"
+        "instanceType": "mem3_ssd1_x8"
       }
     },
     "execDepends": [
       {"name": "openjdk-8-jre-headless"}
-    ]
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
   },
   "authorizedUsers": []
 }

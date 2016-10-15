@@ -39,7 +39,9 @@
         "instanceType": "mem3_ssd1_x4"
       }
     },
-    "execDepends": []
+    "execDepends": [],
+    "distribution": "Ubuntu",
+    "release": "14.04"
   },
   "authorizedUsers": []
 }

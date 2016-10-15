@@ -58,6 +58,7 @@ main() {
         unset PYTHONPATH
 
         set +e +o pipefail
+        export SKIP_VERSION_CHECK=1
         source easy-deploy-viral-ngs.sh load
 
         read_utils.py fastq_to_bam reads.fastq.gz reads2.fastq.gz input.bam --sampleName "$sample_name"
@@ -85,6 +86,7 @@ main() {
     unset PYTHONPATH
 
     set +e +o pipefail
+    export SKIP_VERSION_CHECK=1
     source easy-deploy-viral-ngs.sh load
 
     # count reads and bases in the input
@@ -148,6 +150,7 @@ main() {
     unset PYTHONPATH
 
     set +e +o pipefail
+    export SKIP_VERSION_CHECK=1
     source easy-deploy-viral-ngs.sh load
 
     # run deplete_human
