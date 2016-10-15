@@ -4,7 +4,7 @@ main() {
     set -e -x -o pipefail
 
     pids=()
-    dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+    dx cat "$resources" | pigz -dc | tar x -C / & pids+=($!)
     dx download "$trinity_contigs" -o trinity_contigs.fasta & pids+=($!)
     dx download "$reference_genome" -o reference_genome.fasta & pids+=($!)
     dx download "$trinity_reads" -o reads.bam

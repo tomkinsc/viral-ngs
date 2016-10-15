@@ -4,7 +4,7 @@ main() {
     set -e -x -o pipefail
 
     accessions=$(echo ${accession_numbers[*]})
-    dx cat "$resources" | tar zx -C /
+    dx cat "$resources" | pigz -dc | tar x -C /
 
     # Write combined fasta to /genome.fasta
 

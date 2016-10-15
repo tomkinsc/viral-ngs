@@ -8,7 +8,7 @@ main() {
     fi
 
     pids=()
-    dx cat "$resources" | tar zx -C / & pids+=($!)
+    dx cat "$resources" | pigz -dc | tar x -C / & pids+=($!)
     dx download "$assembly" -o assembly.fasta & pids+=($!)
     dx download "$reads" -o reads.bam & pids+=($!)
     mkdir gatk/

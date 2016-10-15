@@ -5,7 +5,7 @@ main() {
     set -e -x -o pipefail
 
     # Unpack viral-ngs resources
-    dx cat "$resources" | tar zx -C /
+    dx cat "$resources" | pigz -dc | tar x -C /
 
     # Raise error if both of upload_sentinel_record and tarballs are specified
     if [ "$upload_sentinel_record" != "" ] && [ "$run_tarballs" != "" ]; then
@@ -28,7 +28,7 @@ main() {
 
         # This array is space separated, do not quote
         for file_id in ${file_ids[@]}; do
-            dx cat "$file_id" | tar xzf - -C ./input/ --owner root --group root --no-same-owner
+            dx cat "$file_id" | pigz -dc | tar xf - -C ./input/ --owner root --group root --no-same-owner
         done
     else
         # Unpack from run_tarballs, this array contain
@@ -36,7 +36,7 @@ main() {
         # the dnanexus link field intact
         for file_id in "${run_tarballs[@]}"; do
             echo "$file_id"
-            dx cat "$file_id" | tar xzf - -C ./input/ --owner root --group root --no-same-owner
+            dx cat "$file_id" | pigz -dc | tar xf - -C ./input/ --owner root --group root --no-same-owner
         done
     fi
 

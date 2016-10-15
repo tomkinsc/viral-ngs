@@ -91,7 +91,9 @@
         "instanceType": "mem3_ssd1_x8"
       }
     },
-    "execDepends": [],
+    "execDepends": [
+      {"name": "pigz"}
+    ],
     "distribution": "Ubuntu",
     "release": "14.04"
   },

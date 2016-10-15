@@ -17,7 +17,7 @@ main() {
         fi
 
         pids=()
-        dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+        dx cat "$resources" | pigz -dc | tar x -C / & pids+=($!)
         dx download "$file" -o input.bam
         for pid in "${pids[@]}"; do wait $pid || exit $?; done
         # TODO: verify BAM is actually unmapped, contains properly paired reads, etc.
@@ -38,10 +38,10 @@ main() {
         fi
 
         pids=()
-        dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+        dx cat "$resources" | pigz -dc | tar x -C / & pids+=($!)
         # hack SRA FASTQ read names to make them acceptable to Picard FastqToSam
-        maybe_dxzcat "$file" | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.1/\1/' | gzip -c > reads.fastq.gz & pids+=($!)
-        maybe_dxzcat "$paired_fastq" | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.2/\1/' | gzip -c > reads2.fastq.gz
+        maybe_dxzcat "$file" | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.1/\1/' | pigz -c > reads.fastq.gz & pids+=($!)
+        maybe_dxzcat "$paired_fastq" | sed -r 's/(@SRR[0-9]+\.[0-9]+)\.2/\1/' | pigz -c > reads2.fastq.gz
         for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
         if [ -z "$sample_name" ]; then
@@ -90,7 +90,7 @@ main() {
         dbname=${dbname%.bmtagger_db.tar.gz}
         mkdir "bmtagger_db/${dbname}"
         local_bmtagger_dbs="${local_bmtagger_dbs} /user-data/bmtagger_db/${dbname}/${dbname}"
-        dx cat "$tarball" | zcat | tar x -C "bmtagger_db/${dbname}" & pids+=($!)
+        dx cat "$tarball" | pigz -dc | tar x -C "bmtagger_db/${dbname}" & pids+=($!)
     done
 
     mkdir blast_db
@@ -100,7 +100,7 @@ main() {
         dbname=${dbname%.blastndb.tar.gz}
         mkdir "blast_db/${dbname}"
         local_blast_dbs="${local_blast_dbs} /user-data/blast_db/${dbname}/${dbname}"
-        dx cat "$tarball" | zcat | tar x -C "blast_db/${dbname}" & pids+=($!)
+        dx cat "$tarball" | pigz -dc | tar x -C "blast_db/${dbname}" & pids+=($!)
     done
 
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
@@ -155,7 +155,7 @@ main() {
 maybe_dxzcat() {
     name=$(dx describe "$1" --name)
     if [[ "$name" == *.gz ]]; then
-        dx cat "$1" | zcat
+        dx cat "$1" | pigz -dc
     else
         dx cat "$1"
     fi

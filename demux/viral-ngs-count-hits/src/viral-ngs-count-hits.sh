@@ -6,7 +6,7 @@ main() {
 
     set -e -x -o pipefail
 
-    dx cat "$resources" | tar zx -C /
+    dx cat "$resources" | pigz -dc | tar x -C /
 
     # Novoindex the reference fasta file
     ref_fasta_path="in/ref_fasta/*"

@@ -113,7 +113,8 @@
       }
     },
     "execDepends": [
-      {"name": "samtools"}
+      {"name": "samtools"},
+      {"name": "pigz"}
     ],
     "distribution": "Ubuntu",
     "release": "14.04"

@@ -5,7 +5,7 @@ main() {
 
     # stage the inputs
     pids=()
-    dx cat "$resources" | zcat | tar x -C / & pids+=($!)
+    dx cat "$resources" | pigz -dc | tar x -C / & pids+=($!)
     dx download "$targets" -o targets.fasta & pids+=($!)
     dx download "$reads" -o reads.bam
     for pid in "${pids[@]}"; do wait $pid || exit $?; done

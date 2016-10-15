@@ -11,7 +11,7 @@ set -e -x -o pipefail
 dstat -cmdn 60 &
 
 function main() {
-  dx cat "$resources" | tar zx -C /
+  dx cat "$resources" | pigz -dc | tar x -C /
 
   ###################################
   # Fetch and decompress Kraken db. #
@@ -20,7 +20,7 @@ function main() {
 
   # Db can be compressed by gzip or LZ4; choose decompressor based on file
   # extension.
-  decompressor="zcat"
+  decompressor="pigz -dc"
   if [[ "$kraken_db_name" == *.lz4 ]]; then
     decompressor="lz4 -d"
   fi
@@ -43,7 +43,7 @@ function main() {
 
   # Db can be compressed by gzip or LZ4; choose decompressor based on file
   # extension.
-  decompressor="zcat"
+  decompressor="pigz -dc"
   if [[ "$krona_taxonomy_db_name" == *.lz4 ]]; then
     decompressor="lz4 -d"
   fi

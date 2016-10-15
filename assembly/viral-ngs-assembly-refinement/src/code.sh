@@ -8,7 +8,7 @@ main() {
     fi
 
     pids=()
-    dx cat "$resources" | tar zx -C / & pids+=($!)
+    dx cat "$resources" | pigz -dc | tar x -C / & pids+=($!)
     dx download "$assembly" -o assembly.fasta & pids+=($!)
     dx download "$reads" -o reads.bam & pids+=($!)
     mkdir gatk/
@@ -22,7 +22,7 @@ main() {
         --major_cutoff "$major_cutoff" --GATK_PATH /user-data/gatk
         # TODO: --NOVOALIGN_LICENSE_PATH ?
 
-    dxid="$(zcat sites.vcf.gz | dx upload --destination "${name}.refinement.vcf" --brief -)"
+    dxid="$(pigz -dc sites.vcf.gz | dx upload --destination "${name}.refinement.vcf" --brief -)"
     dx-jobutil-add-output assembly_sites_vcf --class=file "$dxid"
     dxid="$(dx upload refined_assembly.fasta --destination "${name}.refined.fasta" --brief)"
     dx-jobutil-add-output refined_assembly --class=file "$dxid"
