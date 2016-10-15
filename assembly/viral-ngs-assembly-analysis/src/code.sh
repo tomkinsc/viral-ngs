@@ -19,11 +19,10 @@ main() {
         dx cat "$novocraft_license" > novoalign.lic
     fi
 
-    viral-ngs read_utils.py index_fasta_picard /user-data/assembly.fasta
-    viral-ngs read_utils.py index_fasta_samtools /user-data/assembly.fasta
-
-    # Prep fasta: index using novoalign
-    viral-ngs novoindex /user-data/assembly.nix /user-data/assembly.fasta
+    # index assembly
+    viral-ngs bash -c "read_utils.py index_fasta_picard /user-data/assembly.fasta &&
+                       read_utils.py index_fasta_samtools /user-data/assembly.fasta &&
+                       novoindex /user-data/assembly.nix /user-data/assembly.fasta"
 
     # align reads, dedup, realign, filter
     viral-ngs read_utils.py align_and_fix /user-data/reads.bam /user-data/assembly.fasta \
