@@ -7,25 +7,6 @@
   "categories": [],
   "inputSpec": [
     {
-      "name": "git_commit",
-      "label": "Git Commit/Ref",
-      "class": "string",
-      "optional": true,
-      "default": "master"
-    },
-    {
-      "name": "git_url",
-      "label": "Git Repo URL",
-      "class": "string",
-      "optional": true,
-      "default": "https://github.com/dnanexus/viral-ngs.git"
-    },
-    {
-      "name": "gatk_tarball",
-      "class": "file",
-      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
-    },
-    {
       "name": "viral_ngs_version",
       "class": "string",
       "help": "Desired version of broadinstitute/viral-ngs image on Docker Hub, either :TAG or @DIGEST",
@@ -47,16 +28,7 @@
       }
     },
     "execDepends": [
-      {"name": "build-essential"},
-      {"name": "unzip"},
-      {"name": "libncurses5-dev"},
-      {"name": "openjdk-8-jre-headless"},
-      {"name": "python-virtualenv"},
-      {"name": "python-numpy"},
-      {"name": "python-scipy"},
-      {"name": "pep8"},
-      {"name": "cython"},
-      {"name": "libtool"}
+      {"name": "python-virtualenv"}
     ],
     "distribution": "Ubuntu",
     "release": "14.04"
