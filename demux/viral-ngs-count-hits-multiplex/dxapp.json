@@ -134,7 +134,7 @@
     "file": "src/viral-ngs-count-hits-multiplex.sh",
     "systemRequirements": {
       "*": {
-        "instanceType": "mem1_ssd1_x2"
+        "instanceType": "mem1_ssd2_x4"
       }
     },
     "distribution": "Ubuntu",

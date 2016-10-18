@@ -45,7 +45,7 @@
     "file": "src/viral-ngs-bwa-count-hits.sh",
     "systemRequirements": {
       "*": {
-        "instanceType": "mem1_ssd1_x4"
+        "instanceType": "mem1_ssd2_x4"
       }
     },
     "execDepends": [],
