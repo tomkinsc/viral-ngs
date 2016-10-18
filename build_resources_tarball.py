@@ -33,7 +33,7 @@ builder = dxpy.find_one_data_object(classname='applet', name="viral-ngs-builder"
 builder_input = {
     "viral_ngs_version": args.version
 }
-job = builder.run(builder_input, project=args.project, folder=args.folder, name=("viral-ngs-bulder " + args.version))
+job = builder.run(builder_input, project=args.project, folder=args.folder, name=("viral-ngs-builder " + args.version))
 print "Waiting for builder job: {}".format(job.get_id())
 
 # wait for job to finish, while making noise to work around Travis 10m inactivity timeout
