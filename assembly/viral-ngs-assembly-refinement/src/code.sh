@@ -15,12 +15,16 @@ main() {
     dx cat "$gatk_tarball" | tar jx -C gatk/
     for pid in "${pids[@]}"; do wait $pid || exit $?; done
 
+    if [ "$novocraft_license" != "" ]; then
+        dx cat "$novocraft_license" > novoalign.lic
+    fi
+
     viral-ngs novoindex /user-data/assembly.nix /user-data/assembly.fasta
 
     viral-ngs assembly.py refine_assembly /user-data/assembly.fasta /user-data/reads.bam /user-data/refined_assembly.fasta \
-        --outVcf /user-data/sites.vcf.gz --min_coverage "$min_coverage" --novo_params "$novoalign_options" \
-        --major_cutoff "$major_cutoff" --GATK_PATH /user-data/gatk
-        # TODO: --NOVOALIGN_LICENSE_PATH ?
+        --outVcf /user-data/sites.vcf.gz --min_coverage "$min_coverage" --major_cutoff "$major_cutoff" \
+        --threads $(nproc) --GATK_PATH /user-data/gatk \
+        --novo_params "$novoalign_options" --NOVOALIGN_LICENSE_PATH /user-data/novoalign.lic
 
     dxid="$(pigz -dc sites.vcf.gz | dx upload --destination "${name}.refinement.vcf" --brief -)"
     dx-jobutil-add-output assembly_sites_vcf --class=file "$dxid"
