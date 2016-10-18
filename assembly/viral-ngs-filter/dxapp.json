@@ -1,0 +1,66 @@
+{
+  "name": "viral-ngs-filter",
+  "title": "viral-ngs-filter",
+  "summary": "Restrict input reads to those that align to a target database",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "reads",
+      "class": "file",
+      "patterns": ["*.bam"],
+      "help": "reads"
+    },
+    {
+      "name": "targets",
+      "help": "Target sequence database (FASTA)",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "filtered_reads",
+      "class": "file",
+      "patterns": ["*.bam"]
+    },
+    {
+      "name": "prefiltration_read_count",
+      "class": "int"
+    },
+    {
+      "name": "prefiltration_base_count",
+      "class": "int"
+    },
+    {
+      "name": "filtered_read_count",
+      "class": "int"
+    },
+    {
+      "name": "filtered_base_count",
+      "class": "int"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-filter.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem3_ssd1_x8"
+      }
+    },
+    "execDepends": [
+      {"name": "samtools"},
+      {"name": "pigz"}
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
+  },
+  "authorizedUsers": []
+}

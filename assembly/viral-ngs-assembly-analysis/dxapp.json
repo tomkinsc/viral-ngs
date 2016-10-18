@@ -1,0 +1,123 @@
+{
+  "name": "viral-ngs-assembly-analysis",
+  "title": "viral-ngs-assembly-analysis",
+  "summary": "Map reads to the final assembly and compute some figures of merit",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "assembly",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "reads",
+      "help": "Reads to map",
+      "class": "file",
+      "patterns": ["*.bam"]
+    },
+    {
+      "name": "aligner_options",
+      "class": "string",
+      "optional": false,
+      "default": "-r Random -l 40 -g 40 -x 20 -t 100 -k -c 3"
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    },
+    {
+      "name": "novocraft_license",
+      "class": "file",
+      "patterns": ["novoalign.lic", "Novoalign.lic"],
+      "optional": true,
+      "help": "(Optional) license for novocraft, which enables multi-threaded novoalign"
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "final_assembly",
+      "class": "file",
+      "patterns": ["*.assembly.fasta", "*.fasta", "*.fa"]
+    },
+    {
+      "name": "all_reads",
+      "help": "reads aligned to final assembly and unmapped reads",
+      "class": "file",
+      "patterns": ["*.all.bam", "*.bam"]
+    },
+    {
+      "name": "bam_stat",
+      "help": "Statistics of the reads aligned to final assembly",
+      "class": "file",
+      "patterns": ["*.txt"]
+    },
+    {
+      "name": "reads_paired_count",
+      "help": "Reads mapped to assembly and properly paired",
+      "class": "int"
+    },
+    {
+      "name": "assembly_read_alignments",
+      "help": "reads aligned to final assembly (mapped reads only)",
+      "class": "file",
+      "patterns": ["*.mapped.bam", "*.bam"]
+    },
+    {
+      "name": "assembly_read_index",
+      "help": "index of reads aligned to final assembly (mapped reads only)",
+      "class": "file",
+      "patterns": ["*.mapped.bam.bai", "*.bam.bai"]
+    },
+    {
+      "name": "coverage_plot",
+      "help": "PDF report of coverage of mapped reads",
+      "class": "file",
+      "patterns": ["*.pdf"]
+    },
+    {
+      "name": "assembly_length",
+      "class": "int"
+    },
+    {
+      "name": "alignment_read_count",
+      "class": "int"
+    },
+    {
+      "name": "alignment_base_count",
+      "class": "int"
+    },
+    {
+      "name": "mean_coverage_depth",
+      "class": "int"
+    },
+    {
+      "name": "alignment_genomecov",
+      "class":"file",
+      "help": "Report from 'bedtools genomecov' on assembly_read_alignments"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x4"
+      }
+    },
+    "execDepends": [
+      {"name": "samtools"},
+      {"name": "pigz"}
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
+  },
+  "authorizedUsers": []
+}

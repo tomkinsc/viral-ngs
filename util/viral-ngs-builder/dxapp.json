@@ -1,0 +1,42 @@
+{
+  "name": "viral-ngs-builder",
+  "title": "viral-ngs-builder",
+  "summary": "Build resources tarball for use by viral-ngs applets",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "viral_ngs_version",
+      "class": "string",
+      "help": "Desired version of broadinstitute/viral-ngs image on Docker Hub, either :TAG or @DIGEST",
+      "default": ":1.12.0"
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "resources",
+      "class": "file"
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-builder.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x8"
+      }
+    },
+    "execDepends": [
+      {"name": "python-virtualenv"}
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "authorizedUsers": []
+}

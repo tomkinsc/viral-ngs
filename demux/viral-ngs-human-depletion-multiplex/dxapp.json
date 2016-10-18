@@ -1,0 +1,60 @@
+{
+  "name": "viral-ngs-human-depletion-multiplex",
+  "title": "viral-ngs-human-depletion-multiplex",
+  "summary": "Run viral-ngs-human-depletion on multiple unmapped BAMs (from demultiplexing)",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "bams",
+      "class": "array:file",
+      "patterns": ["*.bam"],
+      "help": "Unmapped BAM files"
+    },
+    {
+      "name": "depletion_applet",
+      "class": "applet",
+      "patterns": ["viral-ngs-human-depletion"],
+      "help": "The viral-ngs-human-depletion applet"
+    },
+    {
+      "name": "per_sample_output",
+      "class": "boolean",
+      "label": "Output samples in sub folders",
+      "help": "Create subfolder for each sample output file",
+      "default": false
+    },
+    {
+      "name": "skip_depletion",
+      "class": "boolean",
+      "default": false,
+      "help": "This flag causes the actual depletion steps to be skipped, instead just generating an unmapped BAM file containing the input reads."
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"],
+      "default": {"$dnanexus_link": "file-F00gz2j0jpbZ20GbZx87Yqz5"}
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "cleaned_reads",
+      "class": "array:file",
+      "patterns": ["*.cleaned.bam", "*.bam"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x2"
+      }
+    },
+    "distribution": "Ubuntu",
+    "release": "14.04"
+  },
+  "authorizedUsers": []
+}

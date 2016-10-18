@@ -12,7 +12,7 @@ argparser.add_argument("--gatk", help="GATK tarball (default: %(default)s)",
 argparser.add_argument("--project", help="DNAnexus project ID", default="project-BXBXK180x0z7x5kxq11p886f")
 argparser.add_argument("--folder", help="Folder within project (default: %(default)s)", default="/resources_tarball")
 argparser.add_argument("--reuse-builder", help="Reuse the existing 'builder' applet instead of recreating it", action="store_true")
-argparser.add_argument("gitref", help="dnanexus/viral-ngs git ref to build")
+argparser.add_argument("version", help="Desired version of broadinstitute/viral-ngs image on Docker Hub, either :TAG or @DIGEST")
 args = argparser.parse_args()
 
 project = dxpy.DXProject(args.project)
@@ -24,17 +24,16 @@ print "folder: {}".format(args.folder)
 
 if args.reuse_builder is not True:
     subprocess.check_call(["dx","build","-f","--destination",args.project+":"+args.folder+"/",
-                           os.path.join(os.path.dirname(sys.argv[0]),"viral-ngs-builder")])
+                           os.path.join(os.path.dirname(sys.argv[0]),"util/viral-ngs-builder")])
 
 builder = dxpy.find_one_data_object(classname='applet', name="viral-ngs-builder",
                                      project=args.project, folder=args.folder,
                                      zero_ok=False, more_ok=False, return_handler=True)
 
 builder_input = {
-    "git_commit": args.gitref,
-    "gatk_tarball": dxpy.dxlink(args.gatk)
+    "viral_ngs_version": args.version
 }
-job = builder.run(builder_input, project=args.project, folder=args.folder, name=("viral-ngs-bulder " + args.gitref))
+job = builder.run(builder_input, project=args.project, folder=args.folder, name=("viral-ngs-bulder " + args.version))
 print "Waiting for builder job: {}".format(job.get_id())
 
 # wait for job to finish, while making noise to work around Travis 10m inactivity timeout

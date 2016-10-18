@@ -1,0 +1,67 @@
+{
+  "name": "viral-ngs-trinity",
+  "title": "viral-ngs-trinity",
+  "summary": "Run the Trinity assembler, preceded by read trimming, deduplication, and subsampling",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "reads",
+      "class": "file",
+      "patterns": ["*.unmapped.filtered.bam", "*.cleaned.filtered.bam", "*.filtered.bam", "*.bam"]
+    },
+    {
+      "name": "contaminants",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "subsample",
+      "help": "Subsample the Trinity input to no more than this many read pairs",
+      "class": "int",
+      "default": 100000
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "subsampled_reads",
+      "class": "file",
+      "patterns": ["*.bam", "*.subsamp.bam"]
+    },
+    {
+      "name": "subsampled_read_pair_count",
+      "class": "int"
+    },
+    {
+      "name": "subsampled_base_count",
+      "class": "int"
+    },
+    {
+      "name": "contigs",
+      "class": "file",
+      "patterns": ["*.fasta", "*.trinity.fasta"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/viral-ngs-trinity.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem1_ssd1_x4"
+      }
+    },
+    "execDepends": [
+      {"name": "samtools"},
+      {"name": "pigz"}
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
+  },
+  "authorizedUsers": []
+}

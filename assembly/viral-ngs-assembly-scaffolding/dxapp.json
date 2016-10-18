@@ -1,0 +1,101 @@
+{
+  "name": "viral-ngs-assembly-scaffolding",
+  "title": "viral-ngs-assembly-scaffolding",
+  "summary": "Reference-guided scaffolding of Trinity contigs",
+  "dxapi": "1.0.0",
+  "version": "0.0.1",
+  "categories": [],
+  "inputSpec": [
+    {
+      "name": "novocraft_license",
+      "class": "file",
+      "patterns": ["novoalign.lic", "Novoalign.lic"],
+      "optional": true,
+      "help": "(Optional) license for novocraft, which enables multi-threaded novoalign"
+    },
+    {
+      "name": "gatk_tarball",
+      "class": "file",
+      "patterns": ["GenomeAnalysisTK-*.tar.bz2"]
+    },
+    {
+      "name": "trinity_contigs",
+      "class": "file",
+      "patterns": ["*.trinity.fasta"]
+    },
+    {
+      "name": "trinity_reads",
+      "help": "Subsampled Reads from Trinity",
+      "class": "file",
+      "patterns": ["*.bam"]
+    },
+    {
+      "name": "reference_genome",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    },
+    {
+      "name": "name",
+      "help": "name for the sample/assembly (guessed from the filename by default)",
+      "class": "string",
+      "optional": true
+    },
+    {
+      "name": "min_length_fraction",
+      "help": "Fail if the assembly is below this fraction of the target reference",
+      "class": "float",
+      "default": 0.5
+    },
+    {
+      "name": "min_unambig",
+      "help": "Fail if the assembly has less than this proportion of non-N bases",
+      "class": "float",
+      "default": 0.5
+    },
+    {
+      "name": "replace_length",
+      "help": "length of assembly ends to be replaced with reference",
+      "class": "int",
+      "default": 55
+    },
+    {
+      "name": "aligner",
+      "help": "aligner to be used for alignment of fasta to reference. Possible choices: MUSCLE, MAFFT, nucmer",
+      "choices": ["muscle", "mafft", "mummer"],
+      "class": "string",
+      "default": "muscle"
+    },
+    {
+      "name": "resources",
+      "class": "file",
+      "patterns": ["viral-ngs-*.resources.tar.gz"]
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "modified_scaffold",
+      "class": "file",
+      "patterns": ["*.scaffold.fasta", "*.fasta"]
+    },
+    {
+      "name": "intermediate_scaffold",
+      "class": "file",
+      "patterns": ["*.fasta"]
+    }
+  ],
+  "runSpec": {
+    "interpreter": "bash",
+    "file": "src/code.sh",
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem3_ssd1_x8"
+      }
+    },
+    "execDepends": [
+      {"name": "pigz"}
+    ],
+    "distribution": "Ubuntu",
+    "release": "14.04"
+  },
+  "authorizedUsers": []
+}
