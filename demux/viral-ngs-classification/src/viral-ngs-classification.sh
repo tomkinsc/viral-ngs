@@ -13,50 +13,11 @@ dstat -cmdn 60 &
 function main() {
   dx cat "$resources" | pigz -dc | tar x -C /
 
-  ###################################
-  # Fetch and decompress Kraken db. #
-  ###################################
-  mkdir "./$kraken_db_prefix"
-
-  # Db can be compressed by gzip or LZ4; choose decompressor based on file
-  # extension.
-  decompressor="pigz -dc"
-  if [[ "$kraken_db_name" == *.lz4 ]]; then
-    decompressor="lz4 -d"
-  fi
-
-  dx cat "$kraken_db" | $decompressor | tar -C "./$kraken_db_prefix" -xvf -
-
-  if [ $(find "./$kraken_db_prefix" -type f | cut -d / -f 2,3 | sort | uniq | wc -l) -eq "1" ]; then
-    # If tarball has top-level dir, then move contents of that dir up one dir.
-    mv ./${kraken_db_prefix}/$(find "./$kraken_db_prefix" -type f | cut -d / -f 3 | uniq)/* ./${kraken_db_prefix}
-    find "./$kraken_db_prefix" -type f
-  fi
-
-  du -sh "./$kraken_db_prefix"
-
-  ##################################
-  # Fetch and decompress Krona db. #
-  ##################################
-  # TODO: Refactor (same as above for Kraken).
-  mkdir "./$krona_taxonomy_db_prefix"
-
-  # Db can be compressed by gzip or LZ4; choose decompressor based on file
-  # extension.
-  decompressor="pigz -dc"
-  if [[ "$krona_taxonomy_db_name" == *.lz4 ]]; then
-    decompressor="lz4 -d"
-  fi
-
-  dx cat "$krona_taxonomy_db" | $decompressor | tar -C "./$krona_taxonomy_db_prefix" -xvf -
-
-  if [ $(find "./$krona_taxonomy_db_prefix" -type f | cut -d / -f 2,3 | sort | uniq | wc -l) -eq "1" ]; then
-    # If tarball has top-level dir, then move contents of that dir up one dir.
-    mv ./${krona_taxonomy_db_prefix}/$(find "./$krona_taxonomy_db_prefix" -type f | cut -d / -f 3 | uniq)/* ./${krona_taxonomy_db_prefix}
-    find "./$krona_taxonomy_db_prefix" -type f
-  fi
-
-  du -sh "./$krona_taxonomy_db_prefix"
+  ##################################################
+  # Fetch and decompress Kraken & Krona databases. #
+  ##################################################
+  extract_db "$kraken_db" "$kraken_db_name" "$kraken_db_prefix"
+  extract_db "$krona_taxonomy_db" "$krona_taxonomy_db_name" "$krona_taxonomy_db_prefix"
 
   ##########################
   # Process input samples. #
@@ -112,4 +73,29 @@ function main() {
   done
 
   dx-upload-all-outputs --parallel
+}
+
+function extract_db() {
+  db_id="$1"
+  db_name="$2"
+  db_prefix="$3"
+
+  mkdir "./$db_prefix"
+
+  # Db can be compressed by gzip or LZ4; choose decompressor based on file
+  # extension.
+  decompressor="pigz -dc"
+  if [[ "$db_name" == *.lz4 ]]; then
+    decompressor="lz4 -d"
+  fi
+
+  dx cat "$db_id" | $decompressor | tar -C "./$db_prefix" -xvf -
+
+  if [ $(find "./$db_prefix" -type f | cut -d / -f 2,3 | sort | uniq | wc -l) -eq "1" ]; then
+    # If tarball has top-level dir, then move contents of that dir up one dir.
+    mv ./${db_prefix}/$(find "./$db_prefix" -type f | cut -d / -f 3 | uniq)/* ./${db_prefix}
+    find "./$db_prefix" -type f
+  fi
+
+  du -sh "./$db_prefix"
 }
