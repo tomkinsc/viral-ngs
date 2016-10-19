@@ -24,14 +24,14 @@ main() {
         # Decide on the correct instance type to use
         if (( $lane_count > 1 ));
         then
-            instance_type="mem1_ssd1_x32"
+            instance_type="mem1_ssd2_x4"
             echo "Detected $lane_count lanes, interpreting as HiSeq run, executing on a $instance_type machine."
         fi
     fi
 
-    if [ "$upload_sentinel_record" == "" && "$is_hiseq" == 'true' ];
+    if [ "$upload_sentinel_record" == "" ] && [ "$is_hiseq" == 'true' ];
     then
-        instance_type="mem1_ssd1_x32"
+        instance_type="mem1_ssd2_x4"
     fi
 
     # Populate command line options
