@@ -71,7 +71,7 @@ main() {
         dx cat "$sample_sheet" > "$sample_sheet_name"
         # Introduce single quotes to handle filenames with whitespace
         opts+=("--sampleSheet")
-        opts+=("$sample_sheet_name")
+        opts+=("/user-data/${sample_sheet_name}")
     fi
 
     if [ "$advanced_opts" != "" ]
