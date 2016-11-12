@@ -138,7 +138,8 @@
       }
     },
     "distribution": "Ubuntu",
-    "release": "14.04"
+    "release": "14.04",
+    "timeoutPolicy": {"*": {"hours": 24}}
   },
   "authorizedUsers": []
 }
