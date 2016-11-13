@@ -52,7 +52,7 @@
     "file": "src/viral-ngs-filter.sh",
     "systemRequirements": {
       "main": {
-        "instanceType": "mem3_ssd1_x16"
+        "instanceType": "mem2_ssd1_x8"
       }
     },
     "execDepends": [
