@@ -49,7 +49,8 @@
   "runSpec": {
     "execDepends": [
       { "name": "liblz4-tool" },
-      { "name": "pigz" }
+      { "name": "pigz" },
+      { "name": "parallel" }
     ],
     "systemRequirements": {
       "main": {

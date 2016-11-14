@@ -13,65 +13,16 @@ dstat -cmdn 60 &
 function main() {
   dx cat "$resources" | pigz -dc | tar x -C /
 
-  ##################################################
-  # Fetch and decompress Kraken & Krona databases. #
-  ##################################################
+  # Fetch and decompress Kraken & Krona databases.
   extract_db "$kraken_db" "$kraken_db_name" "$kraken_db_prefix"
   extract_db "$krona_taxonomy_db" "$krona_taxonomy_db_name" "$krona_taxonomy_db_prefix"
 
-  ##########################
-  # Process input samples. #
-  ##########################
+  # Process input samples
+  export -f process_bam
+  export SHELL=/bin/bash
+  parallel --delay 1 -P 8 -t process_bam "$kraken_db_prefix" "$krona_taxonomy_db_prefix" ::: "${mappings[@]}"
 
-  mkdir -p scratch/
-
-  for i in "${!mappings[@]}"; do
-    # TODO: Consider streaming this into a Unix FIFO pipe (?). That being said,
-    # our depleted .bam files are rather small (on order of MiB), so streaming
-    # will not gain much.
-    dx cat "${mappings[$i]}" > scratch/"${mappings_name[$i]}"
-
-    # folder structure for multi-lane outputs uses lane metadata recorded
-    # in BAM property at the end of demux
-    lane=$(dx describe --json "${mappings[$i]}" | jq -r .properties.lane)
-    if [ "$lane" == "null" ]; then
-        output_root_dir="out/outputs/"
-    else
-        output_root_dir="out/outputs/lane_$lane/"
-    fi
-
-    output_filename_prefix="${mappings_prefix[$i]%.cleaned}"
-    output_root_dir="${output_root_dir}$output_filename_prefix"
-    mkdir -p "$output_root_dir"/
-
-    # Use Kraken to classify taxonomic profile of sample.
-    viral-ngs metagenomics.py kraken \
-                    /user-data/scratch/"${mappings_name[$i]}" \
-                    "/user-data/$kraken_db_prefix" \
-                    --outReads /user-data/"$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
-                    --outReport /user-data/"$output_root_dir"/"$output_filename_prefix".kraken-report.txt \
-                    --numThreads `nproc`
-
-    mkdir -p scratch/tmp/
-
-    # Use Krona to visualize taxonomic profiling output from Kraken.
-    viral-ngs metagenomics.py krona \
-                    /user-data/"$output_root_dir"/"$output_filename_prefix".kraken-classified.txt.gz \
-                    "/user-data/$krona_taxonomy_db_prefix" \
-                    /user-data/scratch/tmp/"$output_filename_prefix".krona-report.html \
-                    --noRank
-
-    # Standalone html file output
-    cp scratch/tmp/"$output_filename_prefix".krona-report.html "$output_root_dir"/
-
-    # Tar all html and attached js files for easy download
-    tar cvf "$output_root_dir"/"$output_filename_prefix".krona-report.tar -C scratch/tmp/ .
-
-    # Clean up scratch folder for next sample
-    rm -rf scratch/tmp/
-
-  done
-
+  # upload outputs
   dx-upload-all-outputs --parallel
 }
 
@@ -98,4 +49,56 @@ function extract_db() {
   fi
 
   du -sh "./$db_prefix"
+}
+
+function process_bam() {
+  set -e -x -o pipefail
+
+  kraken_db_prefix="$1"
+  krona_taxonomy_db_prefix="$2"
+
+  # stage input BAM
+  bam_id=$(dx-jobutil-parse-link --no-project "$3")
+  bam_name=$(dx describe --name "$3")
+
+  mkdir -p "scratch/${bam_id}/krona"
+  dx download -o "scratch/${bam_id}/${bam_name}" "$bam_id"
+
+  # folder structure for multi-lane outputs uses lane metadata recorded
+  # in BAM property at the end of demux
+  lane=$(dx describe --json "$bam_id" | jq -r .properties.lane)
+  if [ "$lane" == "null" ]; then
+      output_root_dir="out/outputs/"
+  else
+      output_root_dir="out/outputs/lane_$lane/"
+  fi
+
+  output_filename_prefix="${bam_name%.bam}"
+  output_filename_prefix="${output_filename_prefix%.cleaned}"
+  output_root_dir="${output_root_dir}${output_filename_prefix}"
+  mkdir -p "$output_root_dir"
+
+  # Use Kraken to classify taxonomic profile of sample.
+  viral-ngs metagenomics.py kraken \
+                  "/user-data/scratch/${bam_id}/${bam_name}" \
+                  "/user-data/${kraken_db_prefix}" \
+                  --outReads "/user-data/${output_root_dir}/${output_filename_prefix}.kraken-classified.txt.gz" \
+                  --outReport "/user-data/${output_root_dir}/${output_filename_prefix}.kraken-report.txt" \
+                  --numThreads 4
+
+  # Use Krona to visualize taxonomic profiling output from Kraken.
+  viral-ngs metagenomics.py krona \
+                  "/user-data/${output_root_dir}/${output_filename_prefix}.kraken-classified.txt.gz" \
+                  "/user-data/${krona_taxonomy_db_prefix}" \
+                  "/user-data/scratch/${bam_id}/krona/${output_filename_prefix}.krona-report.html" \
+                  --noRank
+
+  # Standalone html file output
+  cp "scratch/${bam_id}/krona/${output_filename_prefix}.krona-report.html" "${output_root_dir}/"
+
+  # Tar all html and attached js files for easy download
+  tar cf "${output_root_dir}/${output_filename_prefix}.krona-report.tar" -C "scratch/$bam_id/krona" .
+
+  # cleanup
+  rm -rf "scratch/${bam_id}"
 }
