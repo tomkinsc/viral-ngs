@@ -20,7 +20,7 @@ main() {
 
     # collect figures of merit
     subsampled_read_count=$(samtools view -c subsamp.bam)
-    subsampled_read_pair_count=$(expr $subsampled_read_count / 2)
+    subsampled_read_pair_count=$(( subsampled_read_count / 2))
     subsampled_base_count=$(samtools view subsamp.bam | cut -f10 | tr -d '\n' | wc -c)
 
     # Check for DenovoAssemblyError raised by assemble_trinity

@@ -38,7 +38,7 @@ main() {
     alignment_read_count=$(samtools view -c mapped.bam)
     reads_paired_count=$(samtools flagstat all.bam | grep properly | awk '{print $1}')
     alignment_base_count=$(samtools view mapped.bam | cut -f10 | tr -d '\n' | wc -c)
-    mean_coverage_depth=$(expr $alignment_base_count / $assembly_length)
+    mean_coverage_depth=$(( alignment_base_count / assembly_length ))
     samtools flagstat  all.bam > stats.txt
 
     # Continue gathering statistics

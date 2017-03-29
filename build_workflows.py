@@ -362,7 +362,7 @@ if args.run_tests is True or args.run_large_tests is True:
             "expected_assembly_sha256sum": "3a849c1e545bca1ff938fe847f09206c0d5001de6153bf65831eb21513f1c3fa",
             # Note: contig name line (>....) removed
             "expected_subsampled_base_count":  729174,
-            "expected_alignment_base_count": 590547
+            "expected_alignment_base_count": 577417
         }
     }
 
