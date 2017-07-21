@@ -28,7 +28,7 @@ main() {
     viral-ngs read_utils.py align_and_fix /user-data/reads.bam /user-data/assembly.fasta \
         --outBamAll /user-data/all.bam --outBamFiltered /user-data/mapped.bam \
         --GATK_PATH /user-data/gatk \
-        --aligner_options "$novoalign_options" --NOVOALIGN_LICENSE_PATH /user-data/novoalign.lic
+        --aligner_options "$aligner_options" --NOVOALIGN_LICENSE_PATH /user-data/novoalign.lic
     samtools index mapped.bam
 
     viral-ngs reports.py plot_coverage /user-data/mapped.bam /user-data/coverage_plot.pdf --plotFormat pdf --plotWidth 1100 --plotHeight 850 --plotDPI 100
@@ -38,7 +38,7 @@ main() {
     alignment_read_count=$(samtools view -c mapped.bam)
     reads_paired_count=$(samtools flagstat all.bam | grep properly | awk '{print $1}')
     alignment_base_count=$(samtools view mapped.bam | cut -f10 | tr -d '\n' | wc -c)
-    mean_coverage_depth=$(expr $alignment_base_count / $assembly_length)
+    mean_coverage_depth=$(( alignment_base_count / assembly_length ))
     samtools flagstat  all.bam > stats.txt
 
     # Continue gathering statistics
