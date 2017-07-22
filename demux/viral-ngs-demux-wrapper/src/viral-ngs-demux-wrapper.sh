@@ -45,13 +45,13 @@ main() {
         if [ "$total_tile_count" -le 50 ]; then 
             instance_type="mem1_ssd1_x4"
             echo "Detected $total_tile_count tiles, interpreting as MiSeq run, executing on a $instance_type machine."
-        elif [ "$total_tile_count" -ge 49 -a "$total_tile_count" -le 150 ]; then 
+        elif [ "$total_tile_count" -gt 50 -a "$total_tile_count" -le 150 ]; then 
             instance_type="mem1_ssd2_x4"
             echo "Detected $total_tile_count tiles, interpreting as HiSeq2k run, executing on a $instance_type machine."
-        elif [ "$total_tile_count" -ge 149 -a "$total_tile_count" -le 896 ]; then 
+        elif [ "$total_tile_count" -gt 150 -a "$total_tile_count" -le 896 ]; then 
             instance_type="mem1_hdd2_x32"
             echo "Detected $total_tile_count tiles, interpreting as HiSeq4k run, executing on a $instance_type machine."
-        elif [ "$total_tile_count" -ge 895 ]; then 
+        elif [ "$total_tile_count" -gt 896 ]; then 
             instance_type="mem1_hdd2_x32"
             echo "Tile count: $total_tile_count tiles, (unknown instrument type), executing on a $instance_type machine."
         fi
