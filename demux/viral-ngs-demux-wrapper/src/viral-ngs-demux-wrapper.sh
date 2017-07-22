@@ -60,6 +60,7 @@ main() {
                 echo "Lane count: $total_tile_count tiles, (unknown instrument type), executing on a $instance_type machine."
             ;;
         esac
+    fi
 
     if [ "$upload_sentinel_record" == "" ] && [ "$is_hiseq" == 'true' ];
     then
