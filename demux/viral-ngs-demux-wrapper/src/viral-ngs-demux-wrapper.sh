@@ -42,24 +42,19 @@ main() {
         # total data size more roughly tracks total tile count
         total_tile_count=$((lane_count*surface_count*swath_count*tile_count))
 
-        case $total_tile_count in
-            28)
-                instance_type="mem1_ssd1_x4"
-                echo "Detected $total_tile_count tiles, interpreting as MiSeq run, executing on a $instance_type machine."
-            ;;
-            128)
-                instance_type="mem1_ssd2_x4"
-                echo "Detected $total_tile_count tiles, interpreting as HiSeq2k run, executing on a $instance_type machine."
-            ;;
-            896)
-                instance_type="mem1_hdd2_x32"
-                echo "Detected $total_tile_count tiles, interpreting as HiSeq4k run, executing on a $instance_type machine."
-            ;;
-            *)
-                instance_type="mem1_ssd1_x4"
-                echo "Tile count: $total_tile_count tiles, (unknown instrument type), executing on a $instance_type machine."
-            ;;
-        esac
+        if [ "$total_tile_count" -le 50 ]; then 
+            instance_type="mem1_ssd1_x4"
+            echo "Detected $total_tile_count tiles, interpreting as MiSeq run, executing on a $instance_type machine."
+        elif [ "$total_tile_count" -ge 49 -a "$total_tile_count" -le 150 ]; then 
+            instance_type="mem1_ssd2_x4"
+            echo "Detected $total_tile_count tiles, interpreting as HiSeq2k run, executing on a $instance_type machine."
+        elif [ "$total_tile_count" -ge 149 -a "$total_tile_count" -le 896 ]; then 
+            instance_type="mem1_hdd2_x32"
+            echo "Detected $total_tile_count tiles, interpreting as HiSeq4k run, executing on a $instance_type machine."
+        elif [ "$total_tile_count" -ge 895 ]; then 
+            instance_type="mem1_hdd2_x32"
+            echo "Tile count: $total_tile_count tiles, (unknown instrument type), executing on a $instance_type machine."
+        fi
     fi
 
     if [ "$upload_sentinel_record" == "" ] && [ "$is_hiseq" == 'true' ];
