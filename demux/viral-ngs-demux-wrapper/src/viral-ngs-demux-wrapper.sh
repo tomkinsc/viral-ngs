@@ -15,19 +15,51 @@ main() {
 
         # Parse the lane count from RunInfo.xml file
         lane_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@LaneCount)" RunInfo.xml)
+        surface_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@SurfaceCount)" RunInfo.xml)
+        swath_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@SwathCount)" RunInfo.xml)
+        tile_count=$(xmllint --xpath "string(//Run/FlowcellLayout/@TileCount)" RunInfo.xml)
 
         # Raise error if laneCount could not be found in the expected XML path
         if [ -z "$lane_count" ]; then
-            dx-jobutil-report-error "Could not parse laneCount from RunInfo.xml. Please check RunInfo.xml is properful formatted"
+            dx-jobutil-report-error "Could not parse LaneCount from RunInfo.xml. Please check RunInfo.xml is properly formatted"
         fi
 
-        # Decide on the correct instance type to use
-        if (( $lane_count > 1 ));
-        then
-            instance_type="mem1_ssd2_x4"
-            echo "Detected $lane_count lanes, interpreting as HiSeq run, executing on a $instance_type machine."
+        # Raise error if laneCount could not be found in the expected XML path
+        if [ -z "$surface_count" ]; then
+            dx-jobutil-report-error "Could not parse SurfaceCount from RunInfo.xml. Please check RunInfo.xml is properly formatted"
         fi
-    fi
+
+        # Raise error if laneCount could not be found in the expected XML path
+        if [ -z "$swath_count" ]; then
+            dx-jobutil-report-error "Could not parse SwathCount from RunInfo.xml. Please check RunInfo.xml is properly formatted"
+        fi
+
+        # Raise error if laneCount could not be found in the expected XML path
+        if [ -z "$tile_count" ]; then
+            dx-jobutil-report-error "Could not parse TileCount from RunInfo.xml. Please check RunInfo.xml is properly formatted"
+        fi
+
+        # total data size more roughly tracks total tile count
+        total_tile_count=$((lane_count*surface_count*swath_count*tile_count))
+
+        case $total_tile_count in
+            28)
+                instance_type="mem1_ssd1_x4"
+                echo "Detected $total_tile_count tiles, interpreting as MiSeq run, executing on a $instance_type machine."
+            ;;
+            128)
+                instance_type="mem1_ssd2_x4"
+                echo "Detected $total_tile_count tiles, interpreting as HiSeq2k run, executing on a $instance_type machine."
+            ;;
+            896)
+                instance_type="mem1_hdd2_x32"
+                echo "Detected $total_tile_count tiles, interpreting as HiSeq4k run, executing on a $instance_type machine."
+            ;;
+            *)
+                instance_type="mem1_ssd1_x4"
+                echo "Lane count: $total_tile_count tiles, (unknown instrument type), executing on a $instance_type machine."
+            ;;
+        esac
 
     if [ "$upload_sentinel_record" == "" ] && [ "$is_hiseq" == 'true' ];
     then
