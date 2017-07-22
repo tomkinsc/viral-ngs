@@ -57,7 +57,7 @@ main() {
             ;;
             *)
                 instance_type="mem1_ssd1_x4"
-                echo "Lane count: $total_tile_count tiles, (unknown instrument type), executing on a $instance_type machine."
+                echo "Tile count: $total_tile_count tiles, (unknown instrument type), executing on a $instance_type machine."
             ;;
         esac
     fi
