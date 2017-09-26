@@ -5,6 +5,8 @@ import csv
 import sys
 import concurrent.futures
 import datetime
+import re
+import multiprocessing
 
 import dxpy
 
@@ -19,6 +21,28 @@ parser.add_argument('ids', type=str, nargs='+', help='IDs for which information 
 parser.add_argument('--state', dest='states', nargs='+', choices=["done", "failed", "running", "terminated", "runnable"], default=None, help="Execution states to include when returning information for all jobs or analyses in a project. Note: 'runnable' means the item is waiting to be executed.")
 parser.add_argument('--executableName', dest='executable_names', nargs='+', default=None, help="DNAnexus executable names to include. If omitted, all are included.")
 parser.add_argument('--noDescendants', dest='no_descendants', action='store_true', help="Include top-level executions only. This is helpful when specifying a project-ID and child jobs are not desired in the output.")
+
+def available_cpu_count():
+    """
+    Return the number of available virtual or physical CPUs on this system.
+    The number of available CPUs can be smaller than the total number of CPUs
+    when the cpuset(7) mechanism is in use, as is the case on some cluster
+    systems.
+
+    Adapted from http://stackoverflow.com/a/1006301/715090
+    """
+    try:
+        with open('/proc/self/status') as f:
+            status = f.read()
+        m = re.search(r'(?m)^Cpus_allowed:\s*(.*)$', status)
+        if m:
+            res = bin(int(m.group(1).replace(',', ''), 16)).count('1')
+            if res > 0:
+                return min(res, multiprocessing.cpu_count())
+    except IOError:
+        pass
+
+    return multiprocessing.cpu_count()
 
 if __name__ == "__main__":
     if len(sys.argv)==1:
@@ -46,7 +70,7 @@ if __name__ == "__main__":
 
     print("Reading {} total executions...".format(len(execution_ids_to_describe)))
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=available_cpu_count()) as executor:
         for execution in executor.map(dxpy.describe, execution_ids_to_describe, chunksize=50):
             executions.append(execution)
 
